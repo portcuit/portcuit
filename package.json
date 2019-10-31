@@ -20,9 +20,7 @@
     "ramda": "^0.26.1",
     "@pkit/core": "^0.0.1",
     "@pkit/helper": "^0.0.1",
-    "rxjs": "^6.5.3"
-  },
-  "devDependencies": {
+    "rxjs": "^6.5.3",
     "electron": "^7.0.0"
   },
   "publishConfig": {
