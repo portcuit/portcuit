@@ -12,9 +12,9 @@ const load = (url, window) =>
 
 exports.default = (curr, context) =>
   compose(
-    plug(latestMergeMap(load, [[0, 0], [1, 0]]),
+    plug(latestMergeMap(load, [0, 0], [1, 0]),
       source(curr.load), sink(curr.loaded), source(curr.window)),
-    plug(latestMap(invoker(0, 'destroy'), [[1, 0]]),
+    plug(latestMap(invoker(0, 'destroy'), [1, 0]),
       source(context.terminate), sink(curr.terminated), source(curr.window)),
     plug(mapCuit(open, [[0]]),
       source(curr.open), sink(curr.window)),
