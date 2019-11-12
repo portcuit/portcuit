@@ -1,9 +1,5 @@
-const {app,BrowserWindow} = require('electron')
-const {apply,pipe,always,invoker,constructN} = require('ramda')
-const {fromEvent} = require('rxjs')
 const {compose,plug,source,sink} = require('@pkit/core')
-const {latestMap,latestMergeMap,mapSink,mergeMapSink} = require('@pkit/helper')
-const {load} = require('./processors')
+const {load, terminate, open, close, quit, ready} = require('./processors')
 
 exports.port = {
   ready: null,
@@ -20,15 +16,17 @@ exports.port = {
 
 exports.default = (curr, context) =>
   compose(
-    plug(latestMergeMap(load, [0, 0], [1, 0]),
-      source(curr.load), sink(curr.loaded), source(curr.window)),
-    plug(latestMap(invoker(0, 'destroy'), [1, 0]),
-      source(context.terminate), sink(curr.terminated), source(curr.window)),
-    plug(mapSink(constructN(1, BrowserWindow), [0]),
+    plug(load,
+      source(curr.load), sink(curr.loaded),
+      source(curr.window)),
+    plug(terminate,
+      source(context.terminate), sink(curr.terminated),
+      source(curr.window)),
+    plug(open,
       source(curr.open), sink(curr.window)),
-    plug(mergeMapSink(pipe(always([app, 'window-all-closed']), apply(fromEvent))),
+    plug(close,
       source(context.init), sink(curr.window_all_closed)),
-    plug(mapSink(app.quit),
+    plug(quit,
       source(curr.quit), sink(curr.terminated)),
-    plug(mergeMapSink(app.whenReady),
+    plug(ready,
       source(context.init), sink(curr.ready)))
