@@ -14,7 +14,7 @@ const open = options =>
 const close = () =>
   fromEvent(app, 'window-all-closed')
 
-exports.load = latestMergeMapSink(load, [1, 0], [0, 0])
+exports.load = latestMergeMapSink(load, [1, 0], [0, 0], [0, 1])
 exports.terminate = latestMapSink(terminate, [1, 0])
 exports.open = mapSink(open, [0])
 exports.close = mergeMapSink(close)
