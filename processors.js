@@ -1,9 +1,9 @@
 const {app,BrowserWindow} = require('electron')
 const {fromEvent} = require('rxjs')
-const {latestMap,latestMergeMap,mapSink,mergeMapSink} = require('@pkit/helper')
+const {latestMapSink,latestMergeMapSink,mapSink,mergeMapSink} = require('@pkit/helper')
 
-const load = (url, window) =>
-  window.loadURL(url)
+const load = (window, url, options={}) =>
+  window.loadURL(url, options)
 
 const terminate = window =>
   window.destroy()
@@ -14,8 +14,8 @@ const open = options =>
 const close = () =>
   fromEvent(app, 'window-all-closed')
 
-exports.load = latestMergeMap(load, [0, 0], [1, 0])
-exports.terminate = latestMap(terminate, [1, 0])
+exports.load = latestMergeMapSink(load, [1, 0], [0, 0])
+exports.terminate = latestMapSink(terminate, [1, 0])
 exports.open = mapSink(open, [0])
 exports.close = mergeMapSink(close)
 exports.quit = mapSink(app.quit)
