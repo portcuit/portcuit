@@ -1,7 +1,7 @@
-const {compose,plug,source,sink} = require('@pkit/core')
-const {load, terminate, open, close, quit, ready} = require('./processors')
+import {compose,plug,source,sink} from '@pkit/core'
+import {load, terminate, open, close, quit, ready} from './processors'
 
-exports.port = {
+export const port = {
   ready: null,
   open: null,
   window: null,
@@ -12,9 +12,9 @@ exports.port = {
   quit: null,
   load: null,
   loaded: null
-}
+};
 
-exports.default = (curr, context) =>
+export default (curr, context) =>
   compose(
     plug(load,
       source(curr.load), sink(curr.loaded),

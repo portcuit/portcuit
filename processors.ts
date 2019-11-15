@@ -1,22 +1,22 @@
-const {app,BrowserWindow} = require('electron')
-const {fromEvent} = require('rxjs')
-const {latestMapSink,latestMergeMapSink,mapSink,mergeMapSink} = require('@pkit/helper')
+import {app,BrowserWindow} from 'electron'
+import {fromEvent} from 'rxjs'
+import {latestMapSink,latestMergeMapSink,mapSink,mergeMapSink} from '@pkit/helper'
 
-const load = (window, url, options={}) =>
-  window.loadURL(url, options)
+const _load = (window, url, options={}) =>
+  window.loadURL(url, options);
 
-const terminate = window =>
-  window.destroy()
+const _terminate = window =>
+  window.destroy();
 
-const open = options =>
-  new BrowserWindow(options)
+const _open = options =>
+  new BrowserWindow(options);
 
-const close = () =>
-  fromEvent(app, 'window-all-closed')
+const _close = () =>
+  fromEvent(app, 'window-all-closed');
 
-exports.load = latestMergeMapSink(load, [1, 0], [0, 0], [0, 1])
-exports.terminate = latestMapSink(terminate, [1, 0])
-exports.open = mapSink(open, [0])
-exports.close = mergeMapSink(close)
-exports.quit = mapSink(app.quit)
-exports.ready = mergeMapSink(app.whenReady)
+export const load = latestMergeMapSink(_load, [1, 0], [0, 0], [0, 1]);
+export const terminate = latestMapSink(_terminate, [1, 0]);
+export const open = mapSink(_open, [0]);
+export const close = mergeMapSink(_close);
+export const quit = mapSink(app.quit);
+export const ready = mergeMapSink(app.whenReady);
