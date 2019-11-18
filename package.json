@@ -19,8 +19,8 @@
   "homepage": "https://github.com/portcuit/electron#readme",
   "dependencies": {
     "ramda": "^0.26.1",
-    "@pkit/core": "^0.1.0",
-    "@pkit/helper": "^0.1.0",
+    "@pkit/core": "~0.1.0",
+    "@pkit/helper": "~0.1.0",
     "rxjs": "^6.5.3",
     "electron": "^7.1.1"
   },
