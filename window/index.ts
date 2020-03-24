@@ -3,6 +3,8 @@ import {merge} from 'rxjs';
 import {source, sink, Socket} from 'pkit/core'
 import {PDLoad, openSink, loadSink, closeSink, readyToShowEventSink, showSink} from './processors'
 
+export * from './processors'
+
 export class WindowPort {
   open = new Socket<BrowserWindowConstructorOptions>();
   window = new Socket<BrowserWindow>();

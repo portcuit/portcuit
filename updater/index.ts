@@ -16,6 +16,8 @@ import {
   updateDownloadedEventSink
 } from "./processors";
 
+export * from './processors'
+
 export class UpdaterPort {
   initAutoUpdater = new Socket<Partial<AutoUpdater>>();
   autoUpdater = new Socket<AutoUpdater>();

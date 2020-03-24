@@ -6,6 +6,10 @@ import {
   windowAllClosedEventSink
 } from './processors'
 
+export * from './ipc'
+export * from './updater'
+export * from './window'
+
 export class ElectronPort extends LifecyclePort {
   quit = new Socket<void>();
   nothing = new Socket<any>();

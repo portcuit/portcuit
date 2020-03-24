@@ -1,6 +1,8 @@
 import {source, sink, Socket} from 'pkit/core'
 import {receiveSink, sendMainSink, PDSent} from './processors'
 
+export {PDSent} from './processors'
+
 export class IpcRendererPort {
   sent = new Socket<PDSent>();
 }

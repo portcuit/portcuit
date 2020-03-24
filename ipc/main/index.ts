@@ -3,6 +3,8 @@ import {Observable} from 'rxjs'
 import {source, sink, Socket, Sink} from 'pkit/core'
 import {receiveSink, sendSink, PDSendSink} from './processors'
 
+export {PDSendSink} from './processors'
+
 export class IpcMainPort {
   sent = new Socket<PDSendSink>();
 }
