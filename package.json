@@ -21,7 +21,8 @@
     "ramda": "^0.26.1",
     "rxjs": "^6.5.3",
     "snabbdom": "^0.7.3",
-    "snabbdom-to-html": "^5.1.1"
+    "snabbdom-to-html": "^5.1.1",
+    "snabbdom-jsx": "github:portcuit/snabbdom-jsx"
   },
   "devDependencies": {
     "typescript": "^3.7.2"

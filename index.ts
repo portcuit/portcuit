@@ -9,7 +9,9 @@ import jsonModule from './modules/json';
 import {merge} from 'rxjs'
 import {source, sink, Socket, LifecyclePort} from 'pkit/core'
 import {renderSink, terminateSink} from './processors'
+import {JSX} from 'snabbdom-jsx'
 
+export const html = JSX(undefined, undefined, ['props', 'class', 'attrs', 'action', 'style', 'dataset', 'json']);
 export {default as createActionModule} from './modules/action'
 
 export const defaultModules = [
