@@ -1,5 +1,5 @@
 {
-  "name": "pkit1/snabbdom",
+  "name": "@pkit/snabbdom",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
@@ -19,8 +19,6 @@
   "homepage": "https://github.com/portcuit/snabbdom#readme",
   "dependencies": {
     "ramda": "^0.26.1",
-    "pkit1/core": "~0.1.0",
-    "pkit1/helper": "~0.1.0",
     "rxjs": "^6.5.3",
     "snabbdom": "^0.7.3",
     "snabbdom-to-html": "^5.1.1"
