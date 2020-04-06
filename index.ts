@@ -10,6 +10,8 @@ import {merge} from 'rxjs'
 import {source, sink, Socket, LifecyclePort} from 'pkit/core'
 import {renderSink, terminateSink} from './processors'
 
+export {default as createActionModule} from './modules/action'
+
 export const defaultModules = [
   classModule,
   propsModule,
@@ -31,7 +33,3 @@ export const useSnabbdom = (port: SnabbdomPort, lifecycle: LifecyclePort, contai
       source(port.render), sink(port.rendered)),
     terminateSink(container)(source(lifecycle.terminate), sink(port.terminated),
       [source(port.rendered)]));
-
-
-export {default as action, ActionData} from './action'
-export {default as h} from './h'
