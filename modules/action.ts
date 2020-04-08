@@ -14,8 +14,8 @@ export default (emitter, eventName, portPrefixPath=[]): Module => {
     const [events, actionPath]: [Events, ActionPath] = vnode.data.action;
 
     vnode.data.on = Object.entries(events).reduce((acc,[domEventName, {port: portNs, state: stateNs}]) => {
-      const stateActionPath = statePath2actionStatePath(actionPath.state.concat(ns2path(stateNs)?.[0] ?? []));
-      const portPath = actionPath.port.concat(ns2path(portNs)?.[0] ?? []);
+      const stateActionPath = statePath2actionStatePath(actionPath.state.concat(ns2path(stateNs || {})?.[0] ?? []));
+      const portPath = actionPath.port.concat(ns2path(portNs || {})?.[0] ?? []);
 
       return Object.assign(acc, {
         [domEventName]: ev => {
