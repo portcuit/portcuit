@@ -1,6 +1,6 @@
 import {Module} from 'snabbdom/modules/module'
 import {ns2path, NsPath} from 'pkit/core'
-import {ActionPath, Events} from 'pkit/ui/compute'
+import {ActionPath, Events} from 'pkit/ui'
 
 export const statePath2actionStatePath = (statePath: NsPath) =>
   statePath.reduce((acc,token) =>
