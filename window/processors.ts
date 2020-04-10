@@ -1,8 +1,8 @@
 import {BrowserWindow, BrowserWindowConstructorOptions, LoadURLOptions} from "electron";
 import {fromEvent} from 'rxjs'
-import {createMapSink, createLatestMapSink, createMergeMapSink} from 'pkit/processors'
+import {createMapProc, createLatestMapSink, createMergeMapSink} from 'pkit/processors'
 
-export const openSink = createMapSink<BrowserWindowConstructorOptions, BrowserWindow>(
+export const openSink = createMapProc<BrowserWindowConstructorOptions, BrowserWindow>(
   (options) =>
     new BrowserWindow(options));
 

@@ -1,4 +1,4 @@
-import {createMapSink, createMergeMapSink, createLatestMapSink} from "pkit/processors/index";
+import {createMapProc, createMergeMapSink, createLatestMapSink} from "pkit/processors/index";
 import {merge, fromEvent, Observable, of, from} from "rxjs";
 import {catchError, map, mergeMap, withLatestFrom} from "rxjs/operators";
 import {ProgressInfo, UpdateInfo} from "builder-util-runtime";
@@ -6,7 +6,7 @@ import {autoUpdater as autoUpdaterSingleton, UpdateCheckResult, CancellationToke
 import {Sink} from "pkit/core/index";
 
 export type AutoUpdater = typeof autoUpdaterSingleton
-export const autoUpdaterSink = createMapSink<Partial<AutoUpdater>, AutoUpdater>(
+export const autoUpdaterSink = createMapProc<Partial<AutoUpdater>, AutoUpdater>(
   (options) =>
     Object.assign(autoUpdaterSingleton, options));
 

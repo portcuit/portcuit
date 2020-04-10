@@ -2,7 +2,7 @@ import {app} from 'electron'
 import {fromEvent, Observable} from 'rxjs'
 import {map, switchMap} from 'rxjs/operators'
 import {Sink} from 'pkit/core'
-import {createMapSink} from 'pkit/processors'
+import {createMapProc} from 'pkit/processors'
 
 export const readyEventSink = (source$: Observable<unknown>, sink: Sink<unknown>) =>
   source$.pipe(
@@ -11,7 +11,7 @@ export const readyEventSink = (source$: Observable<unknown>, sink: Sink<unknown>
         map(() =>
           sink()))));
 
-export const quitSink = createMapSink<unknown, void>(
+export const quitSink = createMapProc<unknown, void>(
   () =>
     app.quit());
 
