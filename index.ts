@@ -1,6 +1,6 @@
 import {merge} from 'rxjs'
 import {source, sink, LifecyclePort, Socket} from 'pkit/core'
-import {directSink} from 'pkit/processors'
+import {directProc} from 'pkit/processors'
 import {
   readyEventSink, quitSink,
   windowAllClosedEventSink
@@ -21,5 +21,5 @@ export const useElectron = (port: ElectronPort, lifecycle: LifecyclePort) =>
     windowAllClosedEventSink(sink(port.windowAllClosed)),
     quitSink(source(port.quit), sink(port.nothing)),
     readyEventSink(source(lifecycle.init), sink(port.ready)),
-    directSink(source(lifecycle.init), sink(port.init)),
+    directProc(source(lifecycle.init), sink(port.init)),
   );
