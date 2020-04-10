@@ -1,4 +1,4 @@
-import {createMapProc, createMergeMapProc, createLatestMapSink} from "pkit/processors/index";
+import {createMapProc, createMergeMapProc, createLatestMapProc} from "pkit/processors/index";
 import {merge, fromEvent, Observable, of, from} from "rxjs";
 import {catchError, map, mergeMap, withLatestFrom} from "rxjs/operators";
 import {ProgressInfo, UpdateInfo} from "builder-util-runtime";
@@ -36,14 +36,14 @@ export const downloadUpdateSink = (source$: Observable<unknown>,
             of(error(e)))))
     }));
 
-export const cancelDownloadSink = createLatestMapSink<unknown, void, CancellationToken>(
+export const cancelDownloadSink = createLatestMapProc<unknown, void, [CancellationToken]>(
   ([, cancellationToken]) =>
     cancellationToken.cancel());
 
 type IsSilent = boolean
 type IsForceRunAfter = boolean;
 export type PDQuitAndInstall = [IsSilent?, IsForceRunAfter?]
-export const quitAndInstallSink = createLatestMapSink<PDQuitAndInstall, void, AutoUpdater>(
+export const quitAndInstallSink = createLatestMapProc<PDQuitAndInstall, void, [AutoUpdater]>(
   ([[isSilent=false, isForceRunAfter=false]=[], autoUpdater]) =>
     autoUpdater.quitAndInstall(isSilent, isForceRunAfter));
 
