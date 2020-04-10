@@ -1,4 +1,4 @@
-import {createMapProc, createMergeMapSink, createLatestMapSink} from "pkit/processors/index";
+import {createMapProc, createMergeMapProc, createLatestMapSink} from "pkit/processors/index";
 import {merge, fromEvent, Observable, of, from} from "rxjs";
 import {catchError, map, mergeMap, withLatestFrom} from "rxjs/operators";
 import {ProgressInfo, UpdateInfo} from "builder-util-runtime";
@@ -47,22 +47,22 @@ export const quitAndInstallSink = createLatestMapSink<PDQuitAndInstall, void, Au
   ([[isSilent=false, isForceRunAfter=false]=[], autoUpdater]) =>
     autoUpdater.quitAndInstall(isSilent, isForceRunAfter));
 
-export const errorEventSink = createMergeMapSink<AutoUpdater, Error>(
+export const errorEventSink = createMergeMapProc<AutoUpdater, Error>(
   (autoUpdater) =>
     fromEvent(autoUpdater, 'error'));
 
-export const updateAvailableEventSink = createMergeMapSink<AutoUpdater, UpdateInfo>(
+export const updateAvailableEventSink = createMergeMapProc<AutoUpdater, UpdateInfo>(
   (autoUpdater) =>
     fromEvent(autoUpdater, 'update-available'));
 
-export const updateNotAvailableEventSink = createMergeMapSink<AutoUpdater, UpdateInfo>(
+export const updateNotAvailableEventSink = createMergeMapProc<AutoUpdater, UpdateInfo>(
   (autoUpdater) =>
     fromEvent(autoUpdater, 'update-not-available'));
 
-export const downloadProgressEventSink = createMergeMapSink<AutoUpdater, Partial<ProgressInfo>>(
+export const downloadProgressEventSink = createMergeMapProc<AutoUpdater, Partial<ProgressInfo>>(
   (autoUpdater) =>
     fromEvent(autoUpdater, 'download-progress'));
 
-export const updateDownloadedEventSink = createMergeMapSink<AutoUpdater, UpdateInfo>(
+export const updateDownloadedEventSink = createMergeMapProc<AutoUpdater, UpdateInfo>(
   (autoUpdater) =>
     fromEvent(autoUpdater, 'update-downloaded'));

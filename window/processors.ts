@@ -1,6 +1,6 @@
 import {BrowserWindow, BrowserWindowConstructorOptions, LoadURLOptions} from "electron";
 import {fromEvent} from 'rxjs'
-import {createMapProc, createLatestMapSink, createMergeMapSink} from 'pkit/processors'
+import {createMapProc, createLatestMapSink, createMergeMapProc} from 'pkit/processors'
 
 export const openSink = createMapProc<BrowserWindowConstructorOptions, BrowserWindow>(
   (options) =>
@@ -16,7 +16,7 @@ export const loadSink = createLatestMapSink<PDLoad, void, BrowserWindow>(
   ([[url, options], window]) =>
     window.loadURL(url, options));
 
-export const readyToShowEventSink = createMergeMapSink<BrowserWindow, void>(
+export const readyToShowEventSink = createMergeMapProc<BrowserWindow, void>(
   (window) =>
     fromEvent(window, 'ready-to-show'));
 
