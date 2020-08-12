@@ -1,27 +1,38 @@
 import {merge, of} from 'rxjs'
 import {mergeMap} from 'rxjs/operators'
 import {source, sink, Socket, LifecyclePort, PortMessage} from 'pkit/core'
-import {mapProc, latestMergeMapProc} from 'pkit/processors'
-import {WorkerConstructor, WorkerInfo, createProc} from './processors'
+import {mapProc, latestMergeMapProc, RunPort, latestMapProc, runKit} from 'pkit/processors'
+import {createProc} from './processors'
 
 export * from './processors'
 export * from './remote/'
 
+export type WorkerParams = {
+  Worker: typeof Worker;
+  args: ConstructorParameters<typeof Worker>
+}
+
 export class WorkerPort extends LifecyclePort {
-  args = new Socket<WorkerInfo>();
-  create = new Socket<void>();
+  run = new RunPort;
+  // args = new Socket<WorkerInfo>();
+  // create = new Socket<void>();
   worker = new Socket<Worker>();
-  info = new Socket<any>();
   err = new Socket<Error>();
   msg = new Socket<PortMessage<any>>();
 }
 
-export const workerKit = (port: WorkerPort, Worker: WorkerConstructor) =>
+export const workerKit = (port: WorkerPort) =>
   merge(
-    createProc(source(port.create), source(port.args), sink(port.worker), sink(port.err), Worker),
-    latestMergeMapProc(source(port.terminate), sink(port.terminated), [source(port.worker)],
+    runKit(port.run, port.running),
+    latestMapProc(source(port.run.start), sink(port.worker), [source(port.init)],
+      ([,{Worker, args}]) =>
+        new Worker(...args)),
+    latestMergeMapProc(source(port.run.stop), sink(port.run.stopped), [source(port.worker)],
       ([,worker]) =>
         of(worker.terminate()).pipe(
           mergeMap((data: any) =>
             data instanceof Promise ? data : of(data))))
+
+
+    // createProc(source(port.create), source(port.args), sink(port.worker), sink(port.err), Worker),
   );
