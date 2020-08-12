@@ -5,7 +5,7 @@ import {mapProc, latestMergeMapProc} from 'pkit/processors'
 import {WorkerConstructor, WorkerInfo, createProc} from './processors'
 
 export * from './processors'
-export * from './remote'
+export * from './remote/'
 
 export class WorkerPort extends LifecyclePort {
   args = new Socket<WorkerInfo>();
