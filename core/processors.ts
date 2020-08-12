@@ -1,4 +1,4 @@
-import {identity, is} from 'ramda'
+import {identity, is, isEmpty} from 'ramda'
 import {Observable, Subject, GroupedObservable} from 'rxjs'
 import {filter, map, switchMap, share, groupBy, takeWhile, tap} from 'rxjs/operators'
 import type {LifecyclePort} from './'
@@ -127,23 +127,23 @@ export type Ns<T extends {}> = T
 
 export type NsPath = string[]
 
-// export const ns2path = <T>(ns: Ns<DeepPartial<T>>) => {
-//   const products: any[] = [];
-//
-//   const walk = (ns, path=[]) => {
-//     if (ns === null || isEmpty(ns)) {
-//       products.push(path);
-//       return;
-//     } else {
-// // TODO: 配列型にも対応!!
-//       return Object.entries(ns).map(([key, val]) =>
-//         walk(val, path.concat(key)));
-//     }
-//   };
-//   walk(ns);
-//
-//   return products;
-// };
+export const ns2path = <T>(ns: Ns<DeepPartial<T>>): string[][] => {
+  const products: any[] = [];
+
+  const walk = (ns: any, path: any[]=[]): any => {
+    if (ns === null || isEmpty(ns)) {
+      products.push(path);
+      return;
+    } else {
+// TODO: 配列型にも対応!!
+      return Object.entries(ns).map(([key, val]) =>
+        walk(val, path.concat(key)));
+    }
+  };
+  walk(ns);
+
+  return products;
+};
 
 export type Unshift<A, T extends readonly any[]> = ((a: A, ...b: T) => void) extends ((...a: infer I) => void) ? I : []
 

@@ -3,9 +3,7 @@ import {source, sink, Socket, portPath, LifecyclePort} from 'pkit/core'
 import type {WorkerPort} from 'pkit/worker'
 import {sendProc, receiveProc} from './processors'
 
-export * from './processors'
-
-export const remoteKit = (port: WorkerPort, socks: Socket<any>[], base?: LifecyclePort) =>
+export const parentRemoteWorkerKit = (port: WorkerPort, socks: Socket<any>[], base?: LifecyclePort) =>
   merge(
     receiveProc(source(port.worker), base ? portPath(base) : []),
     sendProc(source(port.worker), source(port.msg), sink(port.info), sink(port.err),
