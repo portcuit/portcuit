@@ -25,6 +25,6 @@ export const sendProc = (worker$: Observable<Worker>, msg$: Observable<PortMessa
         mergeMap((data) =>
           of(data).pipe(
             map((data) =>
-              infoSink({parent:{send:worker.postMessage(data)}})),
+              infoSink({send: worker.postMessage(data), data})),
             catchError((err) =>
               of(errSink(err))))))));

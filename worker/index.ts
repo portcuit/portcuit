@@ -1,7 +1,8 @@
 import {merge, of} from 'rxjs'
 import {mergeMap} from 'rxjs/operators'
 import {source, sink, Socket, LifecyclePort, PortMessage} from 'pkit/core'
-import {mapProc, latestMergeMapProc, RunPort, latestMapProc, runKit} from 'pkit/processors'
+import {latestMergeMapProc, latestMapProc, mapToProc} from 'pkit/processors'
+import {RunPort, runKit} from 'pkit/run'
 
 export * from './remote/'
 
@@ -23,9 +24,11 @@ export const workerKit = (port: WorkerPort) =>
     latestMapProc(source(port.run.start), sink(port.worker), [source(port.init)],
       ([,{ctor, args}]) =>
         new ctor(...args)),
+    mapToProc(source(port.worker), sink(port.run.started)),
     latestMergeMapProc(source(port.run.stop), sink(port.run.stopped), [source(port.worker)],
       ([,worker]) =>
         of(worker.terminate()).pipe(
           mergeMap((data: any) =>
-            data instanceof Promise ? data : of(data))))
+            data instanceof Promise ? data : of(data)))),
+    mapToProc(source(port.init), sink(port.ready)),
   );

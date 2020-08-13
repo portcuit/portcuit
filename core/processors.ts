@@ -27,6 +27,13 @@ export const sink = <T>(sock: Socket<T>) =>
 export const portPath = <T>(port: Socket<T> | Object): string[] =>
   (port instanceof Socket) ? port.path : (port as any)['_ns'];
 
+const formatNow = (ts: number) => {
+  const min = Math.floor(ts / (60 * 1000));
+  const sec = Math.floor(ts / 1000) % 60;
+  const msec = ts % 1000;
+  return `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}.${msec.toString().padStart(3,'0')}`;
+}
+
 type RootCircuit<T extends LifecyclePort> = (port: T, opts?: any) => Observable<PortMessage<PortData>>
 export const run = <T extends LifecyclePort>(port: T, circuit: RootCircuit<T>, opts?: any) => {
   const subject$ = new Subject<PortMessage<PortData>>(),
@@ -35,12 +42,9 @@ export const run = <T extends LifecyclePort>(port: T, circuit: RootCircuit<T>, o
       portType)),
     stream$ = circuit(inject(port, group$), opts);
 
-  stream$.pipe(
-    tap(([type, ...msg]) =>
-      `${opts?.debug}`.includes('portcuit') &&
-      console.debug(type, ...msg)),
-    takeWhile(([type]) =>
-      type !== 'quit'))
+  const start = (new Date).getTime();
+  stream$.pipe(tap(([type, data]) =>
+    console.debug(`[${formatNow((new Date).getTime() - start)}] ${type}`, data)))
     .subscribe(subject$);
 
   return subject$
