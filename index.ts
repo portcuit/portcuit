@@ -8,8 +8,9 @@ import {Viewport} from "puppeteer/lib/cjs/puppeteer/common/PuppeteerViewport";
 import {identity} from 'ramda';
 import {concat, merge} from "rxjs";
 import {LifecyclePort, sink, Socket, source} from "pkit/core";
-import {fromEventProc, latestMergeMapProc, mapToProc, mergeMapProc} from "pkit/processors";
+import {directProc, fromEventProc, latestMapProc, latestMergeMapProc, mapToProc, mergeMapProc} from "pkit/processors";
 import {delay, toArray} from "rxjs/operators";
+import {runKit, RunPort} from "pkit/run";
 
 export type PuppeteerBrowserParams = {
   launch: Readonly<Parameters<typeof puppeteer.launch>>
@@ -39,6 +40,30 @@ export class PuppeteerPagePort extends LifecyclePort<PuppeteerPageParams> {
   }
   info = new Socket<any>();
 }
+
+export type PuppeteerParams = PuppeteerBrowserParams & PuppeteerPageParams
+
+export class PuppeteerPort extends LifecyclePort<PuppeteerParams> {
+  run = new RunPort;
+  browser = new  PuppeteerBrowserPort;
+  page = new PuppeteerPagePort;
+}
+
+export const puppeteerKit = (port: PuppeteerPort) =>
+  merge(
+    runKit(port.run, port.running),
+    puppeteerBrowserKit(port.browser),
+    puppeteerPageKit(port.page, port.browser),
+    directProc(source(port.init), sink(port.browser.init)),
+    directProc(source(port.browser.ready), sink(port.ready)),
+    latestMapProc(source(port.run.start), sink(port.page.init), [source(port.init)],
+      ([,page]) => page),
+    directProc(source(port.page.ready), sink(port.run.started)),
+    directProc(source(port.run.stop), sink(port.page.terminate)),
+    directProc(source(port.page.terminated), sink(port.run.stopped)),
+    directProc(source(port.terminate), sink(port.browser.terminate)),
+    directProc(source(port.browser.terminated), sink(port.terminated))
+  )
 
 export const puppeteerBrowserKit = (port: PuppeteerBrowserPort) =>
   merge(
