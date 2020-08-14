@@ -11,7 +11,7 @@ export type WorkerParams = {
   args: ConstructorParameters<typeof Worker>
 }
 
-export class WorkerPort extends LifecyclePort {
+export class WorkerPort extends LifecyclePort<WorkerParams> {
   run = new RunPort;
   worker = new Socket<Worker>();
   err = new Socket<Error>();
@@ -28,10 +28,7 @@ export const workerKit = (port: WorkerPort) =>
     latestMergeMapProc(source(port.run.stop), sink(port.run.stopped), [source(port.worker)],
       ([,worker]) => {
         worker.postMessage(['terminate']);
-        // return defer(() =>
-        //   of(worker.terminate())
-        // )
-        return timer(1000).pipe(
+        return timer(100).pipe(
           map(() =>
             worker.terminate()),
           mergeMap((data: any) =>
