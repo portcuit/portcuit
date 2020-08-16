@@ -9,7 +9,7 @@ export const receiveProc = (parentPort: MessagePort): Observable<PortMessage<any
     map((data: any) =>
       data));
 
-export const sendProc = (infoSink: Sink<any>, errSink: Sink<Error>, parentPort: MessagePort, sourceSinks: SourceSink[]) =>
+export const sendProc = (debugSink: Sink<any>, errSink: Sink<Error>, parentPort: MessagePort, sourceSinks: SourceSink[]) =>
   merge(...sourceSinks.map(([source$, sink]) =>
     source$.pipe(
       map((data) =>
@@ -17,6 +17,6 @@ export const sendProc = (infoSink: Sink<any>, errSink: Sink<Error>, parentPort: 
     mergeMap((data) =>
       of(data).pipe(
         map((data) =>
-          infoSink({child:{send:parentPort.postMessage(data)}})),
+          debugSink({send: parentPort.postMessage(data), data})),
         catchError((err) =>
           of(errSink(err))))));

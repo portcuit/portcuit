@@ -1,5 +1,6 @@
+import minimatch from 'minimatch'
 import {identity, is, isEmpty} from 'ramda'
-import {Observable, Subject, GroupedObservable} from 'rxjs'
+import {Observable, Subject, GroupedObservable, merge} from 'rxjs'
 import {filter, map, switchMap, share, groupBy, takeWhile, tap} from 'rxjs/operators'
 import type {LifecyclePort} from './'
 
@@ -9,8 +10,55 @@ export class Socket<T> {
   path!: any[];
 }
 
+type Nested<T> = {
+  [P in number | string]?:
+  | T
+  | { [P in number | string]?: T }
+  | { [P in number | string]?: { [P in number | string]?: T }}
+  | { [P in number | string]?: { [P in number | string]?: { [P in number | string]?: T }}}
+}
+
+type SinkX<T> = (data? : T) => PortSink<Nested<T>>
+
+class SocketX<T> {
+  source$!: Observable<T>;
+  sink!: SinkX<T>;
+}
+
+class Port {
+  m = new SocketX<number>();
+  n = new SocketX<string>();
+}
+
+const sourceX = <T>(sock: SocketX<T>) =>
+  sock.source$
+
+const sinkX = <T>(sock: SocketX<T>) =>
+  sock.sink
+
+const portSink = <T>(data: PortSink<T>) => data
+
+const sss = (port: Port) =>
+  merge(
+    sourceX(port.m).pipe(
+      map((x) => {
+        return sinkX(port.n)('0')
+      })
+    ),
+    sourceX(port.n).pipe(
+      map((data) =>
+        portSink<Port>({
+          n: data.toString(),
+        }))))
+
+const yyy = sss;
+
 export type PortData = any
 export type PortMessage<T extends PortData> = [string, T]
+
+export type PortSink<T> = {
+  [P in keyof T]? : T[P] extends SocketX<infer I> ? I : PortSink<T[P]>
+}
 
 export type Sink<T> = (value?: T) => PortMessage<T>
 
@@ -24,8 +72,8 @@ export const source = <T>(sock: Socket<T>) =>
 export const sink = <T>(sock: Socket<T>) =>
   sock.sink;
 
-export const portPath = <T>(port: Socket<T> | Object): string[] =>
-  (port instanceof Socket) ? port.path : (port as any)['_ns'];
+export const portPath = <T>(port: Socket<T> | {_ns: string[]}): string[] =>
+  (port instanceof Socket) ? port.path : port._ns;
 
 const formatNow = (ts: number) => {
   const min = Math.floor(ts / (60 * 1000));
@@ -42,10 +90,18 @@ export const run = <T extends LifecyclePort>(port: T, circuit: RootCircuit<T>, o
       portType)),
     stream$ = circuit(inject(port, group$), opts);
 
+  // @ts-ignore
+  subject$.exclude = []; subject$.include = globalThis?.process?.env?.NODE_DEBUG === 'production' ? [] : ['*'];
+
   const start = (new Date).getTime();
-  stream$.pipe(tap(([type, data]) =>
-    console.debug(`[${formatNow((new Date).getTime() - start)}] ${type}`, data)))
-    .subscribe(subject$);
+  stream$.pipe(
+    tap(([type, data]) => {
+      const {include, exclude}: {include: string[], exclude: string[]} = subject$ as any;
+      if (include.some((ptn) => minimatch(type, ptn)) &&
+        !exclude.some((ptn) => minimatch(type, ptn))) {
+        console.debug(`[${formatNow((new Date).getTime() - start)}] ${type}`, data)
+      }
+    })).subscribe(subject$);
 
   return subject$
 };
