@@ -12,6 +12,7 @@ export class LifecyclePort<T=PortData> {
   debug = new Socket<PortData>();
   running = new Socket<boolean>();
   err = new Socket<Error>();
+  _ns?: string[]
 }
 
 export class DataPort<T> {

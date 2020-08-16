@@ -18,46 +18,12 @@ type Nested<T> = {
   | { [P in number | string]?: { [P in number | string]?: { [P in number | string]?: T }}}
 }
 
-type SinkX<T> = (data? : T) => PortSink<Nested<T>>
-
-class SocketX<T> {
-  source$!: Observable<T>;
-  sink!: SinkX<T>;
-}
-
-class Port {
-  m = new SocketX<number>();
-  n = new SocketX<string>();
-}
-
-const sourceX = <T>(sock: SocketX<T>) =>
-  sock.source$
-
-const sinkX = <T>(sock: SocketX<T>) =>
-  sock.sink
-
-const portSink = <T>(data: PortSink<T>) => data
-
-const sss = (port: Port) =>
-  merge(
-    sourceX(port.m).pipe(
-      map((x) => {
-        return sinkX(port.n)('0')
-      })
-    ),
-    sourceX(port.n).pipe(
-      map((data) =>
-        portSink<Port>({
-          n: data.toString(),
-        }))))
-
-const yyy = sss;
-
 export type PortData = any
 export type PortMessage<T extends PortData> = [string, T]
 
+const portSink = <T>(data: PortSink<T>) => data
 export type PortSink<T> = {
-  [P in keyof T]? : T[P] extends SocketX<infer I> ? I : PortSink<T[P]>
+  [P in keyof T]? : T[P] extends Socket<infer I> ? I : PortSink<T[P]>
 }
 
 export type Sink<T> = (value?: T) => PortMessage<T>
@@ -72,8 +38,8 @@ export const source = <T>(sock: Socket<T>) =>
 export const sink = <T>(sock: Socket<T>) =>
   sock.sink;
 
-export const portPath = <T>(port: Socket<T> | {_ns: string[]}): string[] =>
-  (port instanceof Socket) ? port.path : port._ns;
+export const portPath = (port: Socket<any> | LifecyclePort) =>
+  (port instanceof Socket) ? port.path : port._ns as string[];
 
 const formatNow = (ts: number) => {
   const min = Math.floor(ts / (60 * 1000));
