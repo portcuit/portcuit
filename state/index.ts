@@ -1,18 +1,17 @@
-import {source, sink, Socket, DeepPartial, PickIFromAnd} from 'pkit/core'
-import {initProc, Replace} from './processors'
+import {source, sink, Socket, DeepPartial} from 'pkit/core'
+import {initProc} from './processors'
 
 export * from './processors'
 
 export class StatePort<T> {
-  raw = new Socket<PickIFromAnd<T>>();
-  init = new Socket<PickIFromAnd<T>>();
+  raw = new Socket<DeepPartial<T>>();
+  init = new Socket<DeepPartial<T>>();
   patch = new Socket<DeepPartial<T>>();
-  replace = new Socket<Replace<T>>();
   data = new Socket<T>();
 }
 
-export type Compute<T> = (state: DeepPartial<T>, plan?: DeepPartial<PickIFromAnd<T>>) => DeepPartial<T>
-const defaultCompute = <T>(state: T) => state;
+export type Compute<T> = (state: DeepPartial<T>) => T;
+const defaultCompute = <T>(state: DeepPartial<T>) => state as T;
 
-export const stateKit = <T, U extends T>(port: StatePort<T>, compute: Compute<T> = defaultCompute as Compute<T>) =>
-  initProc(source(port.init), source(port.patch), source(port.replace), sink(port.raw), sink(port.data), sink(port.patch), compute);
+export const stateKit = <T>(port: StatePort<T>, compute: Compute<T> = defaultCompute) =>
+  initProc(source(port.init), source(port.patch), sink(port.raw), sink(port.data), compute);

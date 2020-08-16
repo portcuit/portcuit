@@ -171,67 +171,8 @@ export const ns2path = <T>(ns: Ns<DeepPartial<T>>): string[][] => {
   return products;
 };
 
-export type Unshift<A, T extends readonly any[]> = ((a: A, ...b: T) => void) extends ((...a: infer I) => void) ? I : []
-
 export type MappedWrapObservable<T> = {[P in keyof T]: Observable<T[P]>}
 export type MappedWrapSocket<T> = {[P in keyof T]: Socket<T[P]>}
-
-export type And<T, U> = T & U;
-export type PickIFromAnd<T> = T extends And<infer I, infer J> ? I : never;
-
-export const patch = <T>(plan: DeepPartial<T>, data: T) => {
-  if (Array.isArray(plan)) {
-    if (!Array.isArray(data)) {
-      throw Error('data is not array')
-    }
-
-    const items: [number, DeepPartial<T>][] = [];
-    plan.forEach((val, index) =>
-      items.unshift([index, val]));
-
-    for (const [index, val] of items) {
-      if (Array.isArray(val) || isPureObject(val)) {
-        if (data[index] === undefined) {
-          data[index] = val;
-        } else {
-          data[index] = patch(val, data[index])
-        }
-      } else if (val === undefined) {
-        data.splice(index, 1)
-      } else {
-        if (data.length < index) {
-          data[data.length] = val;
-        } else {
-          data[index] = val
-        }
-      }
-    }
-
-    return [...data];
-
-  } else if (isPureObject(plan)) {
-    for (const [key, val] of Object.entries(plan)) {
-      if (Array.isArray(val)) {
-        (data as any)[key] = patch(val as DeepPartial<T>, (data as any)[key]);
-      } else if (isPureObject(val)) {
-        if ((data as any)[key] === undefined) {
-          (data as any)[key] = val
-        } else {
-          (data as any)[key] = patch(val as DeepPartial<T>, (data as any)[key])
-        }
-      } else {
-        (data as any)[key] = val;
-      }
-    }
-
-    return {...data}
-
-  } else if(Array.isArray(data) || isPureObject(data)) {
-    throw Error('data patch unmatch type')
-  } else {
-    return plan
-  }
-};
 
 export const splice = <T>(start: number, deleteCount=0, ...items: T[]): T[] =>
   Array(start).concat(Array(deleteCount).fill(undefined)).concat(...items);
