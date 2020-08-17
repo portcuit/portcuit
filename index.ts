@@ -1,21 +1,19 @@
 import type {Module} from "snabbdom/modules/module";
 import type {VNode} from 'snabbdom/vnode'
-import {init} from 'snabbdom'
-import classModule from 'snabbdom/modules/class'
-import propsModule from 'snabbdom/modules/props'
-import attributesModule from 'snabbdom/modules/attributes'
-import styleModule from 'snabbdom/modules/style'
-import eventListenersModule from "snabbdom/modules/eventlisteners"
-import datasetModule from "snabbdom/modules/dataset";
-import toVNode from "snabbdom/tovnode";
-import jsonModule from './modules/json';
+import {init} from 'snabbdom/init'
+import {classModule} from 'snabbdom/modules/class'
+import {propsModule} from 'snabbdom/modules/props'
+import {attributesModule} from 'snabbdom/modules/attributes'
+import {styleModule} from 'snabbdom/modules/style'
+import {eventListenersModule} from "snabbdom/modules/eventlisteners"
+import {datasetModule} from "snabbdom/modules/dataset";
+import {toVNode} from "snabbdom/tovnode";
 import {merge} from 'rxjs'
-import {source, sink, Socket, LifecyclePort} from 'pkit/core'
-import {JSX} from 'snabbdom-jsx'
 import {map, scan, switchMap} from "rxjs/operators";
+import {source, sink, Socket, LifecyclePort} from 'pkit/core'
 import {latestMapProc} from "pkit/processors";
+import {jsonModule} from './modules/json';
 
-export const html = JSX('', undefined, ['props', 'class', 'attrs', 'action', 'style', 'dataset', 'json']);
 // export {default as createActionModule} from './modules/action'
 
 export const defaultModules = [
@@ -35,8 +33,6 @@ export type SnabbdomParams = {
 export class SnabbdomPort extends LifecyclePort<SnabbdomParams> {
   render = new Socket<VNode>();
   vnode = new Socket<VNode>();
-  // rendered = new Socket<VNode>();
-  // terminated = new Socket<Node>();
 }
 
 export const snabbdomKit = (port: SnabbdomPort) =>
@@ -53,14 +49,8 @@ export const snabbdomKit = (port: SnabbdomPort) =>
       })),
     latestMapProc(source(port.terminate), sink(port.info), [source(port.init), source(port.vnode)] as const,
       ([,{container}, vnode]) =>
-        // @ts-ignore
-        vnode.elm.parentNode.replaceChild(container, vnode.elm)
+        vnode!.elm!.parentNode!.replaceChild(container, vnode!.elm!)
     )
-
-    // renderSink(container, modules)(
-    //   source(port.render), sink(port.rendered)),
-    // terminateSink(container)(source(lifecycle.terminate), sink(port.terminated),
-    //   [source(port.rendered)])
   );
 
 
