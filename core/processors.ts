@@ -57,7 +57,7 @@ export const run = <T extends LifecyclePort>(port: T, circuit: RootCircuit<T>, o
     stream$ = circuit(inject(port, group$), opts);
 
   // @ts-ignore
-  subject$.exclude = []; subject$.include = globalThis?.process?.env?.NODE_DEBUG === 'production' ? [] : ['*'];
+  subject$.exclude = []; subject$.include = globalThis?.process?.env?.NODE_ENV === 'production' ? [] : ['*'];
 
   const start = (new Date).getTime();
   stream$.pipe(
