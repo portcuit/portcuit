@@ -1,47 +1,48 @@
 declare module 'snabbdom/init' {
-  export * from 'snabbdom/src/package/init'
+  export * from 'snabbdom/build/package/init'
 }
 
 declare module 'snabbdom/vnode' {
-  export * from 'snabbdom/src/package/vnode'
+  export * from 'snabbdom/build/package/vnode'
 }
 
 declare module 'snabbdom/tovnode' {
-  export * from 'snabbdom/src/package/tovnode'
+  export * from 'snabbdom/build/package/tovnode'
 }
 
 declare module 'snabbdom/modules/module' {
-  export * from 'snabbdom/src/package/modules/module'
+  export * from 'snabbdom/build/package/modules/module'
 }
 
 declare module 'snabbdom/modules/class' {
-  export * from 'snabbdom/src/package/modules/class'
+  export * from 'snabbdom/build/package/modules/class'
 }
 
 declare module 'snabbdom/modules/props' {
-  export * from 'snabbdom/src/package/modules/props'
+  export * from 'snabbdom/build/package/modules/props'
 }
 
 declare module 'snabbdom/modules/attributes' {
-  export * from 'snabbdom/src/package/modules/attributes'
+  export * from 'snabbdom/build/package/modules/attributes'
 }
 
 declare module 'snabbdom/modules/style' {
-  export * from 'snabbdom/src/package/modules/style'
+  export * from 'snabbdom/build/package/modules/style'
 }
 
 declare module 'snabbdom/modules/eventlisteners' {
-  export * from 'snabbdom/src/package/modules/eventlisteners'
+  export * from 'snabbdom/build/package/modules/eventlisteners'
 }
 
 declare module 'snabbdom/modules/dataset' {
-  export * from 'snabbdom/src/package/modules/dataset'
+  export * from 'snabbdom/build/package/modules/dataset'
 }
 
 declare module 'snabbdom/jsx' {
-  export * from 'snabbdom/src/package/jsx'
+  export * from 'snabbdom/build/package/jsx'
 }
 
 declare module 'snabbdom/jsx-global' {
-  export * from 'snabbdom/src/package/jsx-global'
+  export * from 'snabbdom/build/package/jsx-global'
 }
+

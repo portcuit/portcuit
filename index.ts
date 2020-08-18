@@ -14,7 +14,8 @@ import {source, sink, Socket, LifecyclePort} from 'pkit/core'
 import {latestMapProc} from "pkit/processors";
 import {jsonModule} from './modules/json';
 
-// export {default as createActionModule} from './modules/action'
+export * from './modules/action'
+export * from './processors'
 
 export const defaultModules = [
   classModule,
@@ -23,7 +24,8 @@ export const defaultModules = [
   styleModule,
   eventListenersModule,
   jsonModule,
-  datasetModule];
+  datasetModule
+];
 
 export type SnabbdomParams = {
   container: Element;
