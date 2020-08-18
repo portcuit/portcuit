@@ -2,7 +2,8 @@ import {PortData, Socket} from './processors'
 
 export * from './processors'
 
-export class LifecyclePort<T=PortData> {
+
+export class LifecyclePort<T=any> {
   init = new Socket<T>();
   ready = new Socket<PortData>();
   terminate = new Socket<PortData>();

@@ -1,7 +1,7 @@
 import minimatch from 'minimatch'
 import {identity, is, isEmpty} from 'ramda'
-import {Observable, Subject, GroupedObservable, merge} from 'rxjs'
-import {filter, map, switchMap, share, groupBy, takeWhile, tap, finalize} from 'rxjs/operators'
+import {Observable, Subject, GroupedObservable, merge, of} from 'rxjs'
+import {filter, map, switchMap, share, groupBy, tap} from 'rxjs/operators'
 import type {LifecyclePort} from './'
 
 export class Socket<T> {
@@ -41,30 +41,24 @@ export const sink = <T>(sock: Socket<T>) =>
 export const portPath = (port: Socket<any> | LifecyclePort) =>
   (port instanceof Socket) ? port.path : port._ns as string[];
 
-const formatNow = (ts: number) => {
-  const min = Math.floor(ts / (60 * 1000));
-  const sec = Math.floor(ts / 1000) % 60;
-  const msec = ts % 1000;
-  return `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}.${msec.toString().padStart(3,'0')}`;
-}
-
-type RootCircuit<T extends LifecyclePort> = (port: T, opts?: any) => Observable<PortMessage<PortData>>
-export const run = <T extends LifecyclePort>(port: T, circuit: RootCircuit<T>, opts?: any) => {
+export type RootCircuit<T> = (port: T) => Observable<PortMessage<any>>
+export const run = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params: T) => {
   const subject$ = new Subject<PortMessage<PortData>>(),
     source$ = subject$.asObservable(),
     group$ = source$.pipe(groupBy(([portType]) =>
       portType)),
-    stream$ = circuit(inject(port, group$), opts);
+    stream$ = merge(
+      circuit(inject(port, group$)),
+      of(['init', params] as PortMessage<T>));
 
   // @ts-ignore
   subject$.exclude = []; subject$.include = globalThis?.process?.env?.NODE_ENV === 'production' ? [] : ['*'];
 
-  const start = (new Date).getTime();
   stream$.pipe(tap(([type, data]) => {
     const {include, exclude}: {include: string[], exclude: string[]} = subject$ as any;
     if (include.some((ptn) => minimatch(type, ptn)) &&
       !exclude.some((ptn) => minimatch(type, ptn))) {
-      console.debug(`[${formatNow((new Date).getTime() - start)}] ${type}`, data)
+      console.debug(type, data)
     }
   })).subscribe(subject$);
 
