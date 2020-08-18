@@ -65,6 +65,9 @@ export const run = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit
   return subject$
 };
 
+export const mount = <T, U extends LifecyclePort<T>, V extends new() => U>({Port, circuit, params}: {Port: V, circuit: RootCircuit<U>, params: T}) =>
+  run(new Port, circuit, params)
+
 const isSocket = (sock: unknown): sock is Socket<any> =>
   sock instanceof Socket
 
@@ -103,15 +106,6 @@ const inject = <T extends LifecyclePort>(port: PortObject, group$: Observable<Gr
   };
   return walk(port) as T;
 };
-
-const isObject = (val: any): val is Object =>
-  val !== null && val.constructor === Object || val instanceof Object;
-
-export const isPureObject = (val: unknown) =>
-  isObject(val) && val.constructor !== String;
-
-// export const reversePath = (idxs, ...args) =>
-//   (path as any)(idxs.reverse(), ...args);
 
 export class PCError extends Error {
   public constructor(message: string) {
