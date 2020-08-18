@@ -1,7 +1,7 @@
 import minimatch from 'minimatch'
 import {identity, is, isEmpty} from 'ramda'
 import {Observable, Subject, GroupedObservable, merge} from 'rxjs'
-import {filter, map, switchMap, share, groupBy, takeWhile, tap} from 'rxjs/operators'
+import {filter, map, switchMap, share, groupBy, takeWhile, tap, finalize} from 'rxjs/operators'
 import type {LifecyclePort} from './'
 
 export class Socket<T> {
@@ -60,14 +60,13 @@ export const run = <T extends LifecyclePort>(port: T, circuit: RootCircuit<T>, o
   subject$.exclude = []; subject$.include = globalThis?.process?.env?.NODE_ENV === 'production' ? [] : ['*'];
 
   const start = (new Date).getTime();
-  stream$.pipe(
-    tap(([type, data]) => {
-      const {include, exclude}: {include: string[], exclude: string[]} = subject$ as any;
-      if (include.some((ptn) => minimatch(type, ptn)) &&
-        !exclude.some((ptn) => minimatch(type, ptn))) {
-        console.debug(`[${formatNow((new Date).getTime() - start)}] ${type}`, data)
-      }
-    })).subscribe(subject$);
+  stream$.pipe(tap(([type, data]) => {
+    const {include, exclude}: {include: string[], exclude: string[]} = subject$ as any;
+    if (include.some((ptn) => minimatch(type, ptn)) &&
+      !exclude.some((ptn) => minimatch(type, ptn))) {
+      console.debug(`[${formatNow((new Date).getTime() - start)}] ${type}`, data)
+    }
+  })).subscribe(subject$);
 
   return subject$
 };
