@@ -39,14 +39,14 @@ export const patch = (
   if (plan === null
     || plan === undefined
     || plan.constructor === Boolean
+    || plan.constructor === EphemeralBoolean
     || plan.constructor === String
     || plan.constructor === Number
-    || plan.constructor === Array
     || plan.constructor === ReplaceArray
     || plan.constructor === ReplaceObject
   ) {
     return plan;
-  } else if (plan.constructor === PreserveArray) {
+  } else if (plan.constructor === Array) {
     if (data.constructor !== Array) {
       throw Error('data is not Array.');
     }
@@ -71,6 +71,7 @@ export const patch = (
     if (data === null
       || data === undefined
       || data.constructor === Boolean
+      || data.constructor === EphemeralBoolean
       || data.constructor === String
       || data.constructor === Number
       || data.constructor === Array
@@ -102,9 +103,12 @@ export const initProc = <T, U>(init$: Observable<U>,
           patch(curr, JSON.parse(JSON.stringify(acc))), initial),
         mergeMap((raw) =>
           of(
-            rawSink(raw),
+            rawSink(JSON.parse(JSON.stringify(raw))),
             dataSink(compute(raw))
           )),
         startWith(
           rawSink(initial),
           dataSink(compute(initial))))));
+
+export const splice = <T>(start: number, deleteCount=0, items: T[]=[]): T[] =>
+  Array(start).concat(Array(deleteCount).fill(undefined)).concat(...items);

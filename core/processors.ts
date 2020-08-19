@@ -42,7 +42,7 @@ export const portPath = (port: Socket<any> | LifecyclePort) =>
   (port instanceof Socket) ? port.path : port._ns as string[];
 
 export type RootCircuit<T> = (port: T) => Observable<PortMessage<any>>
-export const run = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params: T) => {
+export const run = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params?: T) => {
   const subject$ = new Subject<PortMessage<PortData>>(),
     source$ = subject$.asObservable(),
     group$ = source$.pipe(groupBy(([portType]) =>
@@ -160,9 +160,6 @@ export const ns2path = <T>(ns: Ns<DeepPartial<T>>): string[][] => {
 
 export type MappedWrapObservable<T> = {[P in keyof T]: Observable<T[P]>}
 export type MappedWrapSocket<T> = {[P in keyof T]: Socket<T[P]>}
-
-export const splice = <T>(start: number, deleteCount=0, ...items: T[]): T[] =>
-  Array(start).concat(Array(deleteCount).fill(undefined)).concat(...items);
 
 export const throwErrorIfUndefined = <T>(data: T): T => {
   if(data === undefined) {
