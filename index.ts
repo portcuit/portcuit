@@ -13,18 +13,24 @@ import {map, scan, switchMap} from "rxjs/operators";
 import {source, sink, Socket, LifecyclePort} from 'pkit/core'
 import {latestMapProc} from "pkit/processors";
 import {jsonModule} from './modules/json';
+import {selectorModule} from './modules/selector';
+import {triggerModule} from './modules/trigger'
+import {jsxModule} from './modules/jsx'
 
 export * from './modules/action'
 export * from './processors'
 
 export const defaultModules = [
+  selectorModule,
   classModule,
   propsModule,
   attributesModule,
   styleModule,
   eventListenersModule,
+  datasetModule,
   jsonModule,
-  datasetModule
+  triggerModule,
+  jsxModule
 ];
 
 export type SnabbdomParams = {

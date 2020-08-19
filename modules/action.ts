@@ -1,11 +1,12 @@
 import type {Module} from 'snabbdom/modules/module'
 import type {VNode} from 'snabbdom/vnode'
-import {DeepPartial} from "pkit";
+import type {DeepPartial} from "pkit/core";
 
 type ClonedEvent<T=any> = {
   clientX: number;
   clientY: number;
   key: string;
+  code: string;
   currentTarget: {
     value: string;
     checked: boolean;
@@ -17,7 +18,8 @@ type ClonedEvent<T=any> = {
 }
 
 export type ActionHandler<T> = (ev: ActionEvent) =>
-  (data: ClonedEvent) => DeepPartial<T> | undefined;
+  | undefined
+  | ((data: ClonedEvent) => undefined | DeepPartial<T>)
 
 export type Action<T> = {
   [P in keyof HTMLElementEventMap]?: ActionHandler<T>
@@ -27,10 +29,8 @@ export type ClonedAction = {
   [P in keyof HTMLElementEventMap]?: string
 }
 
-export type ActionDetail = {
-  fn: string;
-  data: ClonedEvent;
-}
+export type ActionDetail = [fn: string, data: ClonedEvent]
+
 
 type ActionEvent = UIEvent & InputEvent & MouseEvent & KeyboardEvent & {
   currentTarget: {
@@ -56,10 +56,7 @@ export const createActionModule = (target: EventTarget): Module => {
               const fn = new Function(`return ${value};`)()(ev);
               if (fn !== undefined) {
                 target.dispatchEvent(new CustomEvent<ActionDetail>('action', {
-                  detail: {
-                    fn: fn.toString(),
-                    data: cloneEvent(ev)
-                  }
+                  detail: [fn.toString(), cloneEvent(ev)]
                 }))
               }
             }
@@ -72,10 +69,11 @@ export const createActionModule = (target: EventTarget): Module => {
   }
 }
 
-const cloneEvent = (ev: ActionEvent) => ({
+const cloneEvent = (ev: ActionEvent): ClonedEvent => ({
   clientX: ev.clientX,
   clientY: ev.clientY,
   key: ev.key,
+  code: ev.code,
   currentTarget: {
     value: ev.currentTarget.value,
     checked: ev.currentTarget.checked,

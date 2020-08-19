@@ -3,9 +3,10 @@ import type {VNode} from "snabbdom/vnode";
 
 const createOrUpdate = (oldVnode: VNode, vnode: VNode) => {
   if (!vnode.data) return;
-  if (!vnode.data.json) return;
+  if (!('json' in vnode.data)) return;
 
-  vnode.data.dataset = Object.assign(vnode.data.dataset || {}, {json: JSON.stringify(vnode.data.json)});
+  // @ts-ignore
+  vnode.elm.dataset.json = JSON.stringify(vnode.data.json);
 };
 
 export const jsonModule: Module = {
