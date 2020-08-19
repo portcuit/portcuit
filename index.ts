@@ -12,7 +12,7 @@ import {merge} from 'rxjs'
 import {map, scan, switchMap} from "rxjs/operators";
 import {source, sink, Socket, LifecyclePort} from 'pkit/core'
 import {latestMapProc} from "pkit/processors";
-import {jsonModule} from './modules/json';
+import {detailModule} from './modules/detail';
 import {selectorModule} from './modules/selector';
 import {triggerModule} from './modules/trigger'
 import {jsxModule} from './modules/jsx'
@@ -28,7 +28,7 @@ export const defaultModules = [
   styleModule,
   eventListenersModule,
   datasetModule,
-  jsonModule,
+  detailModule,
   triggerModule,
   jsxModule
 ];

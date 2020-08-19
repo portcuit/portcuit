@@ -7,22 +7,22 @@ type ClonedEvent<T=any> = {
   clientY: number;
   key: string;
   code: string;
+  detail: T;
   currentTarget: {
     value: string;
     checked: boolean;
     dataset: {
       [key: string]: string;
-      json: any;
     }
   }
 }
 
-export type ActionHandler<T> = (ev: ActionEvent) =>
+export type ActionHandler<T,U=any> = (ev: ActionEvent) =>
   | undefined
-  | ((data: ClonedEvent) => undefined | DeepPartial<T>)
+  | ((data: ClonedEvent<U>) => undefined | DeepPartial<T>)
 
-export type Action<T> = {
-  [P in keyof HTMLElementEventMap]?: ActionHandler<T>
+export type Action<T,U=any> = {
+  [P in keyof HTMLElementEventMap]?: ActionHandler<T,U>
 }
 
 export type ClonedAction = {
@@ -37,7 +37,7 @@ type ActionEvent = UIEvent & InputEvent & MouseEvent & KeyboardEvent & {
     value: string;
     checked: boolean;
     dataset: {
-      json?: string
+      [key: string]: string
     };
   }
 }
@@ -70,6 +70,7 @@ export const createActionModule = (target: EventTarget): Module => {
 }
 
 const cloneEvent = (ev: ActionEvent): ClonedEvent => ({
+  detail: JSON.parse(ev.currentTarget.dataset.detail || 'null'),
   clientX: ev.clientX,
   clientY: ev.clientY,
   key: ev.key,
@@ -77,8 +78,6 @@ const cloneEvent = (ev: ActionEvent): ClonedEvent => ({
   currentTarget: {
     value: ev.currentTarget.value,
     checked: ev.currentTarget.checked,
-    dataset: {...ev.currentTarget.dataset,
-      json: JSON.parse(ev.currentTarget.dataset.json || 'null')
-    }
+    dataset: {...ev.currentTarget.dataset}
   }
 })
