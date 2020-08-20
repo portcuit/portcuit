@@ -1,6 +1,4 @@
 import type {VNode} from 'snabbdom/vnode'
-import {fromEvent, merge} from 'rxjs'
-import {map, scan, switchMap, filter} from "rxjs/operators";
 import {init} from 'snabbdom/init'
 import {classModule} from 'snabbdom/modules/class'
 import {propsModule} from 'snabbdom/modules/props'
@@ -9,14 +7,16 @@ import {styleModule} from 'snabbdom/modules/style'
 import {eventListenersModule} from "snabbdom/modules/eventlisteners"
 import {datasetModule} from "snabbdom/modules/dataset";
 import {toVNode} from "snabbdom/tovnode";
-import {source, sink, Socket, LifecyclePort, DeepPartial} from 'pkit/core'
+import {fromEvent, merge} from 'rxjs'
+import {map, scan, switchMap, filter} from "rxjs/operators";
+import {source, sink, Socket, LifecyclePort} from 'pkit/core'
+import {StatePort} from "pkit/state";
 import {directProc, latestMapProc, mergeMapProc} from "pkit/processors";
 import {selectorModule} from './modules/selector';
 import {triggerModule} from './modules/trigger'
 import {jsxModule} from './modules/jsx'
 import {createActionModule} from "./modules/action";
-import {ActionDetail, actionProc} from "./index";
-import {StatePort} from "pkit/state";
+import {ActionDetail, actionProc} from "./";
 
 export * from './modules/action'
 export * from './processors'
@@ -86,4 +86,4 @@ const optionsKit = (port: SnabbdomPort) =>
           map(() =>
             window.location.hash)), sink(port.event.hashchange))
       ]: [])))
-  )
+  );
