@@ -112,3 +112,6 @@ export const initProc = <T, U>(init$: Observable<U>,
 
 export const splice = <T>(start: number, deleteCount=0, items: T[]=[]): T[] =>
   Array(start).concat(Array(deleteCount).fill(undefined)).concat(...items);
+
+export const padArray = <T>(start: number, item: T, end: number = 0): T[] =>
+  Array(start).concat(item, Array(end))
