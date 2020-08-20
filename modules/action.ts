@@ -12,7 +12,7 @@ type ClonedEvent<T=any> = {
     value: string;
     checked: boolean;
     dataset: {
-      [key: string]: string;
+      [key: string]: string | undefined;
     }
   }
 }
@@ -31,24 +31,25 @@ export type ClonedAction = {
 
 export type ActionDetail = [fn: string, data: ClonedEvent]
 
-
 type ActionEvent = UIEvent & InputEvent & MouseEvent & KeyboardEvent & {
-  currentTarget: {
-    value: string;
-    checked: boolean;
-    dataset: {
-      [key: string]: string
-    };
-  }
+  currentTarget:  HTMLElement & HTMLInputElement
 }
 
 export const createActionModule = (target: EventTarget): Module => {
   const createOrUpdate = (oldVnode: VNode, vnode: VNode) => {
     if (!vnode.data) return;
-    if (!vnode.data.action) return;
-    const action: ClonedAction = vnode.data.action;
-    vnode.data.on = vnode.data.on || {}
+    if (!vnode.data.bind) return;
 
+    // if ('detail' in vnode.data) {
+    //   (vnode.elm as HTMLElement).dataset.detail = JSON.stringify(vnode.data.detail);
+    // }
+
+    const [action, detail]: [ClonedAction, any] = vnode.data.bind;
+    (vnode.elm as HTMLElement).dataset.detail = JSON.stringify(detail);
+
+    // const action: ClonedAction = vnode.data.bind;
+
+    vnode.data.on = vnode.data.on || {}
     Object.entries(action)
       .reduce((acc, [key, value]) =>
           Object.assign(acc, {
