@@ -64,7 +64,7 @@ export const snabbdomKit = (port: SnabbdomPort) =>
     latestMapProc(source(port.terminate), sink(port.info), [source(port.init), source(port.vnode)] as const,
       ([,{container}, vnode]) =>
         vnode!.elm!.parentNode!.replaceChild(container, vnode!.elm!)),
-    mergeMapProc(source(port.init), sink(port.dom.action), ({target}) =>
+    mergeMapProc(source(port.init), sink(port.action), ({target}) =>
       fromEvent<CustomEvent<ActionDetail>>(target as any, 'action').pipe(
         map(({detail}) =>
           detail))),
@@ -84,6 +84,6 @@ const optionsKit = (port: SnabbdomPort) =>
       merge(...(hashchange ? [
         directProc(fromEvent<void>(window, 'hashchange').pipe(
           map(() =>
-            window.location.hash)), sink(port.dom.event.hashchange))
+            window.location.hash)), sink(port.event.hashchange))
       ]: [])))
   )
