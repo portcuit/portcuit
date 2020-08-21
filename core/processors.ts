@@ -42,8 +42,8 @@ export const portPath = (port: Socket<any> | LifecyclePort) =>
   (port instanceof Socket) ? port.path : port._ns as string[];
 
 export type RootCircuit<T> = (port: T) => Observable<PortMessage<any>>
-export const run = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params?: T) => {
-  const subject$ = new Subject<PortMessage<PortData>>(),
+export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params?: T) => {
+  const subject$ = new Subject<PortMessage<any>>(),
     source$ = subject$.asObservable(),
     group$ = source$.pipe(groupBy(([portType]) =>
       portType)),
@@ -65,8 +65,12 @@ export const run = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit
   return subject$
 };
 
+export const terminatedComplete = <T extends PortMessage<any>>(subject$: Subject<T>) =>
+  subject$.pipe(tap(([type]) =>
+    type === 'terminated' && subject$.complete()))
+
 export const mount = <T, U extends LifecyclePort<T>, V extends new() => U>({Port, circuit, params}: {Port: V, circuit: RootCircuit<U>, params: T}) =>
-  run(new Port, circuit, params)
+  entry(new Port, circuit, params)
 
 const isSocket = (sock: unknown): sock is Socket<any> =>
   sock instanceof Socket
@@ -91,7 +95,7 @@ const inject = <T extends LifecyclePort>(port: PortObject, group$: Observable<Gr
         const sink = <T>(value?: T) =>
           [portType, value] as PortMessage<T>;
         Object.assign(sock, {source$, sink, path: portPath});
-      } else {
+      } else if (key !== '_ns') {
         port[key] = walk(sock, ns.concat(key));
         if ( is(Object, sock) && !sock['_ns'] ) {
           Object.defineProperty(sock, '_ns', {
