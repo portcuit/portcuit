@@ -40,16 +40,10 @@ export const createActionModule = (target: EventTarget): Module => {
     if (!vnode.data) return;
     if (!vnode.data.bind) return;
 
-    // if ('detail' in vnode.data) {
-    //   (vnode.elm as HTMLElement).dataset.detail = JSON.stringify(vnode.data.detail);
-    // }
-
     const [action, detail]: [ClonedAction, any] = vnode.data.bind;
     (vnode.elm as HTMLElement).dataset.detail = JSON.stringify(detail);
 
-    // const action: ClonedAction = vnode.data.bind;
-
-    vnode.data.on = vnode.data.on || {}
+    vnode.data.on ||= {}
     Object.entries(action)
       .reduce((acc, [key, value]) =>
           Object.assign(acc, {
