@@ -46,3 +46,7 @@ declare module 'snabbdom/jsx-global' {
   export * from 'snabbdom/build/package/jsx-global'
 }
 
+declare module '@pkit/snabbdom/jsx' {
+  export * from 'snabbdom/build/package/jsx'
+}
+

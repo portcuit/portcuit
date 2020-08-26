@@ -1,4 +1,4 @@
-import type {VNode} from 'snabbdom/vnode'
+import type {VNode, VNodeData} from 'snabbdom/vnode'
 import {init} from 'snabbdom/init'
 import {classModule} from 'snabbdom/modules/class'
 import {propsModule} from 'snabbdom/modules/props'
@@ -18,8 +18,12 @@ import {jsxModule} from './modules/jsx'
 import {createActionModule} from "./modules/action";
 import {ActionDetail, actionProc} from "./";
 
+export type FC<T extends VNodeData = VNodeData> = (data: T, children?: VNode) => VNode
+
 export * from './modules/action'
 export * from './processors'
+export * from './jsx'
+export * from './helper'
 
 export const defaultModules = [
   selectorModule,
