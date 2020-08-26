@@ -111,22 +111,24 @@ const inject = <T extends LifecyclePort>(port: PortObject, group$: Observable<Gr
   return walk(port) as T;
 };
 
-export class PCError extends Error {
-  public constructor(message: string) {
-    super();
-    Object.defineProperty(this, 'name', {
-      get: () => (this.constructor as any).name,
-    });
-    Object.defineProperty(this, 'message', {
-      get: () => message,
-    });
-    Error.captureStackTrace(this, this.constructor);
+export namespace Pkit {
+  export class Error extends globalThis.Error {
+    public constructor(message: string) {
+      super();
+      Object.defineProperty(this, 'name', {
+        get: () => (this.constructor as any).name,
+      });
+      Object.defineProperty(this, 'message', {
+        get: () => message,
+      });
+      globalThis.Error.captureStackTrace(this, this.constructor);
+    }
   }
-}
 
-export class EventError extends PCError {
-  constructor(public error: Event) {
-    super(JSON.stringify(error));
+  export class EventError extends Error {
+    constructor(public error: Event) {
+      super(JSON.stringify(error));
+    }
   }
 }
 
