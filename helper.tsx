@@ -1,5 +1,5 @@
-import type {FC} from './'
-import {jsx} from './jsx'
+import type {FC} from './index'
+import {jsx} from '@pkit/snabbdom/jsx'
 
 export const Fragment: FC = (props, children) =>
   children!
