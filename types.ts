@@ -1,8 +1,8 @@
 declare module 'pkit' {
-  export * from 'pkit/core'
-  export * from 'pkit/processors'
-  export * from 'pkit/worker'
-  export * from 'pkit/state'
-  export * from 'pkit/http/server'
-  export * from 'pkit/run'
+  export * from 'pkit/core/index'
+  export * from 'pkit/processors/index'
+  export * from 'pkit/worker/index'
+  export * from 'pkit/state/index'
+  export * from 'pkit/http/server/index'
+  export * from 'pkit/run/index'
 }
