@@ -1,10 +1,10 @@
 import type {IncomingMessage} from "http";
 import {merge} from "rxjs";
 import {promisify} from "util";
-import {LifecyclePort, sink, Socket, source} from "pkit/core";
+import {LifecyclePort, sink, Socket, source} from 'pkit/core'
+import {directProc, fromEventProc, latestMapProc, latestMergeMapProc, mapProc, mergeMapProc} from "pkit/processors";
 import {RequestArgs} from "../processors";
 import {connectProc, sendProc} from "./processors";
-import {directProc, fromEventProc, latestMapProc, latestMergeMapProc, mapProc, mergeMapProc} from "pkit";
 
 export type SseServerParams = {
   args: RequestArgs;

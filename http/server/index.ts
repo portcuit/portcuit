@@ -1,15 +1,15 @@
 import {promisify} from "util";
 import http from 'http';
 import {merge, fromEvent} from 'rxjs'
+import {delay} from "rxjs/operators";
 import {source, sink, Socket, EndpointPort, LifecyclePort} from 'pkit/core'
 import {mapProc, latestMapProc, latestMergeMapProc, mergeMapProc, mapToProc} from 'pkit/processors'
 import {RunPort, runKit} from 'pkit/run'
 import {RequestArgs, remoteReceiveProc, notFoundProc} from './processors'
-import {delay} from "rxjs/operators";
 
 export * from './processors'
-export * from './sse'
-export * from './api'
+export * from './sse/'
+export * from './api/'
 
 export type HttpServerParams = {
   server?: http.ServerOptions;

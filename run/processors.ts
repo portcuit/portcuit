@@ -1,6 +1,6 @@
 import {Observable} from "rxjs";
-import {Sink} from "pkit/core";
 import {concatMap, delay, filter, map, mergeMap, startWith, take, withLatestFrom} from "rxjs/operators";
+import {Sink} from "pkit/core";
 
 export const restartProc = (source$: Observable<any>, running$: Observable<boolean>,
                             stopped$: Observable<unknown>, started$: Observable<unknown>,
