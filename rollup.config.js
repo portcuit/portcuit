@@ -5,7 +5,6 @@ export default {
   output: {
     dir: `${__dirname}/jsx`,
     entryFileNames: 'index.js',
-    sourceMap: true,
     format: 'cjs'
   },
   plugins: [
