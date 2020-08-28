@@ -1,8 +1,7 @@
 import {Observable} from "rxjs";
 import {map} from "rxjs/operators";
-import {DeepPartial, Sink} from "pkit/core";
+import {DeepPartial, Sink, ReplaceObject, ReplaceArray, EphemeralBoolean, splice, padArray} from "pkit";
 import {Action, ActionDetail} from "./modules/action";
-import {ReplaceObject, ReplaceArray, EphemeralBoolean, splice, padArray} from 'pkit/state'
 
 export const actionProc = <T>(source$: Observable<ActionDetail>, sink: Sink<DeepPartial<T>>) =>
   source$.pipe(

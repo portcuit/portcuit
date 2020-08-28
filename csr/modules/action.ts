@@ -1,6 +1,6 @@
 import type {Module} from 'snabbdom/modules/module'
 import type {VNode} from 'snabbdom/vnode'
-import type {DeepPartial} from "pkit/core";
+import type {DeepPartial} from "pkit";
 
 type ClonedEvent<T=any> = {
   clientX: number;

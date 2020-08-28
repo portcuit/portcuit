@@ -9,9 +9,7 @@ import {datasetModule} from "snabbdom/modules/dataset";
 import {toVNode} from "snabbdom/tovnode";
 import {fromEvent, merge} from 'rxjs'
 import {map, scan, switchMap, filter} from "rxjs/operators";
-import {source, sink, Socket, LifecyclePort} from 'pkit/core'
-import {StatePort} from "pkit/state";
-import {directProc, latestMapProc, mergeMapProc} from "pkit/processors";
+import {source, sink, Socket, LifecyclePort, StatePort, directProc, latestMapProc, mergeMapProc} from 'pkit'
 import {selectorModule} from './modules/selector';
 import {triggerModule} from './modules/trigger'
 import {jsxModule} from './modules/jsx'
