@@ -7,7 +7,7 @@ import {merge} from "rxjs";
 import {filter} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source} from "pkit/core";
 import {latestMergeMapProc, mapProc, mapToProc} from "pkit/processors";
-import {RequestArgs, isNotReserved} from "pkit/http/server";
+import {RequestArgs, isNotReserved} from "pkit/http/server/processors";
 import {selectorModule} from '@pkit/snabbdom/ssr/modules/selector'
 import {jsxModule} from '@pkit/snabbdom/ssr/modules/jsx'
 import classModule from 'snabbdom-to-html/modules/class'
