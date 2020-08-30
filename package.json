@@ -12,6 +12,6 @@
     "rxjs": "^6.6.2",
     "minimatch": "^3.0.4"
   },
-  "main": "index.js",
+  "module": "index.js",
   "types": "index.d.ts"
 }
