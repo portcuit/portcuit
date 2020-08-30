@@ -16,6 +16,8 @@ import {jsxModule} from './modules/jsx'
 import {createActionModule} from "./modules/action";
 import {ActionDetail, actionProc} from "./";
 
+export type Hoge = string;
+
 export * from './modules/action'
 export * from './processors'
 
