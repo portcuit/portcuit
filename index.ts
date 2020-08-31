@@ -1,26 +1,20 @@
-import {LifecyclePort, mapProc, mapToProc, sink, source, workerKit, WorkerParams, WorkerPort, tuple, mount} from 'pkit'
-import {merge} from "rxjs";
-import {Worker} from "worker_threads";
+import 'source-map-support/register'
+import util from 'util'
+import {resolve} from 'path'
+import {LifecyclePort, RootCircuit, entry, mount} from 'pkit'
+import {parentPort, workerData} from 'worker_threads'
 
-type Params = {
-  worker: WorkerParams;
-  workerData: {
-    src: string;
-    params: any;
-  };
+util.inspect.defaultOptions.depth = 1
+util.inspect.defaultOptions.breakLength = Infinity
+
+export * from './worker'
+
+export const run = (src: string, overrideParams?: any) => {
+  const args = require(resolve(src)).default;
+  Object.assign({subject$: mount(overrideParams ? args.slice(0,2).concat(overrideParams) : args)})
 }
 
-class Port extends LifecyclePort<Params> {
-  app = new WorkerPort;
+if (workerData && workerData.src) {
+  run(workerData.src, workerData.params)
 }
 
-const circuit = (port: Port) =>
-  merge(
-    workerKit(port.app),
-    mapProc(source(port.init), sink(port.app.init), ({worker, workerData}) =>
-      ({...worker, args: tuple("./src/repl.js", {workerData} as any)})),
-    mapToProc(source(port.app.ready), sink(port.app.running), true)
-  )
-
-export const run = (src: string, params: any = {}) =>
-  mount([Port, circuit, {worker:{ctor: Worker},workerData:{src,params}} as any])
