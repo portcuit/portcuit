@@ -1,2 +1,2 @@
-!jsx/index.js
+!lib/*.js
 package-lock.json
