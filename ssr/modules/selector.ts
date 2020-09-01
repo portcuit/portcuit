@@ -7,7 +7,7 @@ export const selectorModule: Module = (vnode, attributes) => {
 
   let id;
   if ( id = tokens.find((token) => token.startsWith('#')) ) {
-    attributes.set('id', id);
+    attributes.set('id', id.substr(1));
   }
   attributes.set('class', tokens.filter((token) => !token.startsWith('#')).join(' '));
 }
