@@ -23,6 +23,9 @@ export const isMatchEndpoint = (pattern: string, targetMethod?: string) =>
 export const get = (pattern: string, source$: Observable<RequestArgs>) =>
   route(pattern, source$, 'GET')
 
+export const post = (pattern: string, source$: Observable<RequestArgs>) =>
+  route(pattern, source$, 'POST')
+
 export const route = (pattern: string, source$: Observable<RequestArgs>, method?: string) =>
   source$.pipe(filter(isNotReserved), filter(isMatchEndpoint(pattern, method)), tap(reserveResponse()))
 
