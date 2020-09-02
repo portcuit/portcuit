@@ -38,15 +38,20 @@ declare module 'snabbdom/modules/dataset' {
   export * from 'snabbdom/build/package/modules/dataset'
 }
 
-declare module 'snabbdom/jsx' {
-  export * from 'snabbdom/build/package/jsx'
-}
-
 declare module 'snabbdom/jsx-global' {
   export * from 'snabbdom/build/package/jsx-global'
 }
 
-declare module '@pkit/snabbdom/jsx' {
+declare module '@pkit/snabbdom/lib/jsx' {
   export * from 'snabbdom/build/package/jsx'
 }
 
+declare module '@pkit/snabbdom/lib/h' {
+  export * from 'snabbdom/build/package/h'
+}
+
+declare module 'remark-vdom' {
+  import {Plugin} from 'unified'
+  const vdom: Plugin;
+  export default vdom;
+}

@@ -1,10 +1,10 @@
 import nodeResolve from '@rollup/plugin-node-resolve'
 
-export default {
-  input: 'snabbdom/build/package/jsx.js',
+const createConfig = (name) => ({
+  input: `snabbdom/build/package/${name}.js`,
   output: {
-    dir: `${__dirname}/jsx`,
-    entryFileNames: 'index.js',
+    dir: `${__dirname}/lib`,
+    entryFileNames: `${name}.js`,
     format: 'cjs'
   },
   plugins: [
@@ -14,4 +14,6 @@ export default {
       preferBuiltins: false
     }),
   ]
-}
+})
+
+export default ['h', 'jsx'].map(createConfig);
