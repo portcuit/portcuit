@@ -14,7 +14,8 @@ import {selectorModule} from './modules/selector';
 import {triggerModule} from './modules/trigger'
 import {jsxModule} from './modules/jsx'
 import {createActionModule} from "./modules/action";
-import {ActionDetail, actionProc} from "./";
+import {actionProc} from "./processors";
+import {ActionDetail} from './modules/action'
 
 export * from './modules/action'
 export * from './processors'
