@@ -69,7 +69,7 @@ export const terminatedComplete = <T extends PortMessage<any>>(subject$: Subject
   subject$.pipe(tap(([type]) =>
     type === 'terminated' && subject$.complete()))
 
-export const mount = <T, U extends LifecyclePort<T>, V extends new() => U>([Port, circuit, params]: [Port: V, circuit: RootCircuit<U>, params: T]) =>
+export const mount = <T, U extends LifecyclePort<T>, V extends new() => U>({Port, circuit, params}: {Port: V, circuit: RootCircuit<U>, params?: T}) =>
   entry(new Port, circuit, params)
 
 const isSocket = (sock: unknown): sock is Socket<any> =>
