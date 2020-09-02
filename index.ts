@@ -10,8 +10,8 @@ util.inspect.defaultOptions.breakLength = Infinity
 export * from './worker'
 
 export const run = (src: string, overrideParams?: any) => {
-  const args = require(resolve(src)).default;
-  Object.assign({subject$: mount(overrideParams ? args.slice(0,2).concat(overrideParams) : args)})
+  const args = require(src.startsWith('./') ? resolve(src) : src).default;
+  Object.assign({subject$: mount(overrideParams ? [...args.slice(0,2), overrideParams] : args)})
 }
 
 if (workerData && workerData.src) {
