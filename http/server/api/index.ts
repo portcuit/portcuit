@@ -45,8 +45,10 @@ export const httpServerApiKit = (port: HttpServerApiPort) =>
         res.writeHead(statusCode, headers);
         return promisify<string>(res.end).call(res, body)
       }),
-    mapProc(source(port.vnode), sink(port.html), (data) => toHTML(data)),
-    mapProc(source(port.notFound.vnode), sink(port.notFound.html), (data) => toHTML(data)),
+    mapProc(source(port.vnode), sink(port.html), (data) =>
+      `<!DOCTYPE html>${toHTML(data)}`),
+    mapProc(source(port.notFound.vnode), sink(port.notFound.html), (data) =>
+      `<!DOCTYPE html>${toHTML(data)}`),
   )
 
 export const httpServerApiTerminateKit = (port: HttpServerApiPort) =>
