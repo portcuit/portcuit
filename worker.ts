@@ -46,7 +46,7 @@ const devWorkerRunKit = (port: DevWorkerRunPort) =>
           sink(port.app.run.restart))))
   )
 
-export const run_warker = (src: string, params?: any) =>
+export const run_worker = (src: string, params?: any) =>
   Object.assign(globalThis,{
     subject$: mount({Port: DevWorkerRunPort, circuit: devWorkerRunKit, params: {worker:{ctor: Worker},workerData:{src, params}} as any})
   })
