@@ -39,7 +39,26 @@ declare module 'snabbdom/modules/dataset' {
 }
 
 declare module 'snabbdom/jsx-global' {
-  export * from 'snabbdom/build/package/jsx-global'
+  import { VNode as _VNode } from 'snabbdom/vnode'
+  type VNode = _VNode
+  type VNodeData = {
+    classNames?: {[key: string]: boolean};
+    bind?: {}
+    [key: string]: any;
+  }
+  global {
+    /**
+     * opt-in jsx intrinsic global interfaces
+     * see: https://www.typescriptlang.org/docs/handbook/jsx.html#type-checking
+     */
+      // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace JSX {
+      type Element = VNode
+      interface IntrinsicElements {
+        [elemName: string]: VNodeData
+      }
+    }
+  }
 }
 
 declare module '@pkit/snabbdom/lib/jsx' {

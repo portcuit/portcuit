@@ -1,6 +1,5 @@
 import type {VNode, VNodeData} from 'snabbdom/vnode'
 import {init} from 'snabbdom/init'
-import {classModule} from 'snabbdom/modules/class'
 import {propsModule} from 'snabbdom/modules/props'
 import {attributesModule} from 'snabbdom/modules/attributes'
 import {styleModule} from 'snabbdom/modules/style'
@@ -10,6 +9,7 @@ import {toVNode} from "snabbdom/tovnode";
 import {fromEvent, merge} from 'rxjs'
 import {map, scan, switchMap, filter} from "rxjs/operators";
 import {source, sink, Socket, LifecyclePort, StatePort, directProc, latestMapProc, mergeMapProc} from 'pkit'
+import {classNamesModule} from './modules/classNames'
 import {selectorModule} from './modules/selector';
 import {triggerModule} from './modules/trigger'
 import {jsxModule} from './modules/jsx'
@@ -22,14 +22,14 @@ export * from './processors'
 
 export const defaultModules = [
   selectorModule,
-  classModule,
   propsModule,
   attributesModule,
   styleModule,
   eventListenersModule,
   datasetModule,
   triggerModule,
-  jsxModule
+  jsxModule,
+  classNamesModule
 ];
 
 export type SnabbdomParams = {
