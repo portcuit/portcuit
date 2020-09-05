@@ -46,12 +46,12 @@ const devWorkerRunKit = (port: DevWorkerRunPort) =>
           sink(port.app.run.restart))))
   )
 
-export const worker_run = (src: string, params?: any) =>
+export const run_warker = (src: string, params?: any) =>
   Object.assign(globalThis,{
-    subject$: mount([DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker},workerData:{src, params}} as any])
+    subject$: mount({Port: DevWorkerRunPort, circuit: devWorkerRunKit, params: {worker:{ctor: Worker},workerData:{src, params}} as any})
   })
 
-export const watch_run = (src: string, watch: string, params?: any) =>
+export const run_watch = (src: string, watch: string, params?: any) =>
   Object.assign(globalThis,{
-    subject$: mount([DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker},workerData:{src, params},watch} as any])
+    subject$: mount({Port: DevWorkerRunPort, circuit: devWorkerRunKit, params: {worker:{ctor: Worker},workerData:{src, params},watch} as any})
   })
