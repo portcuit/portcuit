@@ -10,9 +10,9 @@ import {latestMergeMapProc, mapProc, mapToProc} from "pkit/processors";
 import {RequestArgs, isNotReserved} from "pkit/http/server/processors";
 import {selectorModule} from '@pkit/snabbdom/ssr/modules/selector'
 import {jsxModule} from '@pkit/snabbdom/ssr/modules/jsx'
-import classModule from 'snabbdom-to-html/modules/class'
+import {classNamesModule} from '@pkit/snabbdom/ssr/modules/classNames'
 
-const toHTML = init([selectorModule, classModule, jsxModule]);
+const toHTML = init([selectorModule, jsxModule, classNamesModule]);
 
 type ApiResponse = readonly [status: number, headers: OutgoingHttpHeaders, body: any];
 
