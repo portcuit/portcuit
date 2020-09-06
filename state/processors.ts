@@ -32,6 +32,15 @@ export class EphemeralBoolean extends Boolean {
   }
 }
 
+export class EphemeralContainer<T=any> extends Object {
+  constructor(public data: T) {
+    super();
+  }
+  toJSON() {
+    return undefined;
+  }
+}
+
 export const patch = (
   plan: any,
   data: any) => {
