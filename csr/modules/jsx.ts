@@ -7,7 +7,7 @@ const createOrUpdate = (oldVNode: VNode, vnode: VNode) => {
   Object.entries(vnode.data)
     .forEach(([key, value]) => {
       if (['type', 'value', 'placeholder', 'autofocus', 'checked', 'id', 'readOnly', 'wrap',
-      ].includes(key)) {
+      'download'].includes(key)) {
         (vnode.elm as any)[key] = value;
       }
 
