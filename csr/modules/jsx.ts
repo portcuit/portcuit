@@ -6,11 +6,12 @@ const createOrUpdate = (oldVNode: VNode, vnode: VNode) => {
 
   Object.entries(vnode.data)
     .forEach(([key, value]) => {
-      if (['type', 'value', 'placeholder', 'autofocus', 'checked', 'id', 'readOnly'].includes(key)) {
+      if (['type', 'value', 'placeholder', 'autofocus', 'checked', 'id', 'readOnly', 'wrap',
+      ].includes(key)) {
         (vnode.elm as any)[key] = value;
       }
 
-      if (['for', 'href', 'class'].includes(key)) {
+      if (['for', 'href', 'class', 'viewBox', 'd', 'xmlns'].includes(key)) {
         (vnode.elm as any).setAttribute(key, value as any);
       }
     })
