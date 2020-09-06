@@ -13,7 +13,8 @@ type ClonedEvent<T=any> = {
     checked: boolean;
     dataset: {
       [key: string]: string | undefined;
-    }
+    };
+    files: FileList
   }
 }
 
@@ -32,7 +33,9 @@ export type ClonedAction = {
 export type ActionDetail = [fn: string, data: ClonedEvent]
 
 type ActionEvent = UIEvent & InputEvent & MouseEvent & KeyboardEvent & {
-  currentTarget:  HTMLElement & HTMLInputElement
+  currentTarget:  HTMLElement & HTMLInputElement & {
+    files: FileList
+  }
 }
 
 export const createActionModule = (target: EventTarget): Module => {
@@ -73,6 +76,7 @@ const cloneEvent = (ev: ActionEvent): ClonedEvent => ({
   currentTarget: {
     value: ev.currentTarget.value,
     checked: ev.currentTarget.checked,
-    dataset: {...ev.currentTarget.dataset}
+    dataset: {...ev.currentTarget.dataset},
+    files: ev.currentTarget.files
   }
 })
