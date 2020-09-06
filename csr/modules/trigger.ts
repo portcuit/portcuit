@@ -4,6 +4,8 @@ import type {VNode} from 'snabbdom/vnode'
 export type Trigger = {
   focus: boolean;
   blur: boolean;
+  select: boolean;
+  copy: boolean;
 }
 
 const createOrUpdate = (oldVNode: VNode, vnode: VNode) => {
@@ -15,6 +17,16 @@ const createOrUpdate = (oldVNode: VNode, vnode: VNode) => {
   if (trigger.focus !== undefined) {
     elm.focus({preventScroll: trigger.focus})
   }
+
+  if (trigger.select !== undefined) {
+    elm.select()
+  }
+
+  if (trigger.copy !== undefined) {
+    elm.select();
+    document.execCommand('copy');
+  }
+
 }
 
 export const triggerModule: Module = {
