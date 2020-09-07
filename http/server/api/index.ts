@@ -3,10 +3,10 @@ import {promisify} from 'util'
 import type {VNode} from 'snabbdom/vnode'
 import 'snabbdom-to-html'
 import init from 'snabbdom-to-html/init'
-import {merge} from "rxjs";
-import {filter} from "rxjs/operators";
+import {fromEvent, merge} from "rxjs";
+import {filter, reduce, takeUntil, map} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source} from "pkit/core";
-import {latestMergeMapProc, mapProc, mapToProc} from "pkit/processors";
+import {latestMergeMapProc, mapProc, mapToProc, mergeMapProc} from "pkit/processors";
 import {RequestArgs, isNotReserved} from "pkit/http/server/processors";
 import {selectorModule} from '@pkit/snabbdom/ssr/modules/selector'
 import {jsxModule} from '@pkit/snabbdom/ssr/modules/jsx'
@@ -27,6 +27,7 @@ export class HttpServerApiPort extends LifecyclePort<RequestArgs> implements Con
   html = new Socket<string>();
   vnode = new Socket<VNode>();
   notFound = new ContentTypePort;
+  body = new Socket<any>();
   terminate = new Socket<ApiResponse>();
 }
 
@@ -49,6 +50,13 @@ export const httpServerApiKit = (port: HttpServerApiPort) =>
       `<!DOCTYPE html>${toHTML(data)}`),
     mapProc(source(port.notFound.vnode), sink(port.notFound.html), (data) =>
       `<!DOCTYPE html>${toHTML(data)}`),
+    mergeMapProc(source(port.init), sink(port.body), ([req, res]) =>
+      fromEvent<Buffer>(req, 'data').pipe(
+        takeUntil(fromEvent(req, 'end')),
+        reduce((acc, chunk) =>
+          acc.concat(chunk), [] as Buffer[]),
+        map((chunks) =>
+          Buffer.concat(chunks))))
   )
 
 export const httpServerApiTerminateKit = (port: HttpServerApiPort) =>
