@@ -32,6 +32,15 @@ export class EphemeralBoolean extends Boolean {
   }
 }
 
+export class EphemeralString extends String {
+  constructor(data: string) {
+    super(data);
+  }
+  toJSON() {
+    return undefined;
+  }
+}
+
 export class EphemeralContainer<T=any> extends Object {
   constructor(public data: T) {
     super();
@@ -49,6 +58,8 @@ export const patch = (
     || plan === undefined
     || plan.constructor === Boolean
     || plan.constructor === EphemeralBoolean
+    || plan.constructor === EphemeralContainer
+    || plan.constructor === EphemeralString
     || plan.constructor === String
     || plan.constructor === Number
     || plan.constructor === ReplaceArray
@@ -81,6 +92,8 @@ export const patch = (
       || data === undefined
       || data.constructor === Boolean
       || data.constructor === EphemeralBoolean
+      || plan.constructor === EphemeralContainer
+      || plan.constructor === EphemeralString
       || data.constructor === String
       || data.constructor === Number
       || data.constructor === Array
