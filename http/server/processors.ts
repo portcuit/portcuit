@@ -8,6 +8,9 @@ import {Sink} from 'pkit/core'
 
 export type RequestArgs = [IncomingMessage, ServerResponse]
 
+export const reqToUrl = ({url, headers:{origin}, method}: IncomingMessage) =>
+  new URL(`${origin || 'file://'}${url}`)
+
 export const reserveResponse = (id = (new Date).getTime().toString()) =>
   ([,res]: RequestArgs) =>
     res.setHeader('X-Request-Id', id);
@@ -16,9 +19,9 @@ export const isNotReserved = ([,res]: RequestArgs) =>
   !res.hasHeader('X-Request-Id')
 
 export const isMatchEndpoint = (pattern: string, targetMethod?: string) =>
-  ([{url, headers:{origin}, method}]: RequestArgs) =>
-    minimatch((new URL(`${origin || 'file://'}${url}`)).pathname, pattern) &&
-    (targetMethod ? method === targetMethod : true)
+  ([req]: RequestArgs) =>
+    minimatch(reqToUrl(req).pathname, pattern) &&
+    (targetMethod ? req.method === targetMethod : true)
 
 export const get = (pattern: string, source$: Observable<RequestArgs>) =>
   route(pattern, source$, 'GET')
@@ -37,7 +40,7 @@ export const routeProc = (source$: Observable<RequestArgs>, sink: Sink<RequestAr
       !res.hasHeader('X-Request-Id')),
     filter(([req, res]) => {
       const {method, url, headers:{origin}} = req;
-      return fn([{method, url: new URL(`${origin || 'file://'}${url}`)}, [req, res]])
+      return fn([{method, url: reqToUrl(req)}, [req, res]])
     }),
     tap(([,res]) =>
       res.setHeader('X-Request-Id', (new Date).getTime().toString())),
