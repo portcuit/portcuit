@@ -3,7 +3,6 @@ import 'snabbdom-to-html'
 import init from 'snabbdom-to-html/init'
 import {merge} from "rxjs";
 import {latestMapProc, LifecyclePort, sink, Socket, source} from "pkit";
-
 import {jsxModule} from './modules/jsx'
 import {classNamesModule} from './modules/classNames'
 
@@ -20,6 +19,6 @@ export class SnabbdomSsrPort<T extends SnabbdomSsrParams = SnabbdomSsrParams> ex
 
 export const snabbdomSsrKit = (port: SnabbdomSsrPort) =>
   merge(
-    latestMapProc(source(port.render), sink(port.html), [source(port.init)], ([vnode, {fragment = true}]) =>
+    latestMapProc(source(port.render), sink(port.html), [source(port.init)], ([vnode, {fragment} = {fragment: true}]) =>
       (fragment ? '<!DOCTYPE html>' : '') + toHTML(vnode))
   )
