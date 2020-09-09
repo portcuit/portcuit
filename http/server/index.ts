@@ -33,8 +33,11 @@ export const httpServerKit = (port: HttpServerPort) =>
       fromEvent<RequestArgs>(server, 'request')),
     mapToProc(source(port.server).pipe(delay(0)), sink(port.ready)),
     latestMergeMapProc(source(port.run.start), sink(port.run.started), [source(port.init), source(port.server)] as const,
-      ([,{listen = []}, server]) =>
-        promisify(server.listen).apply(server, listen as any)),
+      async ([,{listen = []}, server]) =>
+        ({
+          'server.listen': await promisify(server.listen).apply(server, listen as any),
+          listen
+        })),
     latestMergeMapProc(source(port.run.stop), sink(port.run.stopped), [source(port.server)],
       ([,server]) =>
         promisify(server.close).call(server)),
