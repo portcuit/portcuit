@@ -1,11 +1,11 @@
 import type {VNode, VNodeData} from 'snabbdom/vnode'
-import {init} from 'snabbdom/init'
-import {propsModule} from 'snabbdom/modules/props'
-import {attributesModule} from 'snabbdom/modules/attributes'
-import {styleModule} from 'snabbdom/modules/style'
-import {eventListenersModule} from "snabbdom/modules/eventlisteners"
-import {datasetModule} from "snabbdom/modules/dataset";
-import {toVNode} from "snabbdom/tovnode";
+import {init} from '@pkit/snabbdom/lib/init'
+import {toVNode} from "@pkit/snabbdom/lib/tovnode";
+import {propsModule} from '@pkit/snabbdom/lib/modules/props'
+import {attributesModule} from '@pkit/snabbdom/lib/modules/attributes'
+import {styleModule} from '@pkit/snabbdom/lib/modules/style'
+import {eventListenersModule} from "@pkit/snabbdom/lib/modules/eventlisteners"
+import {datasetModule} from "@pkit/snabbdom/lib/modules/dataset";
 import {fromEvent, merge} from 'rxjs'
 import {map, scan, switchMap, filter} from "rxjs/operators";
 import {source, sink, Socket, LifecyclePort, StatePort, directProc, latestMapProc, mergeMapProc} from 'pkit'

@@ -16,4 +16,11 @@ const createConfig = (name) => ({
   ]
 })
 
-export default ['h', 'jsx'].map(createConfig);
+export default [
+  'h', 'jsx', 'init', 'tovnode',
+  'modules/props',
+  'modules/attributes',
+  'modules/style',
+  'modules/eventlisteners',
+  'modules/dataset'
+].map(createConfig);

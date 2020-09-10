@@ -69,6 +69,33 @@ declare module '@pkit/snabbdom/lib/h' {
   export * from 'snabbdom/build/package/h'
 }
 
+declare module '@pkit/snabbdom/lib/init' {
+  export * from 'snabbdom/build/package/init'
+}
+
+declare module '@pkit/snabbdom/lib/tovnode' {
+  export * from 'snabbdom/build/package/tovnode'
+}
+
+declare module '@pkit/snabbdom/lib/modules/attributes' {
+  export * from 'snabbdom/build/package/modules/attributes'
+}
+
+declare module '@pkit/snabbdom/lib/modules/dataset' {
+  export * from 'snabbdom/build/package/modules/dataset'
+}
+
+declare module '@pkit/snabbdom/lib/modules/eventlisteners' {
+  export * from 'snabbdom/build/package/modules/eventlisteners'
+}
+
+declare module '@pkit/snabbdom/lib/modules/props' {
+  export * from 'snabbdom/build/package/modules/props'
+}
+declare module '@pkit/snabbdom/lib/modules/style' {
+  export * from 'snabbdom/build/package/modules/style'
+}
+
 declare module 'remark-vdom' {
   import {Plugin} from 'unified'
   const vdom: Plugin;
