@@ -3,7 +3,7 @@ import minimatch from 'minimatch'
 import {pick} from 'ramda'
 import {IncomingMessage, ServerResponse} from 'http'
 import {Observable, from, of, fromEvent, merge} from 'rxjs'
-import {mergeMap, map, catchError, takeUntil, toArray, tap, filter} from 'rxjs/operators'
+import {mergeMap, map, catchError, takeUntil, toArray, tap, filter, delay} from 'rxjs/operators'
 import {Sink} from 'pkit/core'
 
 export type RequestArgs = [IncomingMessage, ServerResponse]
@@ -30,7 +30,7 @@ export const post = (pattern: string, source$: Observable<RequestArgs>) =>
   route(pattern, source$, 'POST')
 
 export const route = (pattern: string, source$: Observable<RequestArgs>, method?: string) =>
-  source$.pipe(filter(isNotReserved), filter(isMatchEndpoint(pattern, method)), tap(reserveResponse()))
+  source$.pipe(filter(isNotReserved), filter(isMatchEndpoint(pattern, method)), tap(reserveResponse()), delay(0))
 
 
 export type RouteReq = [{method?: string, url: URL}, RequestArgs]
