@@ -41,6 +41,15 @@ export const sink = <T>(sock: Socket<T>) =>
 export const portPath = (port: Socket<any> | LifecyclePort) =>
   (port instanceof Socket) ? port.path : port._ns as string[];
 
+export type InferParams<T> = T extends LifecyclePort<infer U>  ? U : never;
+
+export type Portcuit<T extends LifecyclePort> = {
+  Port: new(...args: any) => T,
+  circuit: RootCircuit<T>,
+  params: InferParams<T>
+}
+
+
 export type RootCircuit<T> = (port: T) => Observable<PortMessage<any>>
 export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params?: T) => {
   const subject$ = new Subject<PortMessage<any>>(),
