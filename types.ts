@@ -101,3 +101,9 @@ declare module 'remark-vdom' {
   const vdom: Plugin;
   export default vdom;
 }
+
+declare module 'remark-frontmatter' {
+  import {Plugin} from 'unified'
+  const frontmatter: Plugin;
+  export default frontmatter;
+}
