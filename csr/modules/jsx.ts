@@ -11,7 +11,10 @@ const createOrUpdate = (oldVNode: VNode, vnode: VNode) => {
         (vnode.elm as any)[key] = value;
       }
 
-      if (['for', 'href', 'class', 'viewBox', 'd', 'xmlns'].includes(key)) {
+      if ([
+        'for', 'href', 'class',
+        'viewBox', 'd', 'xmlns', 'fill', 'fill-rule', 'clip-rule'
+      ].includes(key)) {
         (vnode.elm as any).setAttribute(key, value as any);
       }
     })
