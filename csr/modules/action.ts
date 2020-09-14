@@ -32,7 +32,7 @@ export type ClonedAction = {
 
 export type ActionDetail = [fn: string, data: ClonedEvent]
 
-type ActionEvent = UIEvent & InputEvent & MouseEvent & KeyboardEvent & {
+type ActionEvent = UIEvent & InputEvent & MouseEvent & KeyboardEvent & ClipboardEvent & {
   currentTarget:  HTMLElement & HTMLInputElement & {
     files: FileList
   }
