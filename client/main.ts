@@ -3,13 +3,17 @@ import {mount} from "pkit";
 import {ScreenParams, ScreenPort, screenKit} from './screen/';
 import {CreateCsr} from "./vm";
 
-export const main = (createCsr: CreateCsr<any>) => {
+type IState = {
+  jsAppRoot: string
+}
+
+export const main = <T>(createCsr: CreateCsr<T>) => {
   if (globalThis.document) {
-    const state = JSON.parse(document.querySelector('#state')!.textContent!);
+    const state = JSON.parse(document.querySelector('#state')!.textContent!) as IState;
     const params: ScreenParams = {
       worker: {
         ctor: Worker,
-        args: [`${state.esmAppRoot}/main.js`, {type: 'module'}]
+        args: [`${state.jsAppRoot}/main.js`, {type: 'module'}]
       },
       snabbdom: {
         container: document.body,
