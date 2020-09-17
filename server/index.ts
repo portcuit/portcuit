@@ -10,16 +10,16 @@ import {CreateSsr} from "./render/";
 
 export * from './render/'
 
-export type Params = {
+export type NextHttpParams = {
   server: HttpServerParams;
   pages: string;
 }
 
-export class Port extends LifecyclePort<Params> {
+export class NextHttpPort extends LifecyclePort<NextHttpParams> {
   server = new HttpServerPort;
 }
 
-export const circuit = (port: Port) =>
+export const nextHttpKit = (port: NextHttpPort) =>
   merge(
     httpServerKit(port.server),
     source(port.init).pipe(
@@ -46,4 +46,4 @@ export const circuit = (port: Port) =>
     mapProc(source(port.init), sink(port.server.init), ({server}) => server),
   )
 
-export default {Port, circuit}
+export default {Port: NextHttpPort, circuit: nextHttpKit}
