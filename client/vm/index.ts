@@ -1,9 +1,9 @@
 import {merge} from "rxjs";
 import {
-  childRemoteWorkerKit, latestMapProc,
+  childRemoteWorkerKit, EncodedPatch, latestMapProc,
   LifecyclePort,
   mapToProc, Portcuit,
-  sink,
+  sink, Socket,
   source,
   stateKit,
   StatePort
@@ -14,7 +14,8 @@ import {FC} from "@pkit/snabbdom";
 
 export class VmPort<T> extends LifecyclePort<FC<T>> {
   state = new StatePort<T>();
-  dom = new SnabbdomPort;
+  vdom = new SnabbdomPort;
+  patch = new Socket<EncodedPatch>();
 }
 
 export const vmKit = <T>(port: VmPort<T>) =>
@@ -22,12 +23,12 @@ export const vmKit = <T>(port: VmPort<T>) =>
     childRemoteWorkerKit(port, self as any, [
       port.ready,
       port.state.raw,
-      port.dom.render
+      port.vdom.render
     ]),
     stateKit(port.state),
-    snabbdomActionPatchKit(port.dom, port.state),
+    snabbdomActionPatchKit(port.vdom, port.state),
 
-    latestMapProc(source(port.state.data), sink(port.dom.render),
+    latestMapProc(source(port.state.data), sink(port.vdom.render),
       [source(port.init)], ([state, Body]) =>
         Body(state)),
     mapToProc(source(port.init), sink(port.ready))

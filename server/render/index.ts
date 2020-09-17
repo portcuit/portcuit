@@ -11,7 +11,7 @@ import {
   stateKit,
   StatePort,
   Portcuit,
-  latestMergeMapProc
+  latestMergeMapProc, Patch, Socket
 } from 'pkit'
 import {RequestArgs} from "pkit/http/server";
 import {FC} from "@pkit/snabbdom";
@@ -31,6 +31,7 @@ export class SharedSsrPort<T> extends LifecyclePort<{requestArgs: RequestArgs, H
   state = new StatePort<T>();
   renderer = new RendererPort<T>();
   vdom = new SnabbdomSsrPort;
+  patch = new Socket<Patch<T>>();
 }
 
 export const sharedSsrKit = <T>(port: SharedSsrPort<T>) =>
