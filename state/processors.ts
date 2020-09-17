@@ -2,6 +2,7 @@ import {Observable, of} from 'rxjs'
 import {scan, switchMap, startWith, mergeMap} from 'rxjs/operators'
 import {Sink} from 'pkit/core'
 import type {Compute} from './'
+import {DeepPartial, tuple} from "pkit";
 
 export class PreserveArray<T> extends Array {
   constructor(...props: T[]) {
@@ -137,3 +138,17 @@ export const splice = <T>(start: number, deleteCount=0, items: T[]=[]): T[] =>
 
 export const padArray = <T>(start: number, item: T, end: number = 0): T[] =>
   Array(start).concat(item, Array(end))
+
+export const makePatch = <T, U, V extends (data: T) => U>(fn: V, data: T) =>
+  tuple(fn, data)
+
+export type Patch<T, U=any> = [(data: U) => DeepPartial<T>, U]
+
+export const encodePatch = <T>([fn, data]: Patch<T>) =>
+  [fn.toString(), data]
+
+export type EncodedPatch = [string, any]
+
+export const decodePatch = <T>([fn, data]: EncodedPatch) =>
+  new Function(`return ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray}) => ${fn};`)()
+  ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray})(data) as DeepPartial<T>

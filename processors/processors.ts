@@ -44,19 +44,6 @@ export const createMapProc = <T, U>(fn: (data: T) => U) =>
   (source$: Observable<T>, sink: Sink<U>) =>
     mapProc(source$, sink, fn);
 
-export const mapFilterVoidProc = <T, U, V extends U>(source$: Observable<T>, sink: Sink<U>, fn: MapFn<T, V>) =>
-  source$.pipe(
-    map((data) =>
-      fn(data)),
-    filter((data) =>
-      data !== undefined),
-    map((data) =>
-      sink(data)));
-
-export const createMapFilterVoidProc = <T, U, V extends U = U>(fn: MapFn<T, V>) =>
-  (source$: Observable<T>, sink: Sink<U>) =>
-    mapFilterVoidProc(source$, sink, fn);
-
 export const mapToProc = <T, U extends T>(source$: Observable<unknown>, sink: Sink<T>, data?: U | T) =>
   source$.pipe(
     map(() =>
@@ -81,12 +68,6 @@ export const mergeMapProc = <T, U, V extends U>(source$: Observable<T>, sink: Si
 export const createMergeMapProc = <T, U, V extends U = U>(fn: MergeMapFn<T, V>) =>
   (source$: Observable<T>, sink: Sink<U>, errSink?: Sink<Error>) =>
     mergeMapProc(source$, sink, fn, errSink);
-
-// TODO: mapToFlatBindProc みたいなのもあるといいかもね。でもそもそもmapProcで間に合うな。。
-export const mapToBindProc = <T, U, V extends U>(source$: Observable<T>, sink: Sink<[T, U?]>, bindArg: V) =>
-  source$.pipe(
-    map((data) =>
-      sink([data, bindArg])));
 
 export const latestProc = <T>(source$: Observable<unknown>, sink: Sink<T>, latest$: Observable<T>) =>
   source$.pipe(
@@ -134,68 +115,9 @@ export const fromEventProc = <T, U extends T>(source$: Observable<FromEventTarge
       sink(data))
   )
 
-const defaultPatchFn = <T>(data: T) => data;
-export const pickProc = <T, U, V extends U = U>(source$: Observable<T>, sink: Sink<U>, query: (data: T) => V, patch: (data: V) => U = defaultPatchFn) =>
+export const preparePatchProc = <T, U, V extends (data: T) => U>(source$: Observable<T>, sink: Sink<[V, T]>, fn: V) =>
   source$.pipe(
-    mergeMap((data) =>
-      of(data).pipe(
-        map((data) =>
-          query(data)),
-        filter((data) =>
-          data !== undefined),
-        catchError(() =>
-          of(data).pipe(
-            filter(() =>
-              false))),
-        map((data: any) =>
-          sink(patch(data))))));
-
-export const intervalMapToProc = <T, U extends T>(running$: Observable<boolean>, sink: Sink<T>, interval: number, data?: U) =>
-  running$.pipe(
-    filter((running) =>
-      running),
-    switchMap(() =>
-      timer(0, interval).pipe(
-        map(() =>
-          sink(data)),
-        takeUntil(running$.pipe(
-          filter((running) =>
-            !running))))));
-
-export const intervalLatestMapProc = <T, U extends readonly any[]>(running$: Observable<boolean>,
-                                                          sink: Sink<T>, fn: (data: U) => T,
-                                                          interval: number = 1000, latests$: MappedWrapObservable<U> = [] as any) =>
-  running$.pipe(
-    filter((running) =>
-      running),
-    switchMap(() =>
-      timer(0, interval).pipe(
-        withLatestFrom<number, U>(...latests$),
-        map((data: U) =>
-          sink(fn(data))))));
-
-export const zipMergeMapProc = <T, U, V>(source$: Observable<T>, sink: Sink<V>, sources$: [Observable<U>], fn: (data: [T, U]) => Observable<V> | Promise<V>) =>
-  zip(source$, ...sources$).pipe(
-    mergeMap((data) =>
-      fn(data)),
-    map(data =>
-      sink(data)));
-
-export const groupProc = <T, U>(source$: Observable<T>, sink: Sink<GroupedObservable<U, T>>, groupFunc: (data: T) => U) =>
-  source$.pipe(
-    groupBy(groupFunc),
-    map(group$ =>
-      sink(group$)));
-
-export const createGroupProc = <T, U>(groupFn: (data: T) => U) =>
-  (source$: Observable<T>, sink: Sink<GroupedObservable<U, T>>) =>
-    groupProc(source$, sink, groupFn);
-
-export const exposeGroupProc = <T, U>(source$: Observable<GroupedObservable<U, T>>, sink: Sink<T>, key: U) =>
-  source$.pipe(
-    filter((group$) =>
-      group$.key === key),
-    mergeMap((group$) =>
-      group$),
     map((data) =>
-      sink(data)));
+      sink([fn, data]))
+  )
+
