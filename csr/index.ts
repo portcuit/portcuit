@@ -8,13 +8,23 @@ import {eventListenersModule} from "@pkit/snabbdom/lib/modules/eventlisteners"
 import {datasetModule} from "@pkit/snabbdom/lib/modules/dataset";
 import {fromEvent, merge} from 'rxjs'
 import {map, scan, switchMap, filter} from "rxjs/operators";
-import {source, sink, Socket, LifecyclePort, StatePort, directProc, latestMapProc, mergeMapProc} from 'pkit'
+import {
+  source,
+  sink,
+  Socket,
+  LifecyclePort,
+  StatePort,
+  directProc,
+  latestMapProc,
+  mergeMapProc,
+  mapProc,
+  decodePatch
+} from 'pkit'
 import {classNamesModule} from './modules/classNames'
 import {selectorModule} from './modules/selector';
 import {triggerModule} from './modules/trigger'
 import {jsxModule} from './modules/jsx'
 import {createActionModule} from "./modules/action";
-import {actionProc} from "./processors";
 import {ActionDetail} from './modules/action'
 
 export * from './modules/action'
@@ -71,7 +81,7 @@ export const snabbdomKit = (port: SnabbdomPort) =>
   );
 
 export const snabbdomActionPatchKit = <T>(port: SnabbdomPort, state: StatePort<T>) =>
-  actionProc(source(port.action), sink(state.patch))
+  mapProc(source(port.action), sink(state.patch), decodePatch)
 
 const optionsKit = (port: SnabbdomPort) =>
   source(port.init).pipe(
