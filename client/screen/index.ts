@@ -1,6 +1,6 @@
-import {merge, of} from "rxjs";
-import {LifecyclePort, source, sink, Socket,
-  directProc,
+import {merge} from "rxjs";
+import {
+  LifecyclePort, source, sink, Socket,
   latestMapProc,
   mapProc,
   mapToProc,
@@ -32,7 +32,6 @@ export const screenKit = (port: ScreenPort) =>
 
 const lifecycleKit = (port: ScreenPort) =>
   merge(
-    directProc(source(port.app.vm.state.raw), sink(port.state)),
     latestMapProc(source(port.app.vm.ready), sink(port.app.vm.state.init),
       [source(port.state)], ([,state]) =>
         state),
@@ -42,11 +41,20 @@ const lifecycleKit = (port: ScreenPort) =>
 const useAppKit = (port: ScreenPort) =>
   merge(
     workerKit(port.app),
-    parentRemoteWorkerKit(port.app, [
-      port.app.vm.state.init,
-      port.app.vm.vdom.action,
-      port.app.vm.vdom.event.hashchange
-    ], port.app.vm),
+    parentRemoteWorkerKit<VmPort<any>>({
+      ready: sink(port.app.vm.ready),
+      state: {
+        raw: sink(port.state),
+        init: source(port.app.vm.state.init)
+      },
+      vdom: {
+        action: source(port.snabbdom.action),
+        event: {
+          hashchange: source(port.snabbdom.event.hashchange)
+        },
+        render: sink(port.snabbdom.render)
+      }
+    }, port.app),
     mapProc(source(port.init), sink(port.app.init), ({worker}) =>
       worker),
     mapToProc(source(port.app.ready), sink(port.app.running), true)
@@ -55,8 +63,5 @@ const useAppKit = (port: ScreenPort) =>
 const useSnabbdomKit = (port: ScreenPort) =>
   merge(
     snabbdomKit(port.snabbdom),
-    mapProc(source(port.init), sink(port.snabbdom.init), ({snabbdom}) => snabbdom),
-    directProc(source(port.snabbdom.action), sink(port.app.vm.vdom.action)),
-    directProc(source(port.snabbdom.event.hashchange), sink(port.app.vm.vdom.event.hashchange)),
-    directProc(source(port.app.vm.vdom.render), sink(port.snabbdom.render)),
+    mapProc(source(port.init), sink(port.snabbdom.init), ({snabbdom}) => snabbdom)
   )

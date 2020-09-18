@@ -23,14 +23,18 @@ export class VmPort<T> extends LifecyclePort<FC<T>> {
 
 export const vmKit = <T>(port: VmPort<T>) =>
   merge(
-    childRemoteWorkerKit(port, self as any, [
-      port.ready,
-      port.state.raw,
-      port.vdom.render
-    ]),
+    childRemoteWorkerKit<VmPort<T>>({
+      ready: source(port.ready),
+      state: {
+        raw: source(port.state.raw),
+        init: sink(port.state.init)
+      },
+      vdom: {
+        render: source(port.vdom.render)
+      }
+    }, port, self as any),
     stateKit(port.state),
     snabbdomActionPatchKit(port.vdom, port.state),
-
     latestMapProc(source(port.state.data), sink(port.vdom.render),
       [source(port.init)], ([state, Body]) =>
         Body(state)),
