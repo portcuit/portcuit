@@ -44,6 +44,7 @@ export const sharedSsrKit = <T>(port: SharedSsrPort<T>) =>
     mapProc(source(port.init), sink(port.renderer.init), ({Html}) => Html),
     directProc(source(port.vdom.html), sink(port.api.html)),
     mapToProc(source(port.api.terminated), sink(port.terminated)),
+    mapToProc(source(port.init), sink(port.ready)),
     httpServerApiTerminateKit(port.api)
   )
 
