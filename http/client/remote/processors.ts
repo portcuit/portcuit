@@ -17,7 +17,10 @@ export const sendProc = (debugSink: Sink<any>, errSink: Sink<Error>, endpoint: s
           mergeMap(async () => {
             const res = await fetch(endpoint, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
               body: JSON.stringify([path, data])
             });
             const msg = await res.json();

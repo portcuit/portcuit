@@ -35,7 +35,7 @@ export const httpServerApiKit = (port: HttpServerApiPort) =>
         res.writeHead(statusCode, headers);
         return promisify<string>(res.end).call(res, body)
       }),
-    mergeMapProc(source(port.init), sink(port.body), ([req, res]) =>
+    mergeMapProc(source(port.init), sink(port.body), ([req]) =>
       fromEvent<Buffer>(req, 'data').pipe(
         takeUntil(fromEvent(req, 'end')),
         reduce((acc, chunk) =>
