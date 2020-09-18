@@ -2,7 +2,7 @@ import {merge} from "rxjs";
 import {
   childRemoteWorkerKit, EncodedPatch, latestMapProc,
   LifecyclePort,
-  mapToProc, Portcuit,
+  mapToProc, Patch, Portcuit,
   sink, Socket,
   source,
   stateKit,
@@ -15,7 +15,10 @@ import {FC} from "@pkit/snabbdom";
 export class VmPort<T> extends LifecyclePort<FC<T>> {
   state = new StatePort<T>();
   vdom = new SnabbdomPort;
-  patch = new Socket<EncodedPatch>();
+  patch = new class {
+    encode = new Socket<Patch<T>>();
+    decode = new Socket<EncodedPatch>();
+  }
 }
 
 export const vmKit = <T>(port: VmPort<T>) =>
