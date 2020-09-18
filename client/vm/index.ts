@@ -30,7 +30,8 @@ export const vmKit = <T>(port: VmPort<T>) =>
         init: sink(port.state.init)
       },
       vdom: {
-        render: source(port.vdom.render)
+        render: source(port.vdom.render),
+        action: sink(port.vdom.action)
       }
     }, port, self as any),
     stateKit(port.state),
@@ -43,4 +44,4 @@ export const vmKit = <T>(port: VmPort<T>) =>
 
 export default {Port: VmPort, circuit: vmKit}
 
-export type CreateCsr<T> = () => Portcuit<VmPort<T>>
+export type CreateCsr<T> = () => any
