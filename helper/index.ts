@@ -1,5 +1,6 @@
 import type {VNode} from 'snabbdom/vnode'
-import remark from 'remark'
+import unified from 'unified'
+import parse from 'remark-parse'
 import vdom from 'remark-vdom'
 import {h} from '@pkit/snabbdom/lib/h'
 
@@ -9,6 +10,7 @@ export * from './fc'
 type TemplateRenderer<T=string,U=any> = (strings: TemplateStringsArray, ...args: U[]) => T;
 
 export const markdown: TemplateRenderer<VNode> = (strings) =>
-  (remark()
+  (unified()
+    .use(parse)
     .use(vdom, {h})
     .processSync(strings.join('')).result as {children: VNode}).children
