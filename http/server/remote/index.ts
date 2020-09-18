@@ -37,7 +37,7 @@ export const remoteServerHttpKit = <T>(port: RemoteServerHttpPort<T>) =>
             source(port.ctx).pipe(filter(isNotReserved)),
             source(port.api.terminated),
             source(port.sse.terminated)), sink(port.terminated)),
-          directProc(of(ctx), sink(port.ctx)),
+          directProc(of(ctx), sink(port.ctx))
         )
       }))
   )

@@ -28,7 +28,7 @@ export const sendProc = (ctx$: Observable<RequestArgs>, debugSink: Sink<any>, er
             of(data).pipe(
               mergeMap(async (data) =>
                 debugSink({
-                  send: await promisify(res.write).call(res, `data: ${JSON.stringify([path, data])}\n\n`), //worker.postMessage([path, data]),
+                  send: await promisify(res.write).call(res, `data: ${JSON.stringify([path, data])}\n\n`),
                   path, data
                 })),
               catchError((err) =>

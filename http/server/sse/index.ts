@@ -1,10 +1,10 @@
 import {promisify} from "util";
 import {IncomingMessage} from "http";
 import {fromEvent, merge, of} from "rxjs";
-import {filter, mergeMap, switchMap} from "rxjs/operators";
+import {switchMap} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source} from "pkit/core";
-import {latestMergeMapProc, mapToProc, mapProc, mergeMapProc, fromEventProc, directProc} from "pkit/processors";
-import {get, isNotReserved, RequestArgs} from "../processors";
+import {latestMergeMapProc, mapToProc, directProc} from "pkit/processors";
+import {RequestArgs} from "../processors";
 import {connectProc} from './processors';
 
 export type SseServerParams = {
@@ -30,12 +30,10 @@ export const sseServerKit = (port: SseServerPort) =>
           directProc(of(ctx), sink(port.ctx)),
           mapToProc(fromEvent(ctx[0], 'close'), sink(port.event.close)),
         ))),
-
     latestMergeMapProc(source(port.terminate), sink(port.info),
       [source(port.ctx)], async ([,[,res]]) =>
         ({
           end: await promisify(res.end).call(res)
         })),
-
     directProc(source(port.event.close), sink(port.terminated))
   )

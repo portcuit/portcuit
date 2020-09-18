@@ -1,6 +1,6 @@
 import {promisify} from "util";
 import {Observable} from "rxjs";
-import {map, mergeMap} from "rxjs/operators";
+import {mergeMap} from "rxjs/operators";
 import {Sink} from "pkit/core";
 import {RequestArgs} from "../processors";
 
