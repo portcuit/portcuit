@@ -28,7 +28,7 @@ export const workerKit = (port: WorkerPort) =>
     latestMergeMapProc(source(port.run.stop), sink(port.run.stopped), [source(port.worker)],
       ([,worker]) => {
         worker.postMessage(['terminate']);
-        return timer(100).pipe(
+        return timer(1000).pipe(
           map(() =>
             worker.terminate()),
           mergeMap((data: any) =>
