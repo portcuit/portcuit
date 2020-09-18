@@ -1,5 +1,5 @@
 import {merge} from 'rxjs'
-import {source, sink, Socket} from 'pkit/core'
+import {PortSourceOrSink, sourceSinkMap, Socket, sink} from 'pkit/core'
 import {receiveProc, sendProc} from './processors'
 
 type IfsPort = {
@@ -7,9 +7,11 @@ type IfsPort = {
   err: Socket<Error>;
 }
 
-export const childRemoteWorkerKit = ({debug, err}: IfsPort, parentPort: MessagePort, socks: Socket<any>[]) =>
-  merge(
-    receiveProc(parentPort),
-    sendProc(sink(debug), sink(err), parentPort, socks.map((sock) =>
-      [source(sock), sink(sock)]))
-  );
+export const childRemoteWorkerKit = <T>(mapping: PortSourceOrSink<T>, {debug, err}: IfsPort, parentPort: MessagePort) => {
+  const [sourceMap, sinkMap] = sourceSinkMap(mapping);
+
+  return merge(
+    receiveProc(parentPort, sinkMap),
+    sendProc(sink(debug), sink(err), parentPort, sourceMap)
+  )
+}

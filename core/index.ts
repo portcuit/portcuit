@@ -1,25 +1,19 @@
-import {PortData, Socket} from './processors'
+import {Socket} from './processors'
 
 export * from './processors'
 
 export class LifecyclePort<T=any> {
   init = new Socket<T>();
-  ready = new Socket<PortData>();
-  terminate = new Socket<PortData>();
-  terminated = new Socket<PortData>();
-  quit = new Socket<PortData>();
-  info = new Socket<PortData>();
-  debug = new Socket<PortData>();
+  ready = new Socket<any>();
+  terminate = new Socket<any>();
+  terminated = new Socket<any>();
+  quit = new Socket<any>();
+  info = new Socket<any>();
+  debug = new Socket<any>();
   running = new Socket<boolean>();
   err = new Socket<Error>();
   _ns?: string[]
 }
-
-export class DataPort<T> {
-  data = new Socket<T>();
-}
-
-export type MappedWrapDataPort<T> = {[P in keyof T]: DataPort<T[P]>}
 
 export class EndpointPort<T, U, V = Error> {
   req = new Socket<T>();

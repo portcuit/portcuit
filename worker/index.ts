@@ -15,7 +15,6 @@ export class WorkerPort extends LifecyclePort<WorkerParams> {
   run = new RunPort;
   worker = new Socket<Worker>();
   err = new Socket<Error>();
-  msg = new Socket<PortMessage<any>>();
 }
 
 export const workerKit = (port: WorkerPort) =>
