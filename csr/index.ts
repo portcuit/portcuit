@@ -18,7 +18,7 @@ import {
   latestMapProc,
   mergeMapProc,
   mapProc,
-  decodePatch
+  decodePatch, EncodedPatch
 } from 'pkit'
 import {classNamesModule} from './modules/classNames'
 import {selectorModule} from './modules/selector';
@@ -54,7 +54,7 @@ export type SnabbdomParams = {
 export class SnabbdomPort extends LifecyclePort<SnabbdomParams> {
   render = new Socket<VNode>();
   vnode = new Socket<VNode>();
-  action = new Socket<ActionDetail>();
+  action = new Socket<EncodedPatch>();
   event = new class {
     hashchange = new Socket<string>();
   }
