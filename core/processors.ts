@@ -94,7 +94,7 @@ export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircu
       of(['init', params] as PortMessage<T>));
 
   // @ts-ignore
-  subject$.exclude = ['*.debug']; subject$.include = globalThis?.process?.env?.NODE_ENV === 'production' ? [] : ['*'];
+  subject$.exclude = [] /*['*.debug']*/; subject$.include = globalThis?.process?.env?.NODE_ENV === 'production' ? [] : ['*'];
 
   stream$.pipe(tap(([type, data]) => {
     const {include, exclude}: {include: string[], exclude: string[]} = subject$ as any;

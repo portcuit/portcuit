@@ -1,13 +1,17 @@
 import {merge} from "rxjs";
-import {map} from "rxjs/operators";
-import {LifecyclePort, Socket, mapProc, PortMessage, sink, source, fromEventProc, latestMapProc} from "pkit";
+import {map, switchMap} from "rxjs/operators";
+import {LifecyclePort, Socket, PortMessage, sink, source, PortSourceOrSink, sourceSinkMap} from "pkit/core";
+import {mapProc, fromEventProc, latestMapProc} from 'pkit/processors'
+import {receiveProc, sendProc} from './processors'
 
-export type HttpClientRemoteParams = {
+export type HttpClientRemoteParams<T> = {
   endpoint: string;
+  mapping: PortSourceOrSink<T>
 }
 
-export class HttpClientRemotePort extends LifecyclePort<HttpClientRemoteParams> {
+export class HttpClientRemotePort<T> extends LifecyclePort<HttpClientRemoteParams<T>> {
   es = new Socket<EventSource>();
+  msg = new Socket<PortMessage<any>>();
   event = new class {
     open = new Socket<MessageEvent>();
     message = new Socket<MessageEvent>();
@@ -15,7 +19,9 @@ export class HttpClientRemotePort extends LifecyclePort<HttpClientRemoteParams> 
   }
 }
 
-export const httpClientRemoteKit = (port: HttpClientRemotePort) =>
+export const httpClientRemoteKit = <T>(port: HttpClientRemotePort<T>) =>
+  // const [sourceMap, sinkMap] = sourceSinkMap(mapping);
+
   merge(
     mapProc(source(port.init), sink(port.es), ({endpoint}) =>
       new EventSource(endpoint)),
@@ -24,16 +30,20 @@ export const httpClientRemoteKit = (port: HttpClientRemotePort) =>
     fromEventProc(source(port.es), sink(port.event.message), 'message'),
     fromEventProc(source(port.es), sink(port.event.error), 'error'),
 
-    source(port.event.message).pipe(
-      map(({data}) =>
-        JSON.parse(data) as PortMessage<any>)),
+    mapProc(source(port.event.message), sink(port.msg), ({data}) =>
+      JSON.parse(data)),
+
+    source(port.init).pipe(
+      switchMap(({endpoint, mapping}) => {
+          const [sourceMap, sinkMap] = sourceSinkMap(mapping);
+          return merge(
+            receiveProc(source(port.msg), sinkMap),
+            sendProc(sink(port.debug), sink(port.err), endpoint, sourceMap)
+          )
+        })),
 
     latestMapProc(source(port.terminate), sink(port.terminated),
-      [source(port.es)], ([,es]) =>
+      [source(port.es)], ([, es]) =>
         es.close()),
   )
 
-export const sseClientSendKit = (port: HttpClientRemotePort, socks: Socket<any>[]) =>
-  merge(
-
-  )
