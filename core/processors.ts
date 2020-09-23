@@ -180,7 +180,8 @@ export type DeepPartial<T> = {
     ? Array<DeepPartial<U>>
     : T[P] extends ReadonlyArray<infer U>
       ? ReadonlyArray<DeepPartial<U>>
-      : DeepPartial<T[P]>
+      : T[P] extends Object
+        ? DeepPartial<T[P]> : T[P]
 };
 
 

@@ -120,4 +120,3 @@ export const preparePatchProc = <T, U, V extends (data: T) => U>(source$: Observ
     map((data) =>
       sink([fn, data]))
   )
-

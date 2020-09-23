@@ -42,6 +42,15 @@ export class EphemeralString extends String {
   }
 }
 
+export class EphemeralNumber extends Number {
+  constructor(data: number) {
+    super(data);
+  }
+  toJSON() {
+    return undefined;
+  }
+}
+
 export class EphemeralContainer<T=any> extends Object {
   constructor(public data: T) {
     super();
@@ -61,6 +70,7 @@ export const patch = (
     || plan.constructor === EphemeralBoolean
     || plan.constructor === EphemeralContainer
     || plan.constructor === EphemeralString
+    || plan.constructor === EphemeralNumber
     || plan.constructor === String
     || plan.constructor === Number
     || plan.constructor === ReplaceArray
@@ -95,6 +105,7 @@ export const patch = (
       || data.constructor === EphemeralBoolean
       || plan.constructor === EphemeralContainer
       || plan.constructor === EphemeralString
+      || plan.constructor === EphemeralNumber
       || data.constructor === String
       || data.constructor === Number
       || data.constructor === Array
@@ -149,7 +160,7 @@ export const encodePatch = <T>([fn, data]: Patch<T>): EncodedPatch =>
 
 export type EncodedPatch = [string, any]
 
-const pkit_1 = {ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray}
+const pkit_1 = {ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, splice, padArray}
 export const decodePatch = <T>([fn, data]: EncodedPatch) =>
   new Function(`return ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray, pkit_1}) => ${fn};`)()
-  ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray, pkit_1})(data) as DeepPartial<T>
+  ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, splice, padArray, pkit_1})(data) as DeepPartial<T>
