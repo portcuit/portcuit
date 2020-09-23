@@ -5,6 +5,7 @@ import {HTTPRequest} from "puppeteer/lib/cjs/puppeteer/common/HTTPRequest";
 import {HTTPResponse} from "puppeteer/lib/cjs/puppeteer/common/HTTPResponse";
 import {Target} from "puppeteer/lib/cjs/puppeteer/common/Target";
 import {Viewport} from "puppeteer/lib/cjs/puppeteer/common/PuppeteerViewport";
+import {Dialog} from 'puppeteer/lib/cjs/puppeteer/common/Dialog'
 import {identity} from 'ramda';
 import {concat, merge} from "rxjs";
 import {LifecyclePort, sink, Socket, source} from "pkit/core";
@@ -37,6 +38,7 @@ export class PuppeteerPagePort extends LifecyclePort<PuppeteerPageParams> {
     close = new Socket<void>();
     response = new Socket<HTTPResponse>();
     request = new Socket<HTTPRequest>();
+    dialog = new Socket<Dialog>();
   }
   info = new Socket<any>();
 }
@@ -96,6 +98,7 @@ export const puppeteerPageKit = (port: PuppeteerPagePort, browser: PuppeteerBrow
     fromEventProc(source(port.page), sink(port.event.close), 'close'),
     fromEventProc(source(port.page), sink(port.event.response), 'response'),
     fromEventProc(source(port.page), sink(port.event.request), 'request'),
+    fromEventProc(source(port.page), sink(port.event.dialog), 'dialog'),
 
     latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.page)],
       async([,page]) => ({close: await page.close()})),
