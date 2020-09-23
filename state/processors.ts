@@ -144,11 +144,12 @@ export const makePatch = <T, U, V extends (data: T) => U>(fn: V, data: T) =>
 
 export type Patch<T, U=any> = [(data: U) => DeepPartial<T>, U]
 
-export const encodePatch = <T>([fn, data]: Patch<T>) =>
+export const encodePatch = <T>([fn, data]: Patch<T>): EncodedPatch =>
   [fn.toString(), data]
 
 export type EncodedPatch = [string, any]
 
+const pkit_1 = {ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray}
 export const decodePatch = <T>([fn, data]: EncodedPatch) =>
-  new Function(`return ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray}) => ${fn};`)()
-  ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray})(data) as DeepPartial<T>
+  new Function(`return ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray, pkit_1}) => ${fn};`)()
+  ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray, pkit_1})(data) as DeepPartial<T>
