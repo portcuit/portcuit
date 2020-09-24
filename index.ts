@@ -8,10 +8,8 @@ import {Viewport} from "puppeteer/lib/cjs/puppeteer/common/PuppeteerViewport";
 import {Dialog} from 'puppeteer/lib/cjs/puppeteer/common/Dialog'
 import {identity} from 'ramda';
 import {concat, merge} from "rxjs";
-import {LifecyclePort, sink, Socket, source} from "pkit/core";
-import {directProc, fromEventProc, latestMapProc, latestMergeMapProc, mapToProc, mergeMapProc} from "pkit/processors";
-import {delay, toArray} from "rxjs/operators";
-import {runKit, RunPort} from "pkit/run";
+import {delay, filter, toArray} from "rxjs/operators";
+import {LifecyclePort, sink, Socket, source, directProc, fromEventProc, latestMapProc, latestMergeMapProc, mapToProc, mergeMapProc, runKit, RunPort} from "pkit";
 
 export type PuppeteerBrowserParams = {
   launch: Readonly<Parameters<typeof puppeteer.launch>>
@@ -28,7 +26,8 @@ export class PuppeteerBrowserPort extends LifecyclePort<PuppeteerBrowserParams> 
 export type PuppeteerPageParams = {
   userAgent?: string;
   viewport?: Viewport;
-  goto?: Parameters<Page['goto']>
+  goto?: Parameters<Page['goto']>;
+  createNewPage?: boolean
 }
 
 export class PuppeteerPagePort extends LifecyclePort<PuppeteerPageParams> {
@@ -58,13 +57,18 @@ export const puppeteerKit = (port: PuppeteerPort) =>
     puppeteerPageKit(port.page, port.browser),
     directProc(source(port.init), sink(port.browser.init)),
     directProc(source(port.browser.ready), sink(port.ready)),
-    latestMapProc(source(port.run.start), sink(port.page.init), [source(port.init)],
-      ([,page]) => page),
+    latestMapProc(source(port.run.start), sink(port.page.init),
+      [source(port.init)], ([,page]) =>
+        ({...page, createNewPage: false})),
+    latestMergeMapProc(source(port.page.init), sink(port.page.page),
+      [source(port.browser.browser)], async ([,browser]) =>
+        (await browser.pages())[0]),
     directProc(source(port.page.ready), sink(port.run.started)),
     directProc(source(port.run.stop), sink(port.page.terminate)),
     directProc(source(port.page.terminated), sink(port.run.stopped)),
+    mapToProc(source(port.run.stopped), sink(port.browser.terminate)),
     directProc(source(port.terminate), sink(port.browser.terminate)),
-    directProc(source(port.browser.terminated), sink(port.terminated))
+    directProc(source(port.browser.terminated), sink(port.terminated)),
   )
 
 export const puppeteerBrowserKit = (port: PuppeteerBrowserPort) =>
@@ -81,8 +85,11 @@ export const puppeteerBrowserKit = (port: PuppeteerBrowserPort) =>
 
 export const puppeteerPageKit = (port: PuppeteerPagePort, browser: PuppeteerBrowserPort) =>
   merge(
-    latestMergeMapProc(source(port.init), sink(port.page), [source(browser.browser)],
-      ([,browser]) => browser.newPage()),
+    latestMergeMapProc(source(port.init).pipe(
+      filter(({createNewPage = true}) =>
+        createNewPage)),
+      sink(port.page), [source(browser.browser)], ([,browser]) =>
+        browser.newPage()),
 
     latestMergeMapProc(source(port.page), sink(port.ready), [source(port.init)],
       ([page, {userAgent, viewport, goto}]) =>
