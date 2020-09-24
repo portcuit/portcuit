@@ -9,6 +9,6 @@
   "author": "pkit <info@subak.jp> (https://github.com/portcuit)",
   "license": "ISC",
   "dependencies": {
-    "puppeteer": "^5.2.1"
+    "puppeteer-core": "^5.3.1"
   }
 }

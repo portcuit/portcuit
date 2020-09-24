@@ -1,11 +1,11 @@
-import puppeteer from "puppeteer/lib/cjs/puppeteer";
-import {Browser} from "puppeteer/lib/cjs/puppeteer/common/Browser";
-import {Page} from "puppeteer/lib/cjs/puppeteer/common/Page";
-import {HTTPRequest} from "puppeteer/lib/cjs/puppeteer/common/HTTPRequest";
-import {HTTPResponse} from "puppeteer/lib/cjs/puppeteer/common/HTTPResponse";
-import {Target} from "puppeteer/lib/cjs/puppeteer/common/Target";
-import {Viewport} from "puppeteer/lib/cjs/puppeteer/common/PuppeteerViewport";
-import {Dialog} from 'puppeteer/lib/cjs/puppeteer/common/Dialog'
+import puppeteer from "puppeteer-core/lib/cjs/puppeteer";
+import {Browser} from "puppeteer-core/lib/cjs/puppeteer/common/Browser";
+import {Page} from "puppeteer-core/lib/cjs/puppeteer/common/Page";
+import {HTTPRequest} from "puppeteer-core/lib/cjs/puppeteer/common/HTTPRequest";
+import {HTTPResponse} from "puppeteer-core/lib/cjs/puppeteer/common/HTTPResponse";
+import {Target} from "puppeteer-core/lib/cjs/puppeteer/common/Target";
+import {Viewport} from "puppeteer-core/lib/cjs/puppeteer/common/PuppeteerViewport";
+import {Dialog} from 'puppeteer-core/lib/cjs/puppeteer/common/Dialog'
 import {identity} from 'ramda';
 import {concat, merge} from "rxjs";
 import {delay, filter, toArray} from "rxjs/operators";
