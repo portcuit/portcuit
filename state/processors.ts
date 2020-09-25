@@ -1,8 +1,7 @@
 import {Observable, of} from 'rxjs'
 import {scan, switchMap, startWith, mergeMap} from 'rxjs/operators'
-import {Sink} from 'pkit/core'
+import {Sink, DeepPartial, tuple} from 'pkit/core'
 import type {Compute} from './'
-import {DeepPartial, tuple} from "pkit";
 
 export class PreserveArray<T> extends Array {
   constructor(...props: T[]) {
@@ -160,7 +159,8 @@ export const encodePatch = <T>([fn, data]: Patch<T>): EncodedPatch =>
 
 export type EncodedPatch = [string, any]
 
-const pkit_1 = {ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, splice, padArray}
+const pkit = {ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, splice, padArray}
+const pkit_1 = pkit;
 export const decodePatch = <T>([fn, data]: EncodedPatch) =>
-  new Function(`return ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray, pkit_1}) => ${fn};`)()
-  ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, splice, padArray, pkit_1})(data) as DeepPartial<T>
+  new Function(`return ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray, pkit, pkit_1}) => ${fn};`)()
+  ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, splice, padArray, pkit, pkit_1})(data) as DeepPartial<T>
