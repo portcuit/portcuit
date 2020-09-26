@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/portcuit/snabbdom#readme",
   "dependencies": {
-    "remark": "^12.0.1",
+    "remark-parse": "^8.0.3",
     "remark-render": "0.0.16",
     "remark-vdom": "^9.0.1",
     "snabbdom": "^1.0.1",
