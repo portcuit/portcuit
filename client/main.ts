@@ -2,10 +2,7 @@ import EventTarget from '@ungap/event-target'
 import {mount} from "pkit";
 import {ScreenParams, ScreenPort, screenKit} from './screen/';
 import {CreateCsr} from "./vm";
-
-type IState = {
-  jsAppRoot: string
-}
+import type {IState} from "../";
 
 export const main = <T>(createCsr: CreateCsr<T>) => {
   if (globalThis.document) {
@@ -13,7 +10,7 @@ export const main = <T>(createCsr: CreateCsr<T>) => {
     const params: ScreenParams = {
       worker: {
         ctor: Worker,
-        args: [`${state.jsAppRoot}/main.js`, {type: 'module'}]
+        args: [state.entryPoint, {type: 'module'}]
       },
       snabbdom: {
         container: document.body,
