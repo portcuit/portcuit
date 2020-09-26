@@ -4,7 +4,7 @@ import {mergeMap} from "rxjs/operators";
 import {Sink} from "pkit/core";
 import {RequestArgs} from "../processors";
 
-export const connectProc = (source$: Observable<RequestArgs>, sink: Sink<any>, retry: number) =>
+export const connectProc = (source$: Observable<RequestArgs>, sink: Sink<void>, retry: number) =>
   source$.pipe(
     mergeMap(async ([req,res]) => {
       res.writeHead(200, {
@@ -16,8 +16,5 @@ export const connectProc = (source$: Observable<RequestArgs>, sink: Sink<any>, r
         'Access-Control-Allow-Headers': '*',
         'Access-Control-Allow-Methods': '*'
       });
-      return sink({
-        connect: await promisify<string>(res.write).call(res, `retry: ${retry}\n\n`),
-        url: req.url
-      })
+      return sink(await promisify<string>(res.write).call(res, `retry: ${retry}\n\n`));
     }));

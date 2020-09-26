@@ -1,5 +1,4 @@
 import {promisify} from "util";
-import {IncomingMessage} from "http";
 import {fromEvent, merge, of} from "rxjs";
 import {switchMap} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source} from "pkit/core";
@@ -13,9 +12,9 @@ export type SseServerParams = {
 }
 
 export class SseServerPort extends LifecyclePort<SseServerParams> {
-  conn = new Socket<IncomingMessage>();
   ctx = new Socket<RequestArgs>();
   event = new class {
+    connect = new Socket<void>();
     close = new Socket<void>();
   };
   json = new Socket<any>();
@@ -26,7 +25,7 @@ export const sseServerKit = (port: SseServerPort) =>
     source(port.init).pipe(
       switchMap(({ctx, retry=3000}) =>
         merge(
-          connectProc(source(port.ctx), sink(port.info), retry),
+          connectProc(source(port.ctx), sink(port.event.connect), retry),
           directProc(of(ctx), sink(port.ctx)),
           mapToProc(fromEvent(ctx[0], 'close'), sink(port.event.close)),
         ))),
