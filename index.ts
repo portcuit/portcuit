@@ -12,8 +12,8 @@ export * from './worker'
 export const run = (src: string, overrideParams?: any) => {
   const args = require(src.startsWith('./') ? resolve(src) : src).default;
   const subject$ = mount(overrideParams ? [...args.slice(0,2), overrideParams] : args);
-  subject$.subscribe({error: console.error})
-  Object.assign({subject$})
+  subject$.subscribe({error: console.error});
+  return subject$;
 }
 
 if (workerData && workerData.src) {
