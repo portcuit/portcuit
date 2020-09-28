@@ -11,6 +11,8 @@ import {concat, merge} from "rxjs";
 import {delay, filter, toArray} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source, directProc, fromEventProc, latestMapProc, latestMergeMapProc, mapToProc, mergeMapProc, runKit, RunPort} from "pkit";
 
+export * from './processors'
+
 export type PuppeteerBrowserParams = {
   launch: Readonly<Parameters<typeof puppeteer.launch>>
 }
