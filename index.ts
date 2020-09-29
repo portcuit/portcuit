@@ -10,7 +10,7 @@ import {
   RunPort,
   sink,
   Socket,
-  source
+  source, tuple
 } from "pkit";
 import {merge} from "rxjs";
 
@@ -48,7 +48,7 @@ export const electronAppKit = (port: ElectronAppPort) =>
 
 export type ElectronBrowserWindowParams = {
   create: BrowserWindowConstructorOptions,
-  loadURL: Parameters<typeof BrowserWindow.prototype.loadURL>
+  loadURL?: Parameters<typeof BrowserWindow.prototype.loadURL>
 }
 
 export class ElectronBrowserWindowPort extends LifecyclePort<ElectronBrowserWindowParams> {
@@ -64,7 +64,7 @@ export const electronBrowserWindowKit = (port: ElectronBrowserWindowPort) =>
   merge(
     runKit(port.run, port.running),
     latestMergeMapProc(source(port.run.start), sink(port.run.started),
-      [source(port.win), source(port.init)] as const, async ([,win, {loadURL: args}]) =>
+      [source(port.win), source(port.init)] as const, async ([,win, {loadURL: args = tuple('about:blank')}]) =>
         await win.loadURL(...args)),
     mapProc(source(port.init), sink(port.win), ({create}) =>
       new BrowserWindow(create)),
