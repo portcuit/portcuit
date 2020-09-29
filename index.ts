@@ -8,13 +8,13 @@ import {Viewport} from "puppeteer-core/lib/cjs/puppeteer/common/PuppeteerViewpor
 import {Dialog} from 'puppeteer-core/lib/cjs/puppeteer/common/Dialog'
 import {identity} from 'ramda';
 import {concat, merge} from "rxjs";
-import {delay, filter, toArray} from "rxjs/operators";
+import {delay, filter, tap, toArray} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source, directProc, fromEventProc, latestMapProc, latestMergeMapProc, mapToProc, mergeMapProc, runKit, RunPort} from "pkit";
 
 export * from './processors'
 
 export type PuppeteerBrowserParams = {
-  launch: Readonly<Parameters<typeof puppeteer.launch>>
+  launch?: Readonly<Parameters<typeof puppeteer.launch>>
 }
 
 export class PuppeteerBrowserPort extends LifecyclePort<PuppeteerBrowserParams> {
@@ -75,8 +75,10 @@ export const puppeteerKit = (port: PuppeteerPort) =>
 
 export const puppeteerBrowserKit = (port: PuppeteerBrowserPort) =>
   merge(
-    mergeMapProc(source(port.init), sink(port.browser),
-      ({launch}) => puppeteer.launch(...launch)),
+    mergeMapProc(source(port.init).pipe(
+      filter(({launch}) =>
+        !!launch)), sink(port.browser),
+      ({launch}) => puppeteer.launch(...launch!)),
     mapToProc(source(port.browser).pipe(delay(0)), sink(port.ready)),
     latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.browser)],
       async ([,browser]) => ({close: await browser.close()})),
@@ -93,7 +95,11 @@ export const puppeteerPageKit = (port: PuppeteerPagePort, browser: PuppeteerBrow
       sink(port.page), [source(browser.browser)], ([,browser]) =>
         browser.newPage()),
 
-    latestMergeMapProc(source(port.page), sink(port.ready), [source(port.init)],
+    latestMergeMapProc(source(port.page).pipe(
+      tap((page) =>
+        page)
+      )
+      , sink(port.ready), [source(port.init)],
       ([page, {userAgent, viewport, goto}]) =>
           concat(...[
             Promise.resolve('ready'),
