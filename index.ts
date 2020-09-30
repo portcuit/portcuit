@@ -62,9 +62,6 @@ export const puppeteerKit = (port: PuppeteerPort) =>
     latestMapProc(source(port.run.start), sink(port.page.init),
       [source(port.init)], ([,page]) =>
         ({...page, createNewPage: false})),
-    latestMergeMapProc(source(port.page.init), sink(port.page.page),
-      [source(port.browser.browser)], async ([,browser]) =>
-        (await browser.pages())[0]),
     directProc(source(port.page.ready), sink(port.run.started)),
     directProc(source(port.run.stop), sink(port.page.terminate)),
     directProc(source(port.page.terminated), sink(port.run.stopped)),
@@ -77,8 +74,9 @@ export const puppeteerBrowserKit = (port: PuppeteerBrowserPort) =>
   merge(
     mergeMapProc(source(port.init).pipe(
       filter(({launch}) =>
-        !!launch)), sink(port.browser),
-      ({launch}) => puppeteer.launch(...launch!)),
+        !!launch)),
+      sink(port.browser), ({launch}) =>
+        puppeteer.launch(...launch!)),
     mapToProc(source(port.browser).pipe(delay(0)), sink(port.ready)),
     latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.browser)],
       async ([,browser]) => ({close: await browser.close()})),
@@ -89,11 +87,11 @@ export const puppeteerBrowserKit = (port: PuppeteerBrowserPort) =>
 
 export const puppeteerPageKit = (port: PuppeteerPagePort, browser: PuppeteerBrowserPort) =>
   merge(
-    latestMergeMapProc(source(port.init).pipe(
-      filter(({createNewPage = true}) =>
-        createNewPage)),
-      sink(port.page), [source(browser.browser)], ([,browser]) =>
-        browser.newPage()),
+    latestMergeMapProc(source(port.init), sink(port.page),
+      [source(browser.browser)], async ([{createNewPage = true}, browser]) =>
+        createNewPage ?
+          (await browser.newPage()) :
+          (await browser.pages())[0]),
 
     latestMergeMapProc(source(port.page).pipe(
       tap((page) =>
