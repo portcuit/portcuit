@@ -13,7 +13,7 @@ import {
   source, tuple
 } from "pkit";
 import {fromEvent, merge} from "rxjs";
-import {filter, tap} from "rxjs/operators";
+import {filter, map, tap} from "rxjs/operators";
 
 export type ElectronParams = {
   app: ElectronAppParams
@@ -58,6 +58,7 @@ export class ElectronAppPort extends LifecyclePort<ElectronAppParams> {
   event = new class {
     ready = new Socket<void>();
     windowAllClosed = new Socket<void>();
+    willQuit = new Socket<Event>();
   }
 }
 
@@ -66,22 +67,24 @@ export const electronAppKit = (port: ElectronAppPort) =>
     mergeMapProc(source(port.init), sink(port.event.ready), async () =>
       await app.whenReady()),
 
-    // mergeMapProc(source(port.init).pipe(
-    //   filter((params) =>
-    //     params && !!params.windowAllClosed)),
-    //   sink(port.event.windowAllClosed), () =>
-    //     fromEvent<void>(app as any, 'window-all-closed').pipe(
-    //       tap((value) =>
-    //         value)
-    //     )
-    // ),
+    mergeMapProc(source(port.init).pipe(
+      filter((params) =>
+        params && !!params.windowAllClosed)),
+      sink(port.event.windowAllClosed), () =>
+        fromEvent<void>(app as any, 'window-all-closed').pipe(
+          tap((value) =>
+            value)
+        )
+    ),
 
-    mergeMapProc(source(port.init), sink(port.info), () =>
+    mergeMapProc(source(port.init), sink(port.event.willQuit), (params) =>
       fromEvent<Event>(app as any, 'will-quit').pipe(
-        tap((ev) =>
-          ev.preventDefault())
-      )),
-
+        map((ev) => {
+          if (params && !!params.windowAllClosed) {
+            ev.preventDefault()
+          }
+          return ev;
+        }))),
   )
 
 export type ElectronBrowserWindowParams = {
