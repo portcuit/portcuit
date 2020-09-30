@@ -12,9 +12,12 @@ import {
   Socket,
   source, tuple
 } from "pkit";
-import {merge} from "rxjs";
+import {fromEvent, merge} from "rxjs";
+import {filter, tap} from "rxjs/operators";
 
-export type ElectronParams = ElectronBrowserWindowParams
+export type ElectronParams = {
+  app: ElectronAppParams
+} & ElectronBrowserWindowParams
 
 export class ElectronPort extends LifecyclePort<ElectronParams> {
   app = new ElectronAppPort;
@@ -27,7 +30,8 @@ export const electronKit = (port: ElectronPort) =>
     electronAppKit(port.app),
     electronBrowserWindowKit(port.browser),
     electronShellKit(port.shell),
-    mapToProc(source(port.init), sink(port.app.init)),
+    mapProc(source(port.init), sink(port.app.init), ({app}) =>
+      app),
     latestMapProc(source(port.app.event.ready), sink(port.browser.init),
       [source(port.init)], ([,args]) =>
         args),
@@ -46,16 +50,38 @@ export const electronShellKit = (port: ElectronShellPort) =>
         await shell.openExternal(...args))
   )
 
-export class ElectronAppPort extends LifecyclePort {
+export type ElectronAppParams = {
+  windowAllClosed?: boolean;
+}
+
+export class ElectronAppPort extends LifecyclePort<ElectronAppParams> {
   event = new class {
     ready = new Socket<void>();
+    windowAllClosed = new Socket<void>();
   }
 }
 
 export const electronAppKit = (port: ElectronAppPort) =>
   merge(
     mergeMapProc(source(port.init), sink(port.event.ready), async () =>
-      await app.whenReady())
+      await app.whenReady()),
+
+    // mergeMapProc(source(port.init).pipe(
+    //   filter((params) =>
+    //     params && !!params.windowAllClosed)),
+    //   sink(port.event.windowAllClosed), () =>
+    //     fromEvent<void>(app as any, 'window-all-closed').pipe(
+    //       tap((value) =>
+    //         value)
+    //     )
+    // ),
+
+    mergeMapProc(source(port.init), sink(port.info), () =>
+      fromEvent<Event>(app as any, 'will-quit').pipe(
+        tap((ev) =>
+          ev.preventDefault())
+      )),
+
   )
 
 export type ElectronBrowserWindowParams = {
