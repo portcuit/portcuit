@@ -1,6 +1,6 @@
-import {app, BrowserWindow, BrowserWindowConstructorOptions} from 'electron'
+import {app, shell, BrowserWindow, BrowserWindowConstructorOptions} from 'electron'
 import {
-  directProc,
+  directProc, EndpointPort,
   fromEventProc, latestMapProc,
   latestMergeMapProc,
   LifecyclePort,
@@ -19,12 +19,14 @@ export type ElectronParams = ElectronBrowserWindowParams
 export class ElectronPort extends LifecyclePort<ElectronParams> {
   app = new ElectronAppPort;
   browser = new ElectronBrowserWindowPort;
+  shell = new ElectronShellPort;
 }
 
 export const electronKit = (port: ElectronPort) =>
   merge(
     electronAppKit(port.app),
     electronBrowserWindowKit(port.browser),
+    electronShellKit(port.shell),
     mapToProc(source(port.init), sink(port.app.init)),
     latestMapProc(source(port.app.event.ready), sink(port.browser.init),
       [source(port.init)], ([,args]) =>
@@ -33,6 +35,16 @@ export const electronKit = (port: ElectronPort) =>
     directProc(source(port.running), sink(port.browser.running))
   )
 
+export class ElectronShellPort extends LifecyclePort {
+  openExternal = new EndpointPort<Parameters<typeof shell.openExternal>, void>()
+}
+
+export const electronShellKit = (port: ElectronShellPort) =>
+  merge(
+    mergeMapProc(source(port.openExternal.req), sink(port.openExternal.res),
+      async (args) =>
+        await shell.openExternal(...args))
+  )
 
 export class ElectronAppPort extends LifecyclePort {
   event = new class {
