@@ -51,7 +51,7 @@ export const electronShellKit = (port: ElectronShellPort) =>
   )
 
 export type ElectronAppParams = {
-  windowAllClosed?: boolean;
+  preventQuitWindowAllClosed?: boolean;
 }
 
 export class ElectronAppPort extends LifecyclePort<ElectronAppParams> {
@@ -69,7 +69,7 @@ export const electronAppKit = (port: ElectronAppPort) =>
 
     mergeMapProc(source(port.init).pipe(
       filter((params) =>
-        params && !!params.windowAllClosed)),
+        params && !!params.preventQuitWindowAllClosed)),
       sink(port.event.windowAllClosed), () =>
         fromEvent<void>(app as any, 'window-all-closed').pipe(
           tap((value) =>
@@ -80,7 +80,7 @@ export const electronAppKit = (port: ElectronAppPort) =>
     mergeMapProc(source(port.init), sink(port.event.willQuit), (params) =>
       fromEvent<Event>(app as any, 'will-quit').pipe(
         map((ev) => {
-          if (params && !!params.windowAllClosed) {
+          if (params && !!params.preventQuitWindowAllClosed) {
             ev.preventDefault()
           }
           return ev;
