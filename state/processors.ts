@@ -59,6 +59,12 @@ export class EphemeralContainer<T=any> extends Object {
   }
 }
 
+export type EphemeralObject<T> = T & {_type: 'ephemeral'}
+
+export const EphemeralObject = (function <T>(this: {new(data: any):EphemeralObject<T>}, data: T) {
+  Object.assign(this, data);
+} as unknown) as {new<T>(data: T): EphemeralObject<T>}
+
 export const patch = (
   plan: any,
   data: any) => {
@@ -68,6 +74,7 @@ export const patch = (
     || plan.constructor === Boolean
     || plan.constructor === EphemeralBoolean
     || plan.constructor === EphemeralContainer
+    || plan.constructor === EphemeralObject
     || plan.constructor === EphemeralString
     || plan.constructor === EphemeralNumber
     || plan.constructor === String
@@ -103,6 +110,7 @@ export const patch = (
       || data.constructor === Boolean
       || data.constructor === EphemeralBoolean
       || plan.constructor === EphemeralContainer
+      || plan.constructor === EphemeralObject
       || plan.constructor === EphemeralString
       || plan.constructor === EphemeralNumber
       || data.constructor === String
@@ -162,5 +170,5 @@ export type EncodedPatch = [string, any]
 const pkit = {ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, splice, padArray}
 const pkit_1 = pkit;
 export const decodePatch = <T>([fn, data]: EncodedPatch) =>
-  new Function(`return ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralContainer, splice, padArray, pkit, pkit_1}) => ${fn};`)()
-  ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, splice, padArray, pkit, pkit_1})(data) as DeepPartial<T>
+  new Function(`return ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, EphemeralObject, splice, padArray, pkit, pkit_1}) => ${fn};`)()
+  ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, EphemeralObject, splice, padArray, pkit, pkit_1})(data) as DeepPartial<T>
