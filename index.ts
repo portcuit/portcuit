@@ -1,4 +1,4 @@
-import {app, shell, BrowserWindow, BrowserWindowConstructorOptions} from 'electron'
+import {app, shell, BrowserWindow, BrowserWindowConstructorOptions, Tray, Menu} from 'electron'
 import {
   directProc, EndpointPort,
   fromEventProc, latestMapProc,
@@ -12,8 +12,8 @@ import {
   Socket,
   source, tuple
 } from "pkit";
-import {fromEvent, merge} from "rxjs";
-import {filter, map, tap} from "rxjs/operators";
+import {fromEvent, merge, of} from "rxjs";
+import {delay, filter, map, mergeMap, tap} from "rxjs/operators";
 
 export type ElectronParams = {
   app: ElectronAppParams
@@ -23,6 +23,7 @@ export class ElectronPort extends LifecyclePort<ElectronParams> {
   app = new ElectronAppPort;
   browser = new ElectronBrowserWindowPort;
   shell = new ElectronShellPort;
+  tray = new ElectronTrayPort;
 }
 
 export const electronKit = (port: ElectronPort) =>
@@ -30,13 +31,40 @@ export const electronKit = (port: ElectronPort) =>
     electronAppKit(port.app),
     electronBrowserWindowKit(port.browser),
     electronShellKit(port.shell),
-    mapProc(source(port.init), sink(port.app.init), ({app}) =>
-      app),
-    latestMapProc(source(port.app.event.ready), sink(port.browser.init),
+    electronTrayKit(port.tray),
+    latestMapProc(source(port.init).pipe(
+      mergeMap(() =>
+        app.whenReady())), sink(port.browser.init),
       [source(port.init)], ([,args]) =>
         args),
     directProc(source(port.browser.ready), sink(port.ready)),
     directProc(source(port.running), sink(port.browser.running))
+  )
+
+export class ElectronContextMenuPort extends LifecyclePort<Parameters<typeof Menu.buildFromTemplate>[0]> {
+  contextMenu = new Socket<Menu>();
+}
+
+export const electronContextMenuKit = (port: ElectronContextMenuPort) =>
+  merge(
+    mapProc(source(port.init), sink(port.contextMenu), (arg) =>
+      Menu.buildFromTemplate(arg)),
+  )
+
+export class ElectronTrayPort extends LifecyclePort<ConstructorParameters<typeof Tray>> {
+  tray = new Socket<Tray>();
+  event = new class {
+    rightClick = new Socket<Event>();
+  };
+  contextMenu = new ElectronContextMenuPort;
+}
+
+const electronTrayKit = (port: ElectronTrayPort) =>
+  merge(
+    electronContextMenuKit(port.contextMenu),
+    mapProc(source(port.init), sink(port.tray), (args) =>
+      new Tray(...args)),
+    fromEventProc(source<any>(port.tray), sink(port.event.rightClick), 'right-click')
   )
 
 export class ElectronShellPort extends LifecyclePort {
@@ -55,6 +83,7 @@ export type ElectronAppParams = {
 }
 
 export class ElectronAppPort extends LifecyclePort<ElectronAppParams> {
+  quit = new Socket<void>();
   event = new class {
     ready = new Socket<void>();
     windowAllClosed = new Socket<void>();
@@ -64,27 +93,38 @@ export class ElectronAppPort extends LifecyclePort<ElectronAppParams> {
 
 export const electronAppKit = (port: ElectronAppPort) =>
   merge(
-    mergeMapProc(source(port.init), sink(port.event.ready), async () =>
-      await app.whenReady()),
+    mapToProc(of(true).pipe(
+      delay(0),
+      mergeMap(() =>
+        app.whenReady())), sink(port.event.ready)),
 
-    mergeMapProc(source(port.init).pipe(
-      filter((params) =>
-        params && !!params.preventQuitWindowAllClosed)),
-      sink(port.event.windowAllClosed), () =>
-        fromEvent<void>(app as any, 'window-all-closed').pipe(
-          tap((value) =>
-            value)
-        )
-    ),
+    // mergeMapProc(source(port.init), sink(port.event.ready), async () =>
+    //   await app.whenReady()),
+    // mergeMapProc(source(port.init).pipe(
+    //   filter((params) =>
+    //     params && !!params.preventQuitWindowAllClosed)),
+    //   sink(port.event.windowAllClosed), () =>
+    //     fromEvent<void>(app as any, 'window-all-closed').pipe(
+    //       tap((value) =>
+    //         value)
+    //     )
+    // ),
 
-    mergeMapProc(source(port.init), sink(port.event.willQuit), (params) =>
-      fromEvent<Event>(app as any, 'will-quit').pipe(
-        map((ev) => {
-          if (params && !!params.preventQuitWindowAllClosed) {
-            ev.preventDefault()
-          }
-          return ev;
-        }))),
+    fromEvent<Event>(app as any, 'will-quit').pipe(map((ev) =>
+      sink(port.event.willQuit)(ev))),
+
+    mapProc(source(port.quit), sink(port.info), () =>
+      ({quit: app.quit()})),
+
+    // mergeMapProc(source(port.init), sink(port.event.willQuit), (params) =>
+    //   fromEvent<Event>(app as any, 'will-quit').pipe(
+    //     map((ev) => {
+    //       if (params && !!params.preventQuitWindowAllClosed) {
+    //         ev.preventDefault()
+    //       }
+    //       return ev;
+    //     }))),
+
   )
 
 export type ElectronBrowserWindowParams = {
