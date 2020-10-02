@@ -167,7 +167,7 @@ export const encodePatch = <T>([fn, data]: Patch<T>): EncodedPatch =>
 
 export type EncodedPatch = [string, any]
 
-const pkit = {ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, splice, padArray}
+const pkit = {ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralObject, EphemeralContainer, splice, padArray}
 const pkit_1 = pkit;
 export const decodePatch = <T>([fn, data]: EncodedPatch) =>
   new Function(`return ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, EphemeralObject, splice, padArray, pkit, pkit_1}) => ${fn};`)()

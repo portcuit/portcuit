@@ -219,3 +219,7 @@ export const throwErrorIfUndefined = <T>(data: T): T => {
 
 export const tuple = <T extends any[]>(...args: T) =>
   args;
+
+export type InferPortMessageFromSocket<T> = T extends Socket<infer I> ? PortMessage<I> : never;
+
+export type InferSinkObservable<T> = T extends Socket<infer I> ? Observable<PortMessage<I>> : never;
