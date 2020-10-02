@@ -65,6 +65,8 @@ export const EphemeralObject = (function <T>(this: {new(data: any):EphemeralObje
   Object.assign(this, data);
 } as unknown) as {new<T>(data: T): EphemeralObject<T>}
 
+EphemeralObject.prototype.toJSON = () => undefined
+
 export const patch = (
   plan: any,
   data: any) => {
