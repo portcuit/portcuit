@@ -1,3 +1,4 @@
+import {Dialog} from "puppeteer-core/lib/cjs/puppeteer/common/Dialog";
 
 
 export const getChromeExecutablePath = () => {
@@ -12,4 +13,43 @@ export const getChromeExecutablePath = () => {
     default:
       throw new Error(`Unsupported Platform: ${process.platform}`);
   }
+}
+
+export type DialogEvent = {
+  type: "alert" | "confirm" | "prompt" | "beforeunload";
+  message: string;
+  accept?: string;
+  dismiss?: boolean;
+  result?: boolean | string | null | undefined
+}
+
+export const answerDialog = async (dialog: DialogEvent, target: Dialog) => {
+  let result: DialogEvent['result'];
+  if( dialog!.accept ) {
+    await target.accept(dialog!.accept);
+    switch (dialog!.type) {
+      case 'confirm':
+        result = true;
+        break;
+      case 'prompt':
+        result = await target.defaultValue();
+        break;
+      default:
+        result = undefined;
+    }
+  } else {
+    await target.dismiss();
+    switch (dialog!.type) {
+      case 'confirm':
+        result = false;
+        break;
+      case 'prompt':
+        result = null
+        break;
+      default:
+        result = undefined;
+    }
+  }
+
+  return result;
 }
