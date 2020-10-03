@@ -113,6 +113,7 @@ export const puppeteerPageKit = (port: PuppeteerPagePort, browser: PuppeteerBrow
     fromEventProc(source(port.page), sink(port.event.request), 'request'),
     fromEventProc(source(port.page), sink(port.event.dialog), 'dialog'),
 
+    // TODO: puppeteer-in-electron 使用時にヘッドありで開いた場合に page.close() で閉じずに実行結果が帰ってこない
     latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.page)],
       async([,page]) => ({close: await page.close()})),
 
