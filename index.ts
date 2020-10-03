@@ -51,10 +51,13 @@ export const electronContextMenuKit = (port: ElectronContextMenuPort) =>
       Menu.buildFromTemplate(arg)),
   )
 
+type TrayEvent = [Event & {sender: Tray}, {x: number; y: number; width: number; height: number}]
+
 export class ElectronTrayPort extends LifecyclePort<ConstructorParameters<typeof Tray>> {
   tray = new Socket<Tray>();
   event = new class {
-    rightClick = new Socket<Event>();
+    click = new Socket<TrayEvent>();
+    rightClick = new Socket<TrayEvent>();
   };
   contextMenu = new ElectronContextMenuPort;
 }
@@ -64,6 +67,7 @@ const electronTrayKit = (port: ElectronTrayPort) =>
     electronContextMenuKit(port.contextMenu),
     mapProc(source(port.init), sink(port.tray), (args) =>
       new Tray(...args)),
+    fromEventProc(source<any>(port.tray), sink(port.event.click), 'click'),
     fromEventProc(source<any>(port.tray), sink(port.event.rightClick), 'right-click')
   )
 
