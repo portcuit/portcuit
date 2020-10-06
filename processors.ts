@@ -25,9 +25,9 @@ export type DialogEvent = {
 
 export const answerDialog = async (dialog: DialogEvent, target: Dialog) => {
   let result: DialogEvent['result'];
-  if( dialog!.accept ) {
-    await target.accept(dialog!.accept);
-    switch (dialog!.type) {
+  if( dialog?.accept !== undefined ) {
+    await target.accept(dialog.accept);
+    switch (dialog.type) {
       case 'confirm':
         result = true;
         break;
@@ -39,10 +39,10 @@ export const answerDialog = async (dialog: DialogEvent, target: Dialog) => {
     }
   } else {
     await target.dismiss();
-    switch (dialog!.type) {
+    switch (dialog.type) {
       case 'confirm':
         result = false;
-        break;
+        break
       case 'prompt':
         result = null
         break;
