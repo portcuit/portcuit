@@ -45,6 +45,5 @@ export const httpServerApiKit = (port: HttpServerApiPort) =>
   )
 
 export const httpServerApiTerminateKit = (port: HttpServerApiPort) =>
-  merge(
-    mapToProc(source(port.init).pipe(filter(isNotReserved)), sink(port.terminated)),
-  )
+  mapToProc(source(port.init).pipe(filter(isNotReserved)), sink(port.terminated)),
+
