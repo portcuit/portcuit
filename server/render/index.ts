@@ -11,7 +11,7 @@ import {
   stateKit,
   StatePort,
   Portcuit,
-  latestMergeMapProc, Patch, Socket
+  latestMergeMapProc, Patch, Socket, EncodedPatch, encodePatch, decodePatch
 } from 'pkit'
 import {RequestArgs} from "pkit/http/server";
 import {FC} from "@pkit/snabbdom";
@@ -26,12 +26,17 @@ export interface RenderPort<T> {
   vdom: SnabbdomSsrPort;
 }
 
-export class SharedSsrPort<T> extends LifecyclePort<{requestArgs: RequestArgs, Html: FC<T>}> implements RenderPort<T> {
+type SharedSsrParams<T> = {requestArgs: RequestArgs, Html: FC<T>}
+
+export class SharedSsrPort<T> extends LifecyclePort<SharedSsrParams<T>> implements RenderPort<T> {
   api = new HttpServerApiPort;
   state = new StatePort<T>();
   renderer = new RendererPort<T>();
   vdom = new SnabbdomSsrPort;
-  patch = new Socket<Patch<T>>();
+  patch = new class {
+    encode = new Socket<Patch<T>>();
+    decode = new Socket<EncodedPatch>();
+  }
 }
 
 export const sharedSsrKit = <T>(port: SharedSsrPort<T>) =>
@@ -43,6 +48,8 @@ export const sharedSsrKit = <T>(port: SharedSsrPort<T>) =>
     mapToProc(source(port.init), sink(port.vdom.init)),
     mapProc(source(port.init), sink(port.renderer.init), ({Html}) => Html),
     directProc(source(port.vdom.html), sink(port.api.html)),
+    mapProc(source(port.patch.encode), sink(port.api.json), encodePatch),
+    mapProc(source(port.patch.decode), sink(port.state.patch), decodePatch),
     mapToProc(source(port.api.terminated), sink(port.terminated)),
     mapToProc(source(port.init), sink(port.ready)),
     httpServerApiTerminateKit(port.api)
