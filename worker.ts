@@ -12,7 +12,7 @@ import {
   directProc
 } from 'pkit'
 import {merge} from "rxjs";
-import {Worker} from "worker_threads";
+import {Worker, SHARE_ENV} from "worker_threads";
 import {chokidarKit, ChokidarPort} from "@pkit/chokidar";
 import {filter, switchMap, takeUntil, throttle, throttleTime, withLatestFrom} from "rxjs/operators";
 
@@ -35,7 +35,7 @@ const devWorkerRunKit = (port: DevWorkerRunPort) =>
     workerKit(port.app),
     chokidarKit(port.chokidar),
     mapProc(source(port.init), sink(port.app.init), ({worker, workerData}) =>
-      ({...worker, args: tuple(`${__dirname}/index.js`, {workerData} as any)})),
+      ({...worker, args: tuple(`${__dirname}/index.js`, {env: SHARE_ENV, workerData} as any)})),
     mapToProc(source(port.app.ready), sink(port.app.running), true),
     mapProc(source(port.init).pipe(filter(({watch}) => !!watch)), sink(port.chokidar.init), ({watch}) =>
       tuple(watch!)),
