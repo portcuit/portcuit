@@ -9,12 +9,14 @@ import {
   WorkerPort,
   tuple,
   mount,
-  directProc
+  directProc, entry
 } from 'pkit'
 import {merge} from "rxjs";
 import {Worker, SHARE_ENV} from "worker_threads";
 import {chokidarKit, ChokidarPort} from "@pkit/chokidar";
 import {filter, switchMap, takeUntil, throttle, throttleTime, withLatestFrom} from "rxjs/operators";
+import {EventEmitter} from "events";
+import {consoleKit, ConsolePort} from "@pkit/console";
 
 type DevWorkerRunParams = {
   worker: WorkerParams;
@@ -26,12 +28,14 @@ type DevWorkerRunParams = {
 }
 
 class DevWorkerRunPort extends LifecyclePort<DevWorkerRunParams> {
+  console = new ConsolePort;
   app = new WorkerPort;
   chokidar = new ChokidarPort;
 }
 
 const devWorkerRunKit = (port: DevWorkerRunPort) =>
   merge(
+    consoleKit(port.console),
     workerKit(port.app),
     chokidarKit(port.chokidar),
     mapProc(source(port.init), sink(port.app.init), ({worker, workerData}) =>
@@ -46,10 +50,24 @@ const devWorkerRunKit = (port: DevWorkerRunPort) =>
           sink(port.app.run.restart))))
   )
 
-export const run_worker = (src: string, params?: any) =>
-  Object.assign(globalThis,{
-    subject$: mount({Port: DevWorkerRunPort, circuit: devWorkerRunKit, params: {worker:{ctor: Worker},workerData:{src, params}} as any})
-  })
+export const run_worker = (src: string, params?: any) => {
+  const emitter = new EventEmitter;
+  const createLogger = (prefix: string = '') =>
+    (type: string, data: any) =>
+      emitter.emit('debug', [`${prefix}${type}`, data])
+  const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker},workerData:{src, params}} as any, createLogger('/top/'));
+  subject$.next(['console.init', {emitter, include: ['**/*'], exclude: [], createLogger}]);
+
+  return subject$;
+
+  // mount({Port: DevWorkerRunPort, circuit: devWorkerRunKit, params: {worker:{ctor: Worker},workerData:{src, params}} as any})
+
+}
+
+
+
+
+
 
 export const run_watch = (src: string, watch: string, params?: any) =>
   Object.assign(globalThis,{
