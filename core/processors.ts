@@ -1,4 +1,3 @@
-import minimatch from 'minimatch'
 import {identity, is, isEmpty} from 'ramda'
 import {Observable, Subject, GroupedObservable, merge, of} from 'rxjs'
 import {filter, map, switchMap, share, groupBy, tap} from 'rxjs/operators'
@@ -79,12 +78,12 @@ export type InferParams<T> = T extends LifecyclePort<infer U>  ? U : never;
 export type Portcuit<T extends LifecyclePort> = {
   Port: new(...args: any) => T,
   circuit: RootCircuit<T>,
-  params: InferParams<T>
+  params?: InferParams<T>
 }
 
 export type RootCircuit<T> = (port: T) => Observable<PortMessage<any>>
 
-export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params?: T) => {
+export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params: T, logger = console.debug) => {
   const subject$ = new Subject<PortMessage<any>>(),
     source$ = subject$.asObservable(),
     group$ = source$.pipe(groupBy(([portType]) =>
@@ -93,26 +92,19 @@ export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircu
       circuit(inject(port, group$)),
       of(['init', params] as PortMessage<T>));
 
-  // @ts-ignore
-  subject$.exclude = [] /*['*.debug']*/; subject$.include = globalThis?.process?.env?.NODE_ENV === 'production' ? [] : ['*'];
-
-  stream$.pipe(tap(([type, data]) => {
-    const {include, exclude}: {include: string[], exclude: string[]} = subject$ as any;
-    if (include.some((ptn) => minimatch(type, ptn)) &&
-      !exclude.some((ptn) => minimatch(type, ptn))) {
-      console.debug(type, data)
-    }
-  })).subscribe(subject$);
+  stream$.pipe(tap((args) =>
+    logger(...args))).subscribe(subject$);
 
   return subject$
 };
 
+export const mount = <T, U extends LifecyclePort<T>, V extends new() => U>(
+  {Port, circuit, params}: {Port: V, circuit: RootCircuit<U>, params: T}, logger = console.debug) =>
+  entry(new Port, circuit, params, logger)
+
 export const terminatedComplete = <T extends PortMessage<any>>(subject$: Subject<T>) =>
   subject$.pipe(tap(([type]) =>
     type === 'terminated' && subject$.complete()))
-
-export const mount = <T, U extends LifecyclePort<T>, V extends new() => U>({Port, circuit, params}: {Port: V, circuit: RootCircuit<U>, params?: T}) =>
-  entry(new Port, circuit, params)
 
 const isSocket = (sock: unknown): sock is Socket<any> =>
   sock instanceof Socket
