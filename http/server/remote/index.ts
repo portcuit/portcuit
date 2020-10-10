@@ -4,7 +4,7 @@ import {LifecyclePort, PortMessage, PortSourceOrSink, sink, Socket, source, Sour
 import {directProc, mapProc, mapToProc} from "pkit/processors";
 import {httpServerApiKit, HttpServerApiPort} from "../api/";
 import {sseServerKit, SseServerParams, SseServerPort} from "../sse/";
-import {get, isNotReserved, post, RequestArgs} from "../processors";
+import {isNotReserved, RequestArgs} from "../processors";
 import {receiveProc, sendProc} from './processors'
 
 export type RemoteServerHttpParams<T> = {
