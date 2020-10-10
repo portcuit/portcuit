@@ -1,6 +1,6 @@
 import {identity, is, isEmpty} from 'ramda'
 import {Observable, Subject, GroupedObservable, merge, of} from 'rxjs'
-import {filter, map, switchMap, share, groupBy, tap} from 'rxjs/operators'
+import {filter, map, switchMap, share, groupBy, tap, startWith} from 'rxjs/operators'
 import type {LifecyclePort} from './'
 
 export class Socket<T> {
@@ -92,8 +92,10 @@ export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircu
       circuit(inject(port, group$)),
       of(['init', params] as PortMessage<T>));
 
-  stream$.pipe(tap((args) =>
-    logger(...args))).subscribe(subject$);
+  stream$.pipe(tap(([type, data]) =>
+    setImmediate(() =>
+      logger(type, data))
+  )).subscribe(subject$);
 
   return subject$
 };
@@ -131,13 +133,13 @@ const inject = <T extends LifecyclePort>(port: PortObject, group$: Observable<Gr
         Object.assign(sock, {source$, sink, path: portPath});
       } else if (key !== '_ns') {
         port[key] = walk(sock, ns.concat(key));
-        if ( is(Object, sock) && !sock['_ns'] ) {
-          Object.defineProperty(sock, '_ns', {
-            value: ns.concat(key),
-            writable: false
-          })
-          // sock['_ns'] = ns.concat(key);
-        }
+        // if ( is(Object, sock) && !sock['_ns'] ) {
+        //   Object.defineProperty(sock, '_ns', {
+        //     value: ns.concat(key),
+        //     writable: false
+        //   })
+        //   // sock['_ns'] = ns.concat(key);
+        // }
       }
     }
     return port
