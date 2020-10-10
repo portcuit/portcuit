@@ -1,8 +1,8 @@
 import {EventEmitter} from "events";
 import minimatch from 'minimatch'
-import {directProc, LifecyclePort, mergeMapProc, PortMessage, sink, Socket, source} from "pkit";
-import {combineLatest, fromEvent, merge, of} from "rxjs";
-import {filter, mergeMap, startWith, switchMap, tap, withLatestFrom} from "rxjs/operators";
+import {LifecyclePort, mergeMapProc, PortMessage, sink, Socket, source} from "pkit";
+import {fromEvent, merge, Observable, of} from "rxjs";
+import {filter, startWith, tap, withLatestFrom} from "rxjs/operators";
 
 export type ConsoleParams = {
   emitter: EventEmitter;
@@ -29,7 +29,17 @@ export const consoleKit = (port: ConsolePort) =>
               minimatch(type, ptn)) &&
             !exclude.some((ptn) =>
               minimatch(type, ptn)) &&
-            console.debug(type, data)),
+            console.debug(type, data, "\n")),
           filter(() =>
             false))),
   )
+
+export const consoleInitOrDefault = (port: any): Observable<ConsoleParams> =>
+  port?.console?.init ?
+    source<ConsoleParams>(port.console.init) :
+    of({
+      emitter: new EventEmitter,
+      include: [] as string[],
+      exclude: [] as string[],
+      createLogger: () => () => null
+    })
