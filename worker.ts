@@ -1,3 +1,6 @@
+import {SHARE_ENV} from "worker_threads";
+import {filter, switchMap, takeUntil, throttleTime} from "rxjs/operators";
+import {merge} from "rxjs";
 import {
   LifecyclePort,
   mapProc,
@@ -7,15 +10,11 @@ import {
   workerKit,
   WorkerParams,
   WorkerPort,
-  tuple,
-  Portcuit
+  tuple
 } from 'pkit'
-import {merge} from "rxjs";
-import {SHARE_ENV} from "worker_threads";
 import {chokidarKit, ChokidarPort} from "@pkit/chokidar";
-import {filter, switchMap, takeUntil, throttleTime} from "rxjs/operators";
 import {consoleKit, ConsolePort} from "@pkit/console";
-import type {IDevPort} from "./";
+import type {IDevPort} from "./index";
 
 export type DevWorkerRunParams = {
   worker: WorkerParams;
@@ -52,8 +51,3 @@ export const devWorkerRunKit = (port: DevWorkerRunPort) =>
           throttleTime(0), takeUntil(source(port.app.run.stop))),
           sink(port.app.run.restart))))
   )
-
-export const portcuit: Portcuit<DevWorkerRunPort> = {Port: DevWorkerRunPort, circuit: devWorkerRunKit}
-export namespace portcuit {
-  export type Params = DevWorkerRunParams
-}
