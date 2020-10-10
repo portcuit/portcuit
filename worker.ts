@@ -8,17 +8,16 @@ import {
   WorkerParams,
   WorkerPort,
   tuple,
-  mount,
-  entry
+  Portcuit
 } from 'pkit'
 import {merge} from "rxjs";
-import {Worker, SHARE_ENV} from "worker_threads";
+import {SHARE_ENV} from "worker_threads";
 import {chokidarKit, ChokidarPort} from "@pkit/chokidar";
-import {filter, switchMap, takeUntil, throttle, throttleTime, withLatestFrom} from "rxjs/operators";
-import {EventEmitter} from "events";
+import {filter, switchMap, takeUntil, throttleTime} from "rxjs/operators";
 import {consoleKit, ConsolePort} from "@pkit/console";
+import type {IDevPort} from "./";
 
-type DevWorkerRunParams = {
+export type DevWorkerRunParams = {
   worker: WorkerParams;
   workerData: {
     src: string;
@@ -27,13 +26,13 @@ type DevWorkerRunParams = {
   watch?: string;
 }
 
-class DevWorkerRunPort extends LifecyclePort<DevWorkerRunParams> {
+export class DevWorkerRunPort extends LifecyclePort<DevWorkerRunParams> implements IDevPort {
   console = new ConsolePort;
   app = new WorkerPort;
   chokidar = new ChokidarPort;
 }
 
-const devWorkerRunKit = (port: DevWorkerRunPort) =>
+export const devWorkerRunKit = (port: DevWorkerRunPort) =>
   merge(
     consoleKit(port.console),
     workerKit(port.app),
@@ -41,6 +40,10 @@ const devWorkerRunKit = (port: DevWorkerRunPort) =>
     mapProc(source(port.init), sink(port.app.init), ({worker, workerData}) =>
       ({...worker, args: tuple(`${__dirname}/index.js`, {env: SHARE_ENV, workerData} as any)})),
     mapToProc(source(port.app.ready), sink(port.app.running), true),
+    mapProc(source(port.console.include), sink(port.app.postMessage), (include) =>
+      sink(port.console.include)(include)),
+    mapProc(source(port.console.exclude), sink(port.app.postMessage), (exclude) =>
+      sink(port.console.exclude)(exclude)),
     mapProc(source(port.init).pipe(filter(({watch}) => !!watch)), sink(port.chokidar.init), ({watch}) =>
       tuple(watch!)),
     source(port.app.run.started).pipe(
@@ -50,23 +53,7 @@ const devWorkerRunKit = (port: DevWorkerRunPort) =>
           sink(port.app.run.restart))))
   )
 
-export const run_worker = (src: string, params?: any) => {
-  const emitter = new EventEmitter;
-  const createLogger = (prefix: string = '') =>
-    (type: string, data: any) =>
-      emitter.emit('debug', [`${prefix}${type}`, data])
-  const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker},workerData:{src, params}} as any, createLogger('/top/'));
-  subject$.next(['console.init', {
-    emitter,
-    include: process.env.include ? process.env.include.split(',') :  ['**/*'],
-    exclude: process.env.exclude ? process.env.exclude.split(',') : [],
-    createLogger
-  }]);
-
-  return subject$;
+export const portcuit: Portcuit<DevWorkerRunPort> = {Port: DevWorkerRunPort, circuit: devWorkerRunKit}
+export namespace portcuit {
+  export type Params = DevWorkerRunParams
 }
-
-export const run_watch = (src: string, watch: string, params?: any) =>
-  Object.assign(globalThis,{
-    subject$: mount({Port: DevWorkerRunPort, circuit: devWorkerRunKit, params: {worker:{ctor: Worker},workerData:{src, params},watch} as any})
-  })
