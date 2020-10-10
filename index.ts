@@ -2,10 +2,10 @@ import 'source-map-support/register'
 import util from 'util'
 import {resolve} from 'path'
 import {EventEmitter} from "events";
-import {LifecyclePort, RootCircuit, entry, mount, Portcuit} from 'pkit'
-import {parentPort, workerData, isMainThread} from 'worker_threads'
+import {workerData, isMainThread} from 'worker_threads'
+import {mount, Portcuit} from 'pkit'
 
-util.inspect.defaultOptions.depth = 1
+util.inspect.defaultOptions.depth = parseInt(process.env.depth || '1', 10);
 util.inspect.defaultOptions.breakLength = Infinity
 
 export * from './worker'
@@ -30,11 +30,22 @@ export const run = (src: string, params?: any) => {
     params: params || portcuit.params
   }, createLogger(isMainThread ? '/top/' : '/worker/'));
   subject$.subscribe({error: console.error});
-  subject$.next(['console.init', {emitter, include: ['**/*'], exclude: [], createLogger}])
+
+  const consoleParams = {
+    emitter,
+    include: process.env.include ?
+      process.env.include.split(',') :
+      ['**/*'],
+    exclude: process.env.exclude ?
+      process.env.exclude.split(',') :
+      [],
+    createLogger
+  }
+
+  subject$.next(['console.init', consoleParams])
   return subject$;
 }
 
 if (workerData && workerData.src) {
   run(workerData.src, workerData.params)
 }
-

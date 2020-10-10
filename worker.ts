@@ -9,7 +9,7 @@ import {
   WorkerPort,
   tuple,
   mount,
-  directProc, entry
+  entry
 } from 'pkit'
 import {merge} from "rxjs";
 import {Worker, SHARE_ENV} from "worker_threads";
@@ -56,18 +56,15 @@ export const run_worker = (src: string, params?: any) => {
     (type: string, data: any) =>
       emitter.emit('debug', [`${prefix}${type}`, data])
   const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker},workerData:{src, params}} as any, createLogger('/top/'));
-  subject$.next(['console.init', {emitter, include: ['**/*'], exclude: [], createLogger}]);
+  subject$.next(['console.init', {
+    emitter,
+    include: process.env.include ? process.env.include.split(',') :  ['**/*'],
+    exclude: process.env.exclude ? process.env.exclude.split(',') : [],
+    createLogger
+  }]);
 
   return subject$;
-
-  // mount({Port: DevWorkerRunPort, circuit: devWorkerRunKit, params: {worker:{ctor: Worker},workerData:{src, params}} as any})
-
 }
-
-
-
-
-
 
 export const run_watch = (src: string, watch: string, params?: any) =>
   Object.assign(globalThis,{
