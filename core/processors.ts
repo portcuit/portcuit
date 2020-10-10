@@ -82,7 +82,9 @@ export type Portcuit<T extends LifecyclePort> =
 
 export type RootCircuit<T> = (port: T) => Observable<PortMessage<any>>
 
-export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params: T, logger = console.debug) => {
+const defaultLogger = globalThis?.process?.env?.NODE_ENV === 'production' ? () => null : console.debug;
+
+export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params: T, logger = defaultLogger) => {
   const subject$ = new Subject<PortMessage<any>>(),
     source$ = subject$.asObservable(),
     group$ = source$.pipe(groupBy(([portType]) =>
@@ -99,7 +101,7 @@ export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircu
   return subject$
 };
 
-export const mount = <T extends LifecyclePort>({Port, circuit, params}: Portcuit<T>, logger = console.debug) =>
+export const mount = <T extends LifecyclePort>({Port, circuit, params}: Portcuit<T>, logger = defaultLogger) =>
   entry(new Port, circuit, params, logger)
 
 export const terminatedComplete = <T extends PortMessage<any>>(subject$: Subject<T>) =>
