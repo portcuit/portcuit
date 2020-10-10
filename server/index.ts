@@ -3,7 +3,7 @@ import {resolve} from 'path'
 import glob from 'glob'
 import handler from "serve-handler";
 import {from, merge} from "rxjs";
-import {delay, map, mergeMap, switchMap} from "rxjs/operators";
+import {delay, map, switchMap} from "rxjs/operators";
 import {sink, source, mergeMapProc, entry, terminatedComplete, mapToProc, mount, LifecyclePort, mapProc} from "pkit";
 import {HttpServerPort, httpServerKit, route, HttpServerParams} from "pkit/http/server";
 import {CreateSsr} from "./render/";
