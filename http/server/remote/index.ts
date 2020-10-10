@@ -9,7 +9,6 @@ import {receiveProc, sendProc} from './processors'
 
 export type RemoteServerHttpParams<T> = {
   mapping: PortSourceOrSink<T>;
-  endpoint: string;
 } & SseServerParams
 
 export class RemoteServerHttpPort<T> extends LifecyclePort<RemoteServerHttpParams<T>> {
@@ -24,15 +23,19 @@ export const remoteServerHttpKit = <T>(port: RemoteServerHttpPort<T>) =>
     sseServerKit(port.sse),
     httpServerApiKit(port.api),
     source(port.init).pipe(
-      switchMap(({ctx, mapping, endpoint, retry}) => {
+      switchMap(({ctx, mapping, retry}) => {
         const [sourceMap, sinkMap] = sourceSinkMap(mapping);
         return merge(
           receiveProc(source(port.api.body),
             sink(port.msg), sink(port.api.json), sink(port.err), sinkMap),
           sendProc(source(port.sse.ctx), sink(port.debug), sink(port.err), sourceMap),
-          mapProc(get(endpoint, source(port.ctx)), sink(port.sse.init), (ctx) =>
+          mapProc(source(port.ctx).pipe(
+            filter(([{method}]) =>
+              method === 'GET')), sink(port.sse.init), (ctx) =>
             ({ctx, retry})),
-          directProc(post(endpoint, source(port.ctx)), sink(port.api.init)),
+          directProc(source(port.ctx).pipe(
+            filter(([{method}]) =>
+              method === 'POST')), sink(port.api.init)),
           mapToProc(race(
             source(port.ctx).pipe(filter(isNotReserved)),
             source(port.api.terminated),

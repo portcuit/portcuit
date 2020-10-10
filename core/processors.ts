@@ -1,6 +1,6 @@
-import {identity, is, isEmpty} from 'ramda'
+import {identity, isEmpty} from 'ramda'
 import {Observable, Subject, GroupedObservable, merge, of} from 'rxjs'
-import {filter, map, switchMap, share, groupBy, tap, startWith} from 'rxjs/operators'
+import {filter, map, switchMap, share, groupBy, tap} from 'rxjs/operators'
 import type {LifecyclePort} from './'
 
 export class Socket<T> {
@@ -60,8 +60,6 @@ export type PortMessage<T> = [string, T]
 
 export type Sink<T> = (value?: T) => PortMessage<T>
 
-export type SourceSink = [Observable<any>, Sink<any>]
-
 export type SocketData<T> = T extends Socket<infer I> ? I : never;
 
 export const source = <T>(sock: Socket<T>) =>
@@ -70,16 +68,17 @@ export const source = <T>(sock: Socket<T>) =>
 export const sink = <T>(sock: Socket<T>) =>
   sock.sink;
 
-export const portPath = (port: Socket<any> | LifecyclePort) =>
-  (port instanceof Socket) ? port.path : port._ns as string[];
-
 export type InferParams<T> = T extends LifecyclePort<infer U>  ? U : never;
 
-export type Portcuit<T extends LifecyclePort> = {
+export type PortcuitDefinition<T extends LifecyclePort> = {
   Port: new(...args: any) => T,
-  circuit: RootCircuit<T>,
-  params?: InferParams<T>
+  circuit: RootCircuit<T>
 }
+
+export type Portcuit<T extends LifecyclePort> =
+  PortcuitDefinition<T> & {
+    params: InferParams<T>
+  }
 
 export type RootCircuit<T> = (port: T) => Observable<PortMessage<any>>
 
@@ -93,15 +92,14 @@ export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircu
       of(['init', params] as PortMessage<T>));
 
   stream$.pipe(tap(([type, data]) =>
-    setImmediate(() =>
+    setTimeout(() =>
       logger(type, data))
   )).subscribe(subject$);
 
   return subject$
 };
 
-export const mount = <T, U extends LifecyclePort<T>, V extends new() => U>(
-  {Port, circuit, params}: {Port: V, circuit: RootCircuit<U>, params: T}, logger = console.debug) =>
+export const mount = <T extends LifecyclePort>({Port, circuit, params}: Portcuit<T>, logger = console.debug) =>
   entry(new Port, circuit, params, logger)
 
 export const terminatedComplete = <T extends PortMessage<any>>(subject$: Subject<T>) =>
@@ -131,15 +129,8 @@ const inject = <T extends LifecyclePort>(port: PortObject, group$: Observable<Gr
         const sink = <T>(value?: T) =>
           [portType, value] as PortMessage<T>;
         Object.assign(sock, {source$, sink, path: portPath});
-      } else if (key !== '_ns') {
+      } else {
         port[key] = walk(sock, ns.concat(key));
-        // if ( is(Object, sock) && !sock['_ns'] ) {
-        //   Object.defineProperty(sock, '_ns', {
-        //     value: ns.concat(key),
-        //     writable: false
-        //   })
-        //   // sock['_ns'] = ns.concat(key);
-        // }
       }
     }
     return port

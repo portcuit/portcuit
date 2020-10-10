@@ -12,7 +12,6 @@ export class LifecyclePort<T=any> {
   debug = new Socket<any>();
   running = new Socket<boolean>();
   err = new Socket<Error>();
-  _ns?: string[]
 }
 
 export class EndpointPort<T, U, V = Error> {
