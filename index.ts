@@ -29,7 +29,7 @@ export const consoleKit = (port: ConsolePort) =>
               minimatch(type, ptn)) &&
             !exclude.some((ptn) =>
               minimatch(type, ptn)) &&
-            console.debug(type, data, "\n")),
+            console.debug(type, data)),
           filter(() =>
             false))),
   )
