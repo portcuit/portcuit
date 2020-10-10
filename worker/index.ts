@@ -14,6 +14,7 @@ export type WorkerParams = {
 export class WorkerPort extends LifecyclePort<WorkerParams> {
   run = new RunPort;
   worker = new Socket<Worker>();
+  postMessage = new Socket<PortMessage<any>>();
   err = new Socket<Error>();
 }
 
@@ -34,5 +35,11 @@ export const workerKit = (port: WorkerPort) =>
             data instanceof Promise ? data : of(data))
         )
       }),
+    latestMapProc(source(port.postMessage), sink(port.debug),
+      [source(port.worker)], ([msg, worker]) =>
+        ({
+          postMessage: worker.postMessage(msg),
+          msg
+        })),
     mapToProc(source(port.init), sink(port.ready)),
   );
