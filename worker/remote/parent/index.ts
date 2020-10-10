@@ -8,6 +8,6 @@ export const parentRemoteWorkerKit = <T>(mapping: PortSourceOrSink<T>, port: Wor
 
   return merge(
     receiveProc(source(port.worker), sinkMap),
-    sendProc(source(port.worker), sink(port.debug), sink(port.err), sourceMap)
+    sendProc(source(port.worker), sink(port.postMessage), sourceMap)
   );
 }
