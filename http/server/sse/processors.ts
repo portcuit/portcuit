@@ -2,9 +2,9 @@ import {promisify} from "util";
 import {Observable} from "rxjs";
 import {mergeMap} from "rxjs/operators";
 import {Sink} from "pkit/core";
-import {RequestArgs} from "../processors";
+import {HttpServerContext} from "../processors";
 
-export const connectProc = (source$: Observable<RequestArgs>, sink: Sink<void>, retry: number) =>
+export const connectProc = (source$: Observable<HttpServerContext>, sink: Sink<void>, retry: number) =>
   source$.pipe(
     mergeMap(async ([req,res]) => {
       res.writeHead(200, {

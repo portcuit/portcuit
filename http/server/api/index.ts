@@ -3,7 +3,7 @@ import {OutgoingHttpHeaders} from "http";
 import {fromEvent, merge} from "rxjs";
 import {filter, reduce, takeUntil, map} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source, latestMergeMapProc, mapProc, mapToProc, mergeMapProc} from "pkit";
-import {RequestArgs, isNotReserved} from "pkit/http/server/processors";
+import {HttpServerContext, isNotReserved} from "pkit/http/server/processors";
 
 type ApiResponse = readonly [status: number, headers: OutgoingHttpHeaders, body: any];
 
@@ -12,7 +12,7 @@ class ContentTypePort {
   html = new Socket<string>();
 }
 
-export class HttpServerApiPort extends LifecyclePort<RequestArgs> implements ContentTypePort {
+export class HttpServerApiPort extends LifecyclePort<HttpServerContext> implements ContentTypePort {
   json = new Socket<any>();
   html = new Socket<string>();
   notFound = new ContentTypePort;

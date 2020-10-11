@@ -13,17 +13,17 @@ import {
 } from "pkit/core";
 import {directProc, mapProc, mapToProc, latestMergeMapProc, mergeMapProc} from "pkit/processors";
 import {httpServerApiKit, HttpServerApiPort} from "../api/";
-import {sseServerKit, SseServerParams, SseServerPort} from "../sse/";
-import {isNotReserved, RequestArgs} from "../processors";
+import {httpServerSseKit, HttpServerSseParams, HttpServerSsePort} from "../sse/";
+import {isNotReserved, HttpServerContext} from "../processors";
 
-export type RemoteServerHttpParams<T> = {
+export type HttpServerRemoteParams<T> = {
   mapping: PortSourceOrSink<T>;
-} & SseServerParams
+} & HttpServerSseParams
 
-export class RemoteServerHttpPort<T> extends LifecyclePort<RemoteServerHttpParams<T>> {
-  sse = new SseServerPort;
+export class HttpServerRemotePort<T> extends LifecyclePort<HttpServerRemoteParams<T>> {
+  sse = new HttpServerSsePort;
   api = new HttpServerApiPort;
-  ctx = new Socket<RequestArgs>();
+  ctx = new Socket<HttpServerContext>();
   msg = new class {
     receive = new Socket<PortMessage<any>>();
     send = new Socket<PortMessage<any>>();
@@ -32,9 +32,9 @@ export class RemoteServerHttpPort<T> extends LifecyclePort<RemoteServerHttpParam
   constructor(public shadow: T) { super(); }
 }
 
-export const remoteServerHttpKit = <T>(port: RemoteServerHttpPort<T>) =>
+export const httpServerRemoteKit = <T>(port: HttpServerRemotePort<T>) =>
   merge(
-    sseServerKit(port.sse),
+    httpServerSseKit(port.sse),
     httpServerApiKit(port.api),
     source(port.init).pipe(
       switchMap(({ctx, mapping, retry}) => {

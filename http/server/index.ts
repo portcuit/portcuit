@@ -5,7 +5,7 @@ import {delay} from "rxjs/operators";
 import {source, sink, Socket, EndpointPort, LifecyclePort} from 'pkit/core'
 import {mapProc, latestMapProc, latestMergeMapProc, mergeMapProc, mapToProc} from 'pkit/processors'
 import {RunPort, runKit} from 'pkit/run'
-import {RequestArgs, remoteReceiveProc, notFoundProc} from './processors'
+import {HttpServerContext, remoteReceiveProc, notFoundProc} from './processors'
 
 export * from './processors'
 export * from './sse/'
@@ -20,7 +20,7 @@ export class HttpServerPort extends LifecyclePort<HttpServerParams> {
   run = new RunPort;
   server = new Socket<http.Server>();
   event = new class {
-    request = new Socket<RequestArgs>();
+    request = new Socket<HttpServerContext>();
   }
 }
 
@@ -30,7 +30,7 @@ export const httpServerKit = (port: HttpServerPort) =>
     mapProc(source(port.init), sink(port.server), ({server={}}) =>
       http.createServer(server)),
     mergeMapProc(source(port.server), sink(port.event.request), (server) =>
-      fromEvent<RequestArgs>(server, 'request')),
+      fromEvent<HttpServerContext>(server, 'request')),
     mapToProc(source(port.server).pipe(delay(0)), sink(port.ready)),
     latestMergeMapProc(source(port.run.start), sink(port.run.started), [source(port.init), source(port.server)] as const,
       async ([,{listen = []}, server]) =>
@@ -43,7 +43,7 @@ export const httpServerKit = (port: HttpServerPort) =>
         promisify(server.close).call(server)),
   );
 
-export const httpServerRemoteKit = (port: EndpointPort<RequestArgs, void>) =>
+export const httpServerRemoteKit = (port: EndpointPort<HttpServerContext, void>) =>
   remoteReceiveProc(source(port.req), sink(port.res), sink(port.err));
 
 export const notFoundKit = (port: HttpServerPort) =>

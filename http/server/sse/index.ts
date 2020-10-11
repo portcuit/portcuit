@@ -3,16 +3,16 @@ import {fromEvent, merge, of} from "rxjs";
 import {switchMap} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source} from "pkit/core";
 import {latestMergeMapProc, mapToProc, directProc} from "pkit/processors";
-import {RequestArgs} from "../processors";
+import {HttpServerContext} from "../processors";
 import {connectProc} from './processors';
 
-export type SseServerParams = {
-  ctx: RequestArgs;
+export type HttpServerSseParams = {
+  ctx: HttpServerContext;
   retry?: number;
 }
 
-export class SseServerPort extends LifecyclePort<SseServerParams> {
-  ctx = new Socket<RequestArgs>();
+export class HttpServerSsePort extends LifecyclePort<HttpServerSseParams> {
+  ctx = new Socket<HttpServerContext>();
   event = new class {
     connect = new Socket<void>();
     close = new Socket<void>();
@@ -20,7 +20,7 @@ export class SseServerPort extends LifecyclePort<SseServerParams> {
   json = new Socket<any>();
 }
 
-export const sseServerKit = (port: SseServerPort) =>
+export const httpServerSseKit = (port: HttpServerSsePort) =>
   merge(
     mapToProc(source(port.event.connect), sink(port.ready)),
     source(port.init).pipe(
