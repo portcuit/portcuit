@@ -13,7 +13,7 @@ import {
   Portcuit,
   latestMergeMapProc, Patch, Socket, EncodedPatch, encodePatch, decodePatch
 } from 'pkit'
-import {RequestArgs} from "pkit/http/server";
+import {HttpServerContext} from "pkit/http/server";
 import {FC} from "@pkit/snabbdom";
 import {httpServerApiKit, HttpServerApiPort, httpServerApiTerminateKit} from "pkit/http/server/index";
 import {snabbdomSsrKit, SnabbdomSsrPort} from "@pkit/snabbdom/ssr";
@@ -26,7 +26,7 @@ export interface RenderPort<T> {
   vdom: SnabbdomSsrPort;
 }
 
-type SharedSsrParams<T> = {requestArgs: RequestArgs, Html: FC<T>}
+type SharedSsrParams<T> = {ctx: HttpServerContext, Html: FC<T>}
 
 export class SharedSsrPort<T> extends LifecyclePort<SharedSsrParams<T>> implements RenderPort<T> {
   api = new HttpServerApiPort;
@@ -44,7 +44,7 @@ export const sharedSsrKit = <T>(port: SharedSsrPort<T>) =>
     httpServerApiKit(port.api),
     stateKit(port.state),
     snabbdomSsrKit(port.vdom),
-    mapProc(source(port.init), sink(port.api.init), ({requestArgs}) => requestArgs),
+    mapProc(source(port.init), sink(port.api.init), ({ctx}) => ctx),
     mapToProc(source(port.init), sink(port.vdom.init)),
     mapProc(source(port.init), sink(port.renderer.init), ({Html}) => Html),
     directProc(source(port.vdom.html), sink(port.api.html)),
@@ -55,7 +55,7 @@ export const sharedSsrKit = <T>(port: SharedSsrPort<T>) =>
     httpServerApiTerminateKit(port.api)
   )
 
-export type CreateSsr<T> = (requestArgs: RequestArgs) => Portcuit<SharedSsrPort<T>>
+export type CreateSsr<T> = (ctx: HttpServerContext) => Portcuit<SharedSsrPort<T>>
 
 export type SsgInfo = [fileName: string, input: string, output: string];
 
