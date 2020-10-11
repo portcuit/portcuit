@@ -1,5 +1,6 @@
 import {EventEmitter} from "events";
 import minimatch from 'minimatch'
+import chalk from "chalk";
 import {LifecyclePort, mergeMapProc, PortMessage, sink, Socket, source} from "pkit";
 import {fromEvent, merge, Observable, of} from "rxjs";
 import {filter, startWith, tap, withLatestFrom} from "rxjs/operators";
@@ -29,7 +30,7 @@ export const consoleKit = (port: ConsolePort) =>
               minimatch(type, ptn)) &&
             !exclude.some((ptn) =>
               minimatch(type, ptn)) &&
-            console.debug(type, data)),
+            console.debug(chalk.bgBlackBright.bold(type), data)),
           filter(() =>
             false))),
   )

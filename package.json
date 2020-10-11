@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "peerDependencies": {
+    "chalk": "^4.1.0",
     "minimatch": "^3.0.4"
   }
 }
