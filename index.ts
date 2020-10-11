@@ -9,6 +9,10 @@ import {fromEvent, merge, Observable} from "rxjs";
 import {filter, map, mergeMap, switchMap} from "rxjs/operators";
 import {DevWorkerRunPort, devWorkerRunKit} from './worker'
 
+if (!isMainThread) {
+  process.stdout.isTTY = process.stderr.isTTY = process.stdin.isTTY = true;
+}
+
 util.inspect.defaultOptions.depth = parseInt(process.env.depth || '1', 10);
 util.inspect.defaultOptions.breakLength = Infinity
 
@@ -53,7 +57,7 @@ const consoleParams = {
 }
 
 export const run_worker = (src: string, params?: any) => {
-  const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker},workerData:{src, params}} as any,
+  const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker}, workerData: {src, params}} as any,
     createLogger('/top/'));
   // const watch: string = 'server/*.js'
   // const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker},workerData:{src, params}, watch} as any, createLogger('/top/'));

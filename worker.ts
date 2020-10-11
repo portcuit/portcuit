@@ -1,6 +1,6 @@
 import {SHARE_ENV} from "worker_threads";
 import {filter, switchMap, takeUntil, throttleTime} from "rxjs/operators";
-import {merge} from "rxjs";
+import {merge, of} from "rxjs";
 import {
   LifecyclePort,
   mapProc,
@@ -10,7 +10,7 @@ import {
   workerKit,
   WorkerParams,
   WorkerPort,
-  tuple
+  tuple, directProc
 } from 'pkit'
 import {chokidarKit, ChokidarPort} from "@pkit/chokidar";
 import {consoleKit, ConsolePort} from "@pkit/console";
@@ -49,5 +49,10 @@ export const devWorkerRunKit = (port: DevWorkerRunPort) =>
       switchMap(() =>
         mapToProc(source(port.chokidar.event.all).pipe(
           throttleTime(0), takeUntil(source(port.app.run.stop))),
-          sink(port.app.run.restart))))
+          sink(port.app.run.restart)))),
+    source(port.terminate).pipe(
+      switchMap(() =>
+        merge(
+          directProc(of(false), sink(port.app.running)),
+          mapToProc(source(port.app.run.stopped), sink(port.terminated)))))
   )
