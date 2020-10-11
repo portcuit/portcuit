@@ -24,16 +24,12 @@ export class RemoteServerHttpPort<T> extends LifecyclePort<RemoteServerHttpParam
   sse = new SseServerPort;
   api = new HttpServerApiPort;
   ctx = new Socket<RequestArgs>();
-  expose = new Socket<PortMessage<any>>();
   msg = new class {
     receive = new Socket<PortMessage<any>>();
     send = new Socket<PortMessage<any>>();
   }
-  proxy: T;
-  constructor(proxy: T) {
-    super();
-    this.proxy = proxy;
-  }
+  expose = new Socket<PortMessage<any>>();
+  constructor(public shadow: T) { super(); }
 }
 
 export const remoteServerHttpKit = <T>(port: RemoteServerHttpPort<T>) =>
@@ -43,7 +39,7 @@ export const remoteServerHttpKit = <T>(port: RemoteServerHttpPort<T>) =>
     source(port.init).pipe(
       switchMap(({ctx, mapping, retry}) => {
         const [sourceMap, sinkMap] = sourceSinkMap(mapping);
-        const [proxySourceMap, proxySinkMap] = sourceSinkMapSocket(port.proxy);
+        const [shadowSourceMap, shadowSinkMap] = sourceSinkMapSocket(port.shadow);
 
         return merge(
           mergeMapProc(source(port.api.body), sink(port.msg.receive), (body) =>
@@ -53,15 +49,15 @@ export const remoteServerHttpKit = <T>(port: RemoteServerHttpPort<T>) =>
             filter(([path]) =>
               sinkMap.has(path)),
             map(([path, data]) =>
-              proxySinkMap.get(path)!(data))),
+              shadowSinkMap.get(path)!(data))),
 
           merge(...Array.from(sinkMap.entries()).map(([path]) =>
-            proxySourceMap.get(path)!.pipe(
+            shadowSourceMap.get(path)!.pipe(
               map((data) =>
                 sink(port.expose)([path, data]))))),
 
           merge(...Array.from(sourceMap.entries()).map(([path]) =>
-            proxySourceMap.get(path)!.pipe(
+            shadowSourceMap.get(path)!.pipe(
               map((data) =>
                 sink(port.msg.send)([path, data]))))),
 
