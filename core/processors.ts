@@ -18,7 +18,8 @@ export type PortSink<T> = {
 }
 
 export type PortSourceOrSink<T> = {
-  [P in keyof T]?: T[P] extends Socket<any> ? (T[P]['source$'] | T[P]['sink']) : PortSourceOrSink<T[P]>
+  [P in keyof T]?: T[P] extends Socket<any> ?
+    (T[P]['source$'] | T[P]['sink']) : PortSourceOrSink<T[P]>
 }
 
 export type PortData<T> = {
@@ -27,6 +28,38 @@ export type PortData<T> = {
 
 export type SourceMap = ReadonlyMap<string, Observable<any>>;
 export type SinkMap = ReadonlyMap<string, Sink<any>>;
+
+export const sourceSinkMapSocket = (port: PortObject): [SourceMap, SinkMap] => {
+  const sourceMap: [string, Observable<any>][] = [];
+  const sinkMap: [string, Sink<any>][] = [];
+
+  const walk = (port: any, paths: string[]=[]) => {
+
+    if (isSocket(port)) {
+      const path = paths.join('.');
+      sinkMap.push([path, port.sink]);
+      sourceMap.push([path, port.source$]);
+    } else {
+      for (const [key, val] of Object.entries(port)) {
+        walk(val, [...paths, key])
+      }
+    }
+
+
+    // if ( typeof port === 'function' ) {
+    //   sinkMap.push([paths.join('.'), port])
+    // } else if( port.pipe && typeof port.pipe === 'function' ) {
+    //   sourceMap.push([paths.join('.'), port])
+    // } else {
+    //   for ( const [key, val] of Object.entries(port) ) {
+    //     walk(val, [...paths, key])
+    //   }
+    // }
+  }
+  walk(port);
+
+  return [new Map(sourceMap), new Map(sinkMap)];
+}
 
 export const sourceSinkMap = <T>(port: PortSourceOrSink<T>): [SourceMap, SinkMap] => {
   const sourceMap: [string, Observable<any>][] = [];
@@ -68,7 +101,8 @@ export const source = <T>(sock: Socket<T>) =>
 export const sink = <T>(sock: Socket<T>) =>
   sock.sink;
 
-export type InferParams<T> = T extends LifecyclePort<infer U>  ? U : never;
+export type RootCircuit<U> = (port: U) => Observable<PortMessage<any>>
+export type InferParams<T> = T extends { init: {source$: Observable<infer I>} } ? I : never;
 
 export type PortcuitDefinition<T extends LifecyclePort> = {
   Port: new(...args: any) => T,
@@ -80,18 +114,17 @@ export type Portcuit<T extends LifecyclePort> =
     params: InferParams<T>
   }
 
-export type RootCircuit<T> = (port: T) => Observable<PortMessage<any>>
-
 const defaultLogger = globalThis?.process?.env?.NODE_ENV === 'production' ? () => null : console.debug;
+export const entry = <T>(port: T, circuit: RootCircuit<T>, params: InferParams<T>,
+  logger = defaultLogger) => {
 
-export const entry = <T, U extends LifecyclePort<T>>(port: U, circuit: RootCircuit<U>, params: T, logger = defaultLogger) => {
   const subject$ = new Subject<PortMessage<any>>(),
     source$ = subject$.asObservable(),
     group$ = source$.pipe(groupBy(([portType]) =>
       portType)),
     stream$ = merge(
       circuit(inject(port, group$)),
-      of(['init', params] as PortMessage<T>));
+      of(tuple('init', params)));
 
   stream$.pipe(tap(([type, data]) =>
     setTimeout(() =>
@@ -112,10 +145,10 @@ const isSocket = (sock: unknown): sock is Socket<any> =>
   sock instanceof Socket
 
 type PortObject = {
-  [key: string]: any
+  [key: string]: Socket<any> | any
 }
 
-const inject = <T extends LifecyclePort>(port: PortObject, group$: Observable<GroupedObservable<string, any>>) => {
+const inject = <T extends PortObject>(port: T, group$: Observable<GroupedObservable<string, any>>) => {
   const walk = (port: PortObject, ns: string[]=[]) => {
     for (const [key, sock] of Object.entries(port) ) {
       if (isSocket(sock)) {

@@ -1,11 +1,20 @@
+import {promisify} from "util";
 import {merge, of, race} from "rxjs";
-import {filter, switchMap} from "rxjs/operators";
-import {LifecyclePort, PortMessage, PortSourceOrSink, sink, Socket, source, SourceMap, sourceSinkMap} from "pkit/core";
-import {directProc, mapProc, mapToProc} from "pkit/processors";
+import {filter, map, switchMap} from "rxjs/operators";
+import {
+  LifecyclePort,
+  PortMessage,
+  PortSourceOrSink,
+  sink,
+  Socket,
+  source,
+  sourceSinkMap,
+  sourceSinkMapSocket
+} from "pkit/core";
+import {directProc, mapProc, mapToProc, latestMergeMapProc, mergeMapProc} from "pkit/processors";
 import {httpServerApiKit, HttpServerApiPort} from "../api/";
 import {sseServerKit, SseServerParams, SseServerPort} from "../sse/";
 import {isNotReserved, RequestArgs} from "../processors";
-import {receiveProc, sendProc} from './processors'
 
 export type RemoteServerHttpParams<T> = {
   mapping: PortSourceOrSink<T>;
@@ -15,7 +24,16 @@ export class RemoteServerHttpPort<T> extends LifecyclePort<RemoteServerHttpParam
   sse = new SseServerPort;
   api = new HttpServerApiPort;
   ctx = new Socket<RequestArgs>();
-  msg = new Socket<PortMessage<any>>();
+  expose = new Socket<PortMessage<any>>();
+  msg = new class {
+    receive = new Socket<PortMessage<any>>();
+    send = new Socket<PortMessage<any>>();
+  }
+  proxy: T;
+  constructor(proxy: T) {
+    super();
+    this.proxy = proxy;
+  }
 }
 
 export const remoteServerHttpKit = <T>(port: RemoteServerHttpPort<T>) =>
@@ -25,21 +43,49 @@ export const remoteServerHttpKit = <T>(port: RemoteServerHttpPort<T>) =>
     source(port.init).pipe(
       switchMap(({ctx, mapping, retry}) => {
         const [sourceMap, sinkMap] = sourceSinkMap(mapping);
+        const [proxySourceMap, proxySinkMap] = sourceSinkMapSocket(port.proxy);
+
         return merge(
-          receiveProc(source(port.api.body),
-            sink(port.msg), sink(port.api.json), sink(port.err), sinkMap),
-          sendProc(source(port.sse.ctx), sink(port.debug), sink(port.err), sourceMap),
+          mergeMapProc(source(port.api.body), sink(port.msg.receive), (body) =>
+            of(JSON.parse(body)), sink(port.err)),
+
+          source(port.msg.receive).pipe(
+            filter(([path]) =>
+              sinkMap.has(path)),
+            map(([path, data]) =>
+              proxySinkMap.get(path)!(data))),
+
+          merge(...Array.from(sinkMap.entries()).map(([path]) =>
+            proxySourceMap.get(path)!.pipe(
+              map((data) =>
+                sink(port.expose)([path, data]))))),
+
+          merge(...Array.from(sourceMap.entries()).map(([path]) =>
+            proxySourceMap.get(path)!.pipe(
+              map((data) =>
+                sink(port.msg.send)([path, data]))))),
+
+          latestMergeMapProc(source(port.msg.send), sink(port.info),
+            [source(port.ctx)], async ([[path, data], [,res]]) =>
+              ({
+                send: await promisify(res.write).call(res, `data: ${JSON.stringify([path, data])}\n\n`),
+                path, data
+              }), sink(port.err)),
+
           mapProc(source(port.ctx).pipe(
             filter(([{method}]) =>
               method === 'GET')), sink(port.sse.init), (ctx) =>
             ({ctx, retry})),
+
           directProc(source(port.ctx).pipe(
             filter(([{method}]) =>
               method === 'POST')), sink(port.api.init)),
+
           mapToProc(race(
             source(port.ctx).pipe(filter(isNotReserved)),
             source(port.api.terminated),
             source(port.sse.terminated)), sink(port.terminated)),
+
           directProc(of(ctx), sink(port.ctx))
         )
       }))

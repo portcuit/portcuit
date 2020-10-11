@@ -22,6 +22,7 @@ export class SseServerPort extends LifecyclePort<SseServerParams> {
 
 export const sseServerKit = (port: SseServerPort) =>
   merge(
+    mapToProc(source(port.event.connect), sink(port.ready)),
     source(port.init).pipe(
       switchMap(({ctx, retry=3000}) =>
         merge(
