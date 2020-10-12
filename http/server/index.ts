@@ -9,7 +9,7 @@ import {HttpServerContext, remoteReceiveProc, notFoundProc} from './processors'
 
 export * from './processors'
 export * from './sse/'
-export * from './api/'
+export * from './rest/'
 
 export type HttpServerParams = {
   server?: http.ServerOptions;

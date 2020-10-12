@@ -20,8 +20,6 @@ export class HttpClientRemotePort<T> extends LifecyclePort<HttpClientRemoteParam
 }
 
 export const httpClientRemoteKit = <T>(port: HttpClientRemotePort<T>) =>
-  // const [sourceMap, sinkMap] = sourceSinkMap(mapping);
-
   merge(
     mapProc(source(port.init), sink(port.es), ({endpoint}) =>
       new EventSource(endpoint)),

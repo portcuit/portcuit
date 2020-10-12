@@ -12,7 +12,7 @@ import {
   sourceSinkMapSocket
 } from "pkit/core";
 import {directProc, mapProc, mapToProc, latestMergeMapProc, mergeMapProc} from "pkit/processors";
-import {httpServerRestKit, HttpServerRestPort} from "../api/";
+import {httpServerRestKit, HttpServerRestPort} from "../rest/";
 import {httpServerSseKit, HttpServerSseParams, HttpServerSsePort} from "../sse/";
 import {HttpServerContext} from "../processors";
 
@@ -87,8 +87,7 @@ const receiveKit = <T>(port: HttpServerRemotePort<T>) =>
       const [shadowSourceMap, shadowSinkMap] = sourceSinkMapSocket(port.shadow);
 
       return merge(
-        mergeMapProc(source(port.api.body), sink(port.msg.receive), (body) =>
-          of(JSON.parse(body)), sink(port.err)),
+        directProc(source(port.api.request.body.json), sink(port.msg.receive)),
 
         source(port.msg.receive).pipe(
           filter(([path]) =>

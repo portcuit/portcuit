@@ -18,8 +18,8 @@ export const sendProc = (debugSink: Sink<any>, errSink: Sink<Error>, endpoint: s
             const res = await fetch(endpoint, {
               method: 'POST',
               headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Accept': 'application/json; charset=utf-8',
+                'Content-Type': 'application/json; charset=utf-8'
               },
               body: JSON.stringify([path, data])
             });
