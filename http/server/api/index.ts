@@ -1,7 +1,7 @@
 import {promisify} from 'util'
 import {OutgoingHttpHeaders} from "http";
 import {fromEvent, merge, race} from "rxjs";
-import {filter, reduce, takeUntil, map, mergeMap, take, tap, finalize} from "rxjs/operators";
+import {reduce, takeUntil, map, mergeMap, take} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source, latestMergeMapProc, mapProc, mapToProc, mergeMapProc} from "pkit";
 import {HttpServerContext, isNotReserved} from "pkit/http/server/processors";
 
@@ -56,6 +56,3 @@ export const httpServerApiKit = (port: HttpServerApiPort) =>
           take(1)))),
       sink(port.terminated)),
   )
-
-export const httpServerApiTerminateKit = (port: HttpServerApiPort) =>
-  mapToProc(source(port.init).pipe(filter(isNotReserved)), sink(port.terminated))
