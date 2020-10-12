@@ -6,9 +6,9 @@ import {from, merge} from "rxjs";
 import {delay, map, switchMap} from "rxjs/operators";
 import {sink, source, mergeMapProc, entry, terminatedComplete, mapToProc, mount, LifecyclePort, mapProc} from "pkit";
 import {HttpServerPort, httpServerKit, route, HttpServerParams} from "pkit/http/server";
-import {CreateSsr} from "./render/";
+import {CreateSsr} from "./ssr/";
 
-export * from './render/'
+export * from './ssr/'
 
 export type NextHttpParams = {
   server: HttpServerParams;
