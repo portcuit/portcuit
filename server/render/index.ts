@@ -15,7 +15,7 @@ import {
 } from 'pkit'
 import {HttpServerContext} from "pkit/http/server";
 import {FC} from "@pkit/snabbdom";
-import {httpServerApiKit, HttpServerApiPort} from "pkit/http/server/index";
+import {httpServerRestKit, HttpServerRestPort} from "pkit/http/server/index";
 import {snabbdomSsrKit, SnabbdomSsrPort} from "@pkit/snabbdom/ssr";
 
 class RendererPort<T> extends LifecyclePort<FC<T>> {}
@@ -32,7 +32,7 @@ type SharedSsrParams<T> = {
 }
 
 export class SharedSsrPort<T> extends LifecyclePort<SharedSsrParams<T>> implements RenderPort<T> {
-  api = new HttpServerApiPort;
+  api = new HttpServerRestPort;
   state = new StatePort<T>();
   renderer = new RendererPort<T>();
   vdom = new SnabbdomSsrPort;
@@ -44,7 +44,7 @@ export class SharedSsrPort<T> extends LifecyclePort<SharedSsrParams<T>> implemen
 
 export const sharedSsrKit = <T>(port: SharedSsrPort<T>) =>
   merge(
-    httpServerApiKit(port.api),
+    httpServerRestKit(port.api),
     stateKit(port.state),
     snabbdomSsrKit(port.vdom),
     mapProc(source(port.init), sink(port.api.init), ({ctx}) => ctx),
