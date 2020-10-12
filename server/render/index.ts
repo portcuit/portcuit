@@ -26,7 +26,10 @@ export interface RenderPort<T> {
   vdom: SnabbdomSsrPort;
 }
 
-type SharedSsrParams<T> = {ctx: HttpServerContext, Html: FC<T>}
+type SharedSsrParams<T> = {
+  ctx: HttpServerContext;
+  Html: FC<T>;
+}
 
 export class SharedSsrPort<T> extends LifecyclePort<SharedSsrParams<T>> implements RenderPort<T> {
   api = new HttpServerApiPort;
