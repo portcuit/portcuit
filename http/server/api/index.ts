@@ -12,16 +12,24 @@ class ContentTypePort {
   html = new Socket<string>();
 }
 
+// JSON.parseが例外の場合があるよ
 export class HttpServerApiPort extends LifecyclePort<HttpServerContext> implements ContentTypePort {
   json = new Socket<any>();
   html = new Socket<string>();
   notFound = new ContentTypePort;
   body = new Socket<any>();
+  request = new class {
+    body = new class {
+      raw = new Socket<Buffer>();
+      json = new Socket<any>();
+    }
+  }
   response = new Socket<HttpServerApiResponse>();
 }
 
 export const httpServerApiKit = (port: HttpServerApiPort) =>
   merge(
+
     mapProc(source(port.json), sink(port.response), (data) =>
       [200, {'Content-Type': 'application/json; charset=utf-8'}, JSON.stringify(data)] as const),
     mapProc(source(port.html), sink(port.response), (data) =>
