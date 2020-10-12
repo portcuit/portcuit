@@ -1,6 +1,6 @@
 import {promisify} from "util";
 import {merge, of, race} from "rxjs";
-import {filter, map, switchMap} from "rxjs/operators";
+import {filter, map, switchMap, takeUntil} from "rxjs/operators";
 import {
   LifecyclePort,
   PortMessage,
@@ -14,7 +14,7 @@ import {
 import {directProc, mapProc, mapToProc, latestMergeMapProc, mergeMapProc} from "pkit/processors";
 import {httpServerApiKit, HttpServerApiPort} from "../api/";
 import {httpServerSseKit, HttpServerSseParams, HttpServerSsePort} from "../sse/";
-import {isNotReserved, HttpServerContext} from "../processors";
+import {HttpServerContext} from "../processors";
 
 export type HttpServerRemoteParams<T> = {
   mapping: PortSourceOrSink<T>;
@@ -36,53 +36,74 @@ export const httpServerRemoteKit = <T>(port: HttpServerRemotePort<T>) =>
   merge(
     httpServerSseKit(port.sse),
     httpServerApiKit(port.api),
-    source(port.init).pipe(
-      switchMap(({ctx, mapping, retry}) => {
-        const [sourceMap, sinkMap] = sourceSinkMap(mapping);
-        const [shadowSourceMap, shadowSinkMap] = sourceSinkMapSocket(port.shadow);
+    sendKit(port),
+    receiveKit(port),
 
-        return merge(
-          mergeMapProc(source(port.api.body), sink(port.msg.receive), (body) =>
-            of(JSON.parse(body)), sink(port.err)),
+    mapProc(source(port.init), sink(port.ctx), ({ctx}) =>
+      ctx),
 
-          source(port.msg.receive).pipe(
-            filter(([path]) =>
-              sinkMap.has(path)),
-            map(([path, data]) =>
-              shadowSinkMap.get(path)!(data))),
-
-          merge(...Array.from(sinkMap.entries()).map(([path]) =>
-            shadowSourceMap.get(path)!.pipe(
-              map((data) =>
-                sink(port.expose)([path, data]))))),
-
-          merge(...Array.from(sourceMap.entries()).map(([path]) =>
-            shadowSourceMap.get(path)!.pipe(
-              map((data) =>
-                sink(port.msg.send)([path, data]))))),
-
-          latestMergeMapProc(source(port.msg.send), sink(port.info),
-            [source(port.ctx)], async ([[path, data], [,res]]) =>
-              ({
-                send: await promisify(res.write).call(res, `data: ${JSON.stringify([path, data])}\n\n`),
-                path, data
-              }), sink(port.err)),
-
-          mapProc(source(port.ctx).pipe(
-            filter(([{method}]) =>
-              method === 'GET')), sink(port.sse.init), (ctx) =>
-            ({ctx, retry})),
-
-          directProc(source(port.ctx).pipe(
-            filter(([{method}]) =>
-              method === 'POST')), sink(port.api.init)),
-
-          mapToProc(race(
-            source(port.ctx).pipe(filter(isNotReserved)),
-            source(port.api.terminated),
-            source(port.sse.terminated)), sink(port.terminated)),
-
-          directProc(of(ctx), sink(port.ctx))
-        )
-      }))
+    mapToProc(race(source(port.api.terminated), source(port.sse.terminated)),
+      sink(port.terminated)),
   )
+
+const sendKit = <T>(port: HttpServerRemotePort<T>) =>
+  source(port.init).pipe(
+    filter(({ctx: [{method}]}) =>
+      method === 'GET'),
+    switchMap(({ctx, mapping, retry}) => {
+      const [sourceMap] = sourceSinkMap(mapping);
+      const [shadowSourceMap, shadowSinkMap] = sourceSinkMapSocket(port.shadow);
+
+      return merge(
+        merge(...Array.from(sourceMap.entries()).map(([path, source$]) =>
+          source$.pipe(
+            takeUntil(source(port.terminated)),
+            map((data) =>
+              shadowSinkMap.get(path)!(data))))),
+
+        merge(...Array.from(sourceMap.entries()).map(([path]) =>
+          shadowSourceMap.get(path)!.pipe(
+            map((data) =>
+              sink(port.msg.send)([path, data]))))),
+
+        latestMergeMapProc(source(port.msg.send), sink(port.info),
+          [source(port.ctx)], async ([[path, data], [,res]]) =>
+            ({
+              send: await promisify(res.write).call(res, `data: ${JSON.stringify([path, data])}\n\n`),
+              path, data
+            }), sink(port.err)),
+
+        mapProc(source(port.ctx), sink(port.sse.init), (ctx) =>
+          ({ctx, retry})),
+      )
+    }));
+
+const receiveKit = <T>(port: HttpServerRemotePort<T>) =>
+  source(port.init).pipe(
+    filter(({ctx: [{method}]}) =>
+      method === 'POST'),
+    switchMap(({ctx, mapping, retry}) => {
+      const [,sinkMap] = sourceSinkMap(mapping);
+      const [shadowSourceMap, shadowSinkMap] = sourceSinkMapSocket(port.shadow);
+
+      return merge(
+        mergeMapProc(source(port.api.body), sink(port.msg.receive), (body) =>
+          of(JSON.parse(body)), sink(port.err)),
+
+        source(port.msg.receive).pipe(
+          filter(([path]) =>
+            sinkMap.has(path)),
+          map(([path, data]) =>
+            shadowSinkMap.get(path)!(data))),
+
+        directProc(
+          merge(...Array.from(sinkMap.entries()).map(([path, sink]) =>
+            shadowSourceMap.get(path)!.pipe(
+              map((data) =>
+                sink(data))))),
+          sink(port.expose)),
+
+        directProc(source(port.ctx), sink(port.api.init)),
+      )
+    }));
+

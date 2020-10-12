@@ -34,7 +34,6 @@ export const sourceSinkMapSocket = (port: PortObject): [SourceMap, SinkMap] => {
   const sinkMap: [string, Sink<any>][] = [];
 
   const walk = (port: any, paths: string[]=[]) => {
-
     if (isSocket(port)) {
       const path = paths.join('.');
       sinkMap.push([path, port.sink]);
@@ -44,17 +43,6 @@ export const sourceSinkMapSocket = (port: PortObject): [SourceMap, SinkMap] => {
         walk(val, [...paths, key])
       }
     }
-
-
-    // if ( typeof port === 'function' ) {
-    //   sinkMap.push([paths.join('.'), port])
-    // } else if( port.pipe && typeof port.pipe === 'function' ) {
-    //   sourceMap.push([paths.join('.'), port])
-    // } else {
-    //   for ( const [key, val] of Object.entries(port) ) {
-    //     walk(val, [...paths, key])
-    //   }
-    // }
   }
   walk(port);
 
