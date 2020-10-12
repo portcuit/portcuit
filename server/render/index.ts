@@ -50,8 +50,8 @@ export const sharedSsrKit = <T>(port: SharedSsrPort<T>) =>
     mapProc(source(port.init), sink(port.api.init), ({ctx}) => ctx),
     mapToProc(source(port.init), sink(port.vdom.init)),
     mapProc(source(port.init), sink(port.renderer.init), ({Html}) => Html),
-    directProc(source(port.vdom.html), sink(port.api.html)),
-    mapProc(source(port.patch.encode), sink(port.api.json), encodePatch),
+    directProc(source(port.vdom.html), sink(port.api.response.html)),
+    mapProc(source(port.patch.encode), sink(port.api.response.json), encodePatch),
     mapProc(source(port.patch.decode), sink(port.state.patch), decodePatch),
     mapToProc(source(port.api.terminated), sink(port.terminated)),
     mapToProc(source(port.init), sink(port.ready))
