@@ -15,7 +15,7 @@ import {
 } from 'pkit'
 import {HttpServerContext} from "pkit/http/server";
 import {FC} from "@pkit/snabbdom";
-import {httpServerApiKit, HttpServerApiPort, httpServerApiTerminateKit} from "pkit/http/server/index";
+import {httpServerApiKit, HttpServerApiPort} from "pkit/http/server/index";
 import {snabbdomSsrKit, SnabbdomSsrPort} from "@pkit/snabbdom/ssr";
 
 class RendererPort<T> extends LifecyclePort<FC<T>> {}
@@ -54,8 +54,7 @@ export const sharedSsrKit = <T>(port: SharedSsrPort<T>) =>
     mapProc(source(port.patch.encode), sink(port.api.json), encodePatch),
     mapProc(source(port.patch.decode), sink(port.state.patch), decodePatch),
     mapToProc(source(port.api.terminated), sink(port.terminated)),
-    mapToProc(source(port.init), sink(port.ready)),
-    httpServerApiTerminateKit(port.api)
+    mapToProc(source(port.init), sink(port.ready))
   )
 
 export type CreateSsr<T> = (ctx: HttpServerContext) => Portcuit<SharedSsrPort<T>>
