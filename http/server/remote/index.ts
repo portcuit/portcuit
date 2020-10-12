@@ -12,7 +12,7 @@ import {
   sourceSinkMapSocket
 } from "pkit/core";
 import {directProc, mapProc, mapToProc, latestMergeMapProc, mergeMapProc} from "pkit/processors";
-import {httpServerApiKit, HttpServerApiPort} from "../api/";
+import {httpServerRestKit, HttpServerRestPort} from "../api/";
 import {httpServerSseKit, HttpServerSseParams, HttpServerSsePort} from "../sse/";
 import {HttpServerContext} from "../processors";
 
@@ -22,7 +22,7 @@ export type HttpServerRemoteParams<T> = {
 
 export class HttpServerRemotePort<T> extends LifecyclePort<HttpServerRemoteParams<T>> {
   sse = new HttpServerSsePort;
-  api = new HttpServerApiPort;
+  api = new HttpServerRestPort;
   ctx = new Socket<HttpServerContext>();
   msg = new class {
     receive = new Socket<PortMessage<any>>();
@@ -35,7 +35,7 @@ export class HttpServerRemotePort<T> extends LifecyclePort<HttpServerRemoteParam
 export const httpServerRemoteKit = <T>(port: HttpServerRemotePort<T>) =>
   merge(
     httpServerSseKit(port.sse),
-    httpServerApiKit(port.api),
+    httpServerRestKit(port.api),
     sendKit(port),
     receiveKit(port),
 

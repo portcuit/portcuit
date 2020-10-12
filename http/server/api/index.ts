@@ -13,7 +13,7 @@ class ContentTypePort {
 }
 
 // JSON.parseが例外の場合があるよ
-export class HttpServerApiPort extends LifecyclePort<HttpServerContext> implements ContentTypePort {
+export class HttpServerRestPort extends LifecyclePort<HttpServerContext> implements ContentTypePort {
   json = new Socket<any>();
   html = new Socket<string>();
   notFound = new ContentTypePort;
@@ -27,7 +27,7 @@ export class HttpServerApiPort extends LifecyclePort<HttpServerContext> implemen
   response = new Socket<HttpServerApiResponse>();
 }
 
-export const httpServerApiKit = (port: HttpServerApiPort) =>
+export const httpServerRestKit = (port: HttpServerRestPort) =>
   merge(
 
     mapProc(source(port.json), sink(port.response), (data) =>
