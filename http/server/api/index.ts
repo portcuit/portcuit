@@ -1,11 +1,11 @@
 import {promisify} from 'util'
 import {OutgoingHttpHeaders} from "http";
-import {fromEvent, merge} from "rxjs";
-import {filter, reduce, takeUntil, map} from "rxjs/operators";
+import {fromEvent, merge, race} from "rxjs";
+import {filter, reduce, takeUntil, map, mergeMap, take, tap, finalize} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source, latestMergeMapProc, mapProc, mapToProc, mergeMapProc} from "pkit";
 import {HttpServerContext, isNotReserved} from "pkit/http/server/processors";
 
-type ApiResponse = readonly [status: number, headers: OutgoingHttpHeaders, body: any];
+type HttpServerApiResponse = readonly [status: number, headers: OutgoingHttpHeaders, body: any];
 
 class ContentTypePort {
   json = new Socket<any>();
@@ -17,33 +17,45 @@ export class HttpServerApiPort extends LifecyclePort<HttpServerContext> implemen
   html = new Socket<string>();
   notFound = new ContentTypePort;
   body = new Socket<any>();
-  terminate = new Socket<ApiResponse>();
+  response = new Socket<HttpServerApiResponse>();
 }
 
 export const httpServerApiKit = (port: HttpServerApiPort) =>
   merge(
-    mapProc(source(port.json), sink(port.terminate), (data) =>
+    mapProc(source(port.json), sink(port.response), (data) =>
       [200, {'Content-Type': 'application/json; charset=utf-8'}, JSON.stringify(data)] as const),
-    mapProc(source(port.html), sink(port.terminate), (data) =>
+    mapProc(source(port.html), sink(port.response), (data) =>
       [200, {'Content-Type': 'text/html; charset=utf-8'}, data] as const),
-    mapProc(source(port.notFound.json), sink(port.terminate), (data) =>
+    mapProc(source(port.notFound.json), sink(port.response), (data) =>
       [404, {'Content-Type': 'application/json; charset=utf-8'}, JSON.stringify(data)] as const),
-    mapProc(source(port.notFound.html), sink(port.terminate), (data) =>
+    mapProc(source(port.notFound.html), sink(port.response), (data) =>
       [404, {'Content-Type': 'text/html; charset=utf-8'}, data] as const),
-    latestMergeMapProc(source(port.terminate), sink(port.terminated), [source(port.init)],
-      ([[statusCode, headers, body], [,res]]) => {
-        res.writeHead(statusCode, headers);
-        return promisify<string>(res.end).call(res, body)
-      }),
+
+    latestMergeMapProc(source(port.response), sink(port.info), [source(port.init)],
+      async ([[statusCode, headers, body], [,res]]) =>
+        ({
+          response: {
+            writeHead: res.writeHead(statusCode, headers),
+            end: await promisify<string>(res.end).call(res, body)
+          }
+        })),
+
     mergeMapProc(source(port.init), sink(port.body), ([req]) =>
       fromEvent<Buffer>(req, 'data').pipe(
         takeUntil(fromEvent(req, 'end')),
         reduce((acc, chunk) =>
           acc.concat(chunk), [] as Buffer[]),
         map((chunks) =>
-          Buffer.concat(chunks))))
+          Buffer.concat(chunks)))),
+    
+    mapToProc(source(port.init).pipe(
+      mergeMap(([req, res]) =>
+        race(
+          fromEvent(res, 'close'),
+          fromEvent(req, 'abort')).pipe(
+          take(1)))),
+      sink(port.terminated)),
   )
 
 export const httpServerApiTerminateKit = (port: HttpServerApiPort) =>
   mapToProc(source(port.init).pipe(filter(isNotReserved)), sink(port.terminated))
-
