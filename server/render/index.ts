@@ -32,7 +32,7 @@ type SharedSsrParams<T> = {
 }
 
 export class SharedSsrPort<T> extends LifecyclePort<SharedSsrParams<T>> implements RenderPort<T> {
-  api = new HttpServerRestPort;
+  rest = new HttpServerRestPort;
   state = new StatePort<T>();
   renderer = new RendererPort<T>();
   vdom = new SnabbdomSsrPort;
@@ -44,16 +44,16 @@ export class SharedSsrPort<T> extends LifecyclePort<SharedSsrParams<T>> implemen
 
 export const sharedSsrKit = <T>(port: SharedSsrPort<T>) =>
   merge(
-    httpServerRestKit(port.api),
+    httpServerRestKit(port.rest),
     stateKit(port.state),
     snabbdomSsrKit(port.vdom),
-    mapProc(source(port.init), sink(port.api.init), ({ctx}) => ctx),
+    mapProc(source(port.init), sink(port.rest.init), ({ctx}) => ctx),
     mapToProc(source(port.init), sink(port.vdom.init)),
     mapProc(source(port.init), sink(port.renderer.init), ({Html}) => Html),
-    directProc(source(port.vdom.html), sink(port.api.response.html)),
-    mapProc(source(port.patch.encode), sink(port.api.response.json), encodePatch),
+    directProc(source(port.vdom.html), sink(port.rest.response.html)),
+    mapProc(source(port.patch.encode), sink(port.rest.response.json), encodePatch),
     mapProc(source(port.patch.decode), sink(port.state.patch), decodePatch),
-    mapToProc(source(port.api.terminated), sink(port.terminated)),
+    mapToProc(source(port.rest.terminated), sink(port.terminated)),
     mapToProc(source(port.init), sink(port.ready))
   )
 
