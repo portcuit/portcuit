@@ -26,7 +26,7 @@ type NextStateParams<T> = {
 class NextStatePort<T, U extends NextStateParams<T>> extends LifecyclePort<U> {
   state = new StatePort<T>();
 
-  nextStateKit () {
+  stateKit () {
     return merge(
       stateKit(this.state),
       mapProc(source(this.init).pipe(delay(0)),
@@ -36,44 +36,37 @@ class NextStatePort<T, U extends NextStateParams<T>> extends LifecyclePort<U> {
   }
 }
 
-const nextStateKit = <T, U extends NextStateParams<T>>(port: NextStatePort<T, U>) =>
-  merge(
-    stateKit(port.state),
-    mapProc(source(port.init).pipe(delay(0)),
-      sink(port.state.init), ({state}) => state),
-    mapToProc(source(port.init), sink(port.ready))
-  )
-
 export type NextRestParams<T> = {
   ctx: HttpServerContext;
 } & NextStateParams<T>
 
 export class NextRestPort<T, U extends NextRestParams<T>> extends NextStatePort<T, U> {
   rest = new HttpServerRestPort;
-}
 
-export const nextRestKit = <T, U extends NextRestParams<T>>(port: NextRestPort<T, U>) =>
-  merge(
-    httpServerRestKit(port.rest),
-    port.nextStateKit(),
-    // nextStateKit(port),
-    mapProc(source(port.init), sink(port.rest.init), ({ctx}) => ctx),
-    mapToProc(source(port.rest.terminated), sink(port.terminated)),
-  )
+  restKit () {
+    return merge(
+      httpServerRestKit(this.rest),
+      this.stateKit(),
+      mapProc(source(this.init), sink(this.rest.init), ({ctx}) => ctx),
+      mapToProc(source(this.rest.terminated), sink(this.terminated))
+    )
+  }
+}
 
 export class NextApiPort<T, U extends NextRestParams<T> = NextRestParams<T>> extends NextRestPort<T, U> {
   patch = new class {
     encode = new Socket<Patch<T>>();
     decode = new Socket<EncodedPatch>();
   }
-}
 
-export const nextApiKit = <T>(port: NextApiPort<T>) =>
-  merge(
-    nextRestKit(port),
-    mapProc(source(port.patch.encode), sink(port.rest.response.json), encodePatch),
-    mapProc(source(port.patch.decode), sink(port.state.patch), decodePatch),
-  )
+  apiKit () {
+    return merge(
+      this.restKit(),
+      mapProc(source(this.patch.encode), sink(this.rest.response.json), encodePatch),
+      mapProc(source(this.patch.decode), sink(this.state.patch), decodePatch),
+    )
+  }
+}
 
 type NextRenderParams<T> = {
   Html: FC<T>;
@@ -99,18 +92,19 @@ const nextRenderKit = <T extends IState, U extends NextRenderParams<T>>(port: Ne
 
 export type NextSsrParams<T> = NextRenderParams<T> & NextRestParams<T>;
 
-export class NextSsrPort<T, U extends NextSsrParams<T> = NextSsrParams<T>> extends NextRestPort<T, U> {
+export class NextSsrPort<T extends IState, U extends NextSsrParams<T> = NextSsrParams<T>> extends NextRestPort<T, U> {
   vdom = new SnabbdomSsrPort;
+
+  circuit (params: U) {
+    return merge(
+      this.restKit(),
+      nextRenderKit(this),
+      directProc(source(this.vdom.html), sink(this.rest.response.html))
+    )
+  }
 }
 
-export const nextSsrKit = <T extends IState>(port: NextSsrPort<T>) =>
-  merge(
-    nextRestKit(port),
-    nextRenderKit(port),
-    directProc(source(port.vdom.html), sink(port.rest.response.html)),
-  )
-
-export type CreateSsr<T> = (ctx: HttpServerContext) => Portcuit<NextSsrPort<T>>
+export type CreateSsr<T extends IState> = (ctx: HttpServerContext) => Portcuit<NextSsrPort<T>>
 
 export type NextSsgInfo = [fileName: string, input: string, output: string];
 
@@ -124,7 +118,7 @@ export class NextSsgPort<T, U extends NextSsgParams<T> = NextSsgParams<T>> exten
 
 export const nextSsgKit = <T extends IState>(port: NextSsgPort<T>) =>
   merge(
-    nextStateKit(port),
+    port.stateKit.call(port),
     nextRenderKit(port),
   )
 
