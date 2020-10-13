@@ -102,7 +102,7 @@ export type Portcuit<T extends LifecyclePort> =
     params: InferParams<T>
   }
 
-const defaultLogger = globalThis?.process?.env?.NODE_ENV === 'production' ? () => null : console.debug;
+export const defaultLogger = globalThis?.process?.env?.NODE_ENV === 'production' ? () => null : console.debug;
 export const entry = <T>(port: T, circuit: RootCircuit<T>, params: InferParams<T>,
   logger = defaultLogger) => {
 
