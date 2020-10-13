@@ -1,6 +1,7 @@
-import {merge} from "rxjs";
 import {promisify} from "util";
 import {writeFile} from "fs";
+import {merge} from "rxjs";
+import {delay, filter} from "rxjs/operators";
 import {
   directProc,
   LifecyclePort,
@@ -11,16 +12,12 @@ import {
   stateKit,
   StatePort,
   Portcuit,
-  latestMergeMapProc, Patch, Socket, EncodedPatch, encodePatch, decodePatch, latestMapProc, DeepPartial
+  latestMergeMapProc, Patch, Socket, EncodedPatch, encodePatch, decodePatch, latestMapProc
 } from 'pkit'
-import {HttpServerContext} from "pkit/http/server";
+import {HttpServerContext, httpServerRestKit, HttpServerRestPort} from "pkit/http/server";
 import {FC} from "@pkit/snabbdom";
-import {httpServerRestKit, HttpServerRestPort} from "pkit/http/server/index";
 import {snabbdomSsrKit, SnabbdomSsrPort} from "@pkit/snabbdom/ssr";
-import {IState} from "../..";
-import {delay, filter} from "rxjs/operators";
-
-class RendererPort<T> extends LifecyclePort<FC<T>> {}
+import {IState} from "../../";
 
 type NextStateParams<T> = {
   state: T
@@ -28,6 +25,15 @@ type NextStateParams<T> = {
 
 class NextStatePort<T, U extends NextStateParams<T>> extends LifecyclePort<U> {
   state = new StatePort<T>();
+
+  nextStateKit () {
+    return merge(
+      stateKit(this.state),
+      mapProc(source(this.init).pipe(delay(0)),
+        sink(this.state.init), ({state}) => state),
+      mapToProc(source(this.init), sink(this.ready))
+    )
+  }
 }
 
 const nextStateKit = <T, U extends NextStateParams<T>>(port: NextStatePort<T, U>) =>
@@ -49,7 +55,8 @@ export class NextRestPort<T, U extends NextRestParams<T>> extends NextStatePort<
 export const nextRestKit = <T, U extends NextRestParams<T>>(port: NextRestPort<T, U>) =>
   merge(
     httpServerRestKit(port.rest),
-    nextStateKit(port),
+    port.nextStateKit(),
+    // nextStateKit(port),
     mapProc(source(port.init), sink(port.rest.init), ({ctx}) => ctx),
     mapToProc(source(port.rest.terminated), sink(port.terminated)),
   )
@@ -61,7 +68,7 @@ export class NextApiPort<T, U extends NextRestParams<T> = NextRestParams<T>> ext
   }
 }
 
-export const nextApiKit = <T, U extends NextRestParams<T>>(port: NextApiPort<T, U>) =>
+export const nextApiKit = <T>(port: NextApiPort<T>) =>
   merge(
     nextRestKit(port),
     mapProc(source(port.patch.encode), sink(port.rest.response.json), encodePatch),
@@ -90,7 +97,7 @@ const nextRenderKit = <T extends IState, U extends NextRenderParams<T>>(port: Ne
         Html(state))
   )
 
-type NextSsrParams<T> = NextRenderParams<T> & NextRestParams<T>;
+export type NextSsrParams<T> = NextRenderParams<T> & NextRestParams<T>;
 
 export class NextSsrPort<T, U extends NextSsrParams<T> = NextSsrParams<T>> extends NextRestPort<T, U> {
   vdom = new SnabbdomSsrPort;
