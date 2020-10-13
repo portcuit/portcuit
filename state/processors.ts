@@ -134,9 +134,9 @@ export const patch = (
   }
 };
 
-export const initProc = <T, U>(init$: Observable<U>,
+export const initProc = <T, U>(init$: Observable<T>,
                              patch$: Observable<U>,
-                             rawSink: Sink<U>,
+                             rawSink: Sink<T>,
                              dataSink: Sink<T>,
                              compute: Compute<T>) =>
   init$.pipe(

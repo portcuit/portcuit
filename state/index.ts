@@ -4,8 +4,8 @@ import {initProc} from './processors'
 export * from './processors'
 
 export class StatePort<T> {
-  raw = new Socket<DeepPartial<T>>();
-  init = new Socket<DeepPartial<T>>();
+  raw = new Socket<T>();
+  init = new Socket<T>();
   patch = new Socket<DeepPartial<T>>();
   data = new Socket<T>();
 }

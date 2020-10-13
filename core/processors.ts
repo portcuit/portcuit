@@ -152,7 +152,7 @@ const inject = <T extends PortObject>(port: T, group$: Observable<GroupedObserva
         const sink = <T>(value?: T) =>
           [portType, value] as PortMessage<T>;
         Object.assign(sock, {source$, sink, path: portPath});
-      } else {
+      } else if (typeof sock !== 'function') {
         port[key] = walk(sock, ns.concat(key));
       }
     }
