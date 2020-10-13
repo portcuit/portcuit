@@ -6,7 +6,7 @@ import {reduce, takeUntil, map, mergeMap, take, filter} from "rxjs/operators";
 import {LifecyclePort, sink, Socket, source, latestMergeMapProc, mapProc, mapToProc, mergeMapProc} from "pkit";
 import {HttpServerContext} from "pkit/http/server/processors";
 
-class HttpServerRestResponse {
+export class HttpServerRestResponse {
   constructor(public body?: any, public init?: ResponseInit) {}
 
   writeHeadArgs (): Parameters<typeof ServerResponse.prototype.writeHead> {
