@@ -59,7 +59,7 @@ export class EphemeralContainer<T=any> extends Object {
   }
 }
 
-export type EphemeralObject<T> = T & {_type: 'ephemeral'}
+export type EphemeralObject<T> = T & {readonly brand: unique symbol}
 
 export const EphemeralObject = (function <T>(this: {new(data: any):EphemeralObject<T>}, data: T) {
   Object.assign(this, data);

@@ -45,6 +45,10 @@ export class HttpServerRestPort extends LifecyclePort<HttpServerContext> {
     json = new Socket<any>();
     html = new Socket<string>();
   }
+
+  circuit () {
+    return httpServerRestKit(this);
+  }
 }
 
 export const makeJsonResponse = (json: any, init?: ResponseInit) =>

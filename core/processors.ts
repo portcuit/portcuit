@@ -3,85 +3,31 @@ import {Observable, Subject, GroupedObservable, merge, of} from 'rxjs'
 import {filter, map, switchMap, share, groupBy, tap} from 'rxjs/operators'
 import type {LifecyclePort} from './'
 
+type SocketX<T> = WritableSocket<T> | ReadableSocket<T>
+
+const SocketX = (function (this: any) {
+  this.source$ = undefined;
+  this.sink = undefined;
+} as unknown) as {new<T>(): SocketX<T>}
+
+class ReadableSocket<T> {
+  public readonly source$!: Observable<T>;
+  protected readonly sink!: Sink<T>;
+}
+
+class WritableSocket<T> {
+  protected readonly source$!: Observable<T>;
+  public readonly sink!: Sink<T>;
+}
+
 export class Socket<T> {
   source$!: Observable<T>;
   sink!: Sink<T>;
-  path!: any[];
 }
-
-export type PortSource<T> = {
-  [P in keyof T]?: T[P] extends Socket<any> ? T[P]['source$'] : PortSource<T[P]>
-}
-
-export type PortSink<T> = {
-  [P in keyof T]?: T[P] extends Socket<any> ? T[P]['sink'] : PortSink<T[P]>
-}
-
-export type PortSourceOrSink<T> = {
-  [P in keyof T]?: T[P] extends Socket<any> ?
-    (T[P]['source$'] | T[P]['sink']) : PortSourceOrSink<T[P]>
-}
-
-export type PortData<T> = {
-  [P in keyof T]?: T[P] extends Socket<infer I> ? I : PortData<T[P]>
-}
-
-export type SourceMap = ReadonlyMap<string, Observable<any>>;
-export type SinkMap = ReadonlyMap<string, Sink<any>>;
-
-export const sourceSinkMapSocket = (port: PortObject): [SourceMap, SinkMap] => {
-  const sourceMap: [string, Observable<any>][] = [];
-  const sinkMap: [string, Sink<any>][] = [];
-
-  const walk = (port: any, paths: string[]=[]) => {
-    if (isSocket(port)) {
-      const path = paths.join('.');
-      sinkMap.push([path, port.sink]);
-      sourceMap.push([path, port.source$]);
-    } else {
-      for (const [key, val] of Object.entries(port)) {
-        walk(val, [...paths, key])
-      }
-    }
-  }
-  walk(port);
-
-  return [new Map(sourceMap), new Map(sinkMap)];
-}
-
-export const sourceSinkMap = <T>(port: PortSourceOrSink<T>): [SourceMap, SinkMap] => {
-  const sourceMap: [string, Observable<any>][] = [];
-  const sinkMap: [string, Sink<any>][] = [];
-
-  const walk = (port: any, paths: string[]=[]) => {
-    if ( typeof port === 'function' ) {
-      sinkMap.push([paths.join('.'), port])
-    } else if( port.pipe && typeof port.pipe === 'function' ) {
-      sourceMap.push([paths.join('.'), port])
-    } else {
-      for ( const [key, val] of Object.entries(port) ) {
-        walk(val, [...paths, key])
-      }
-    }
-  }
-  walk(port);
-
-  return [new Map(sourceMap), new Map(sinkMap)];
-}
-
-type Nested<T> = {
-  [P in number | string]?:
-  | T
-  | { [P in number | string]?: T }
-  | { [P in number | string]?: { [P in number | string]?: T }}
-  | { [P in number | string]?: { [P in number | string]?: { [P in number | string]?: T }}}
-}
-
-export type PortMessage<T> = [string, T]
 
 export type Sink<T> = (value?: T) => PortMessage<T>
 
-export type SocketData<T> = T extends Socket<infer I> ? I : never;
+export type PortMessage<T> = [string, T]
 
 export const source = <T>(sock: Socket<T>) =>
   sock.source$;
@@ -151,7 +97,7 @@ const inject = <T extends PortObject>(port: T, group$: Observable<GroupedObserva
           share());
         const sink = <T>(value?: T) =>
           [portType, value] as PortMessage<T>;
-        Object.assign(sock, {source$, sink, path: portPath});
+        Object.assign(sock, {source$, sink});
       } else if (typeof sock !== 'function') {
         port[key] = walk(sock, ns.concat(key));
       }
@@ -192,6 +138,75 @@ export type DeepPartial<T> = {
         ? DeepPartial<T[P]> : T[P]
 };
 
+export type PortSource<T> = {
+  [P in keyof T]?: T[P] extends Socket<any> ? T[P]['source$'] : PortSource<T[P]>
+}
+
+export type PortSink<T> = {
+  [P in keyof T]?: T[P] extends Socket<any> ? T[P]['sink'] : PortSink<T[P]>
+}
+
+export type PortSourceOrSink<T> = {
+  [P in keyof T]?: T[P] extends Socket<any> ?
+    (T[P]['source$'] | T[P]['sink']) : PortSourceOrSink<T[P]>
+}
+
+export type SocketData<T> = T extends Socket<infer I> ? I : never;
+
+export type PortData<T> = {
+  [P in keyof T]?: T[P] extends Socket<infer I> ? I : PortData<T[P]>
+}
+
+export type SourceMap = ReadonlyMap<string, Observable<any>>;
+export type SinkMap = ReadonlyMap<string, Sink<any>>;
+
+export const sourceSinkMapSocket = (port: PortObject): [SourceMap, SinkMap] => {
+  const sourceMap: [string, Observable<any>][] = [];
+  const sinkMap: [string, Sink<any>][] = [];
+
+  const walk = (port: any, paths: string[]=[]) => {
+    if (isSocket(port)) {
+      const path = paths.join('.');
+      sinkMap.push([path, port.sink]);
+      sourceMap.push([path, port.source$]);
+    } else {
+      for (const [key, val] of Object.entries(port)) {
+        walk(val, [...paths, key])
+      }
+    }
+  }
+  walk(port);
+
+  return [new Map(sourceMap), new Map(sinkMap)];
+}
+
+export const sourceSinkMap = <T>(port: PortSourceOrSink<T>): [SourceMap, SinkMap] => {
+  const sourceMap: [string, Observable<any>][] = [];
+  const sinkMap: [string, Sink<any>][] = [];
+
+  const walk = (port: any, paths: string[]=[]) => {
+    if ( typeof port === 'function' ) {
+      sinkMap.push([paths.join('.'), port])
+    } else if( port.pipe && typeof port.pipe === 'function' ) {
+      sourceMap.push([paths.join('.'), port])
+    } else {
+      for ( const [key, val] of Object.entries(port) ) {
+        walk(val, [...paths, key])
+      }
+    }
+  }
+  walk(port);
+
+  return [new Map(sourceMap), new Map(sinkMap)];
+}
+
+type Nested<T> = {
+  [P in number | string]?:
+  | T
+  | { [P in number | string]?: T }
+  | { [P in number | string]?: { [P in number | string]?: T }}
+  | { [P in number | string]?: { [P in number | string]?: { [P in number | string]?: T }}}
+}
 
 export type Ns<T extends {}> = T
 

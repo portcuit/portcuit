@@ -1,6 +1,7 @@
-import {Socket} from './processors'
+import {PortMessage, Socket} from './processors'
 import {entry, defaultLogger} from './processors'
 import {tap} from "rxjs/operators";
+import {Observable, Subject} from "rxjs";
 
 export * from './processors'
 
@@ -15,20 +16,39 @@ export class LifecyclePort<T=any> {
   running = new Socket<boolean>();
   err = new Socket<Error>();
 
-  entry(params: T, logger = defaultLogger) {
-    const subject$ = entry(this as any, this.circuit.bind(this) as any, params, logger);
+  entry(circuit: (port: this) => Observable<PortMessage<any>>, params?: T, logger?: (...args: any[]) => void): Subject<PortMessage<any>>;
+  entry(params?: T, logger?: (...args: any[]) => void): Subject<PortMessage<any>>;
+
+  entry(...args: any[]) {
+    let circuit, params, logger;
+    if (args[0] instanceof Observable) {
+      circuit = args[0];
+      params = args[1];
+      logger = args[2] || defaultLogger;
+    } else {
+      circuit = this.circuit.bind(this);
+      params = args[0];
+      logger = args[1] || defaultLogger;
+    }
+
+    const subject$ = entry(this as any, circuit as any, params, logger);
     subject$.pipe(tap(([type]) =>
       type === 'terminated' &&
       subject$.complete()))
       .subscribe({error: this.error.bind(this)})
+
     return subject$;
+
+
+    // const subject$ = new Subject<PortMessage<any>>();
+    // return subject$
   }
 
   error (err: Error) {
     throw err;
   }
 
-  circuit (params: T) {
+  circuit (port: this) {
     throw new Error('need implement')
   }
 }
