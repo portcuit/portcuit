@@ -1,5 +1,5 @@
 import {promisify} from "util";
-import {merge, of, race} from "rxjs";
+import {merge, race} from "rxjs";
 import {filter, map, switchMap, takeUntil} from "rxjs/operators";
 import {
   LifecyclePort,
@@ -35,7 +35,7 @@ export class HttpServerRemotePort<T> extends LifecyclePort<HttpServerRemoteParam
 export const httpServerRemoteKit = <T>(port: HttpServerRemotePort<T>) =>
   merge(
     httpServerSseKit(port.sse),
-    port.rest.circuit(port.rest),
+    port.rest.httpServerRestKit(port.rest),
     sendKit(port),
     receiveKit(port),
 

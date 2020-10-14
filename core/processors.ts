@@ -93,7 +93,7 @@ export const terminatedComplete = <T extends PortMessage<any>>(subject$: Subject
     type === 'terminated' && subject$.complete()))
 
 const isSocket = (sock: unknown): sock is Socket<any> =>
-  sock instanceof Socket
+  sock instanceof Socket || sock instanceof ReadableSocket || sock instanceof WritableSocket
 
 type PortObject = {
   [key: string]: Socket<any> | any

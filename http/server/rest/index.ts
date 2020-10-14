@@ -46,7 +46,7 @@ export class HttpServerRestPort extends LifecyclePort<HttpServerContext> {
     readonly html = new WritableSocket<string>();
   }
 
-  circuit (port: this) {
+  httpServerRestKit (port: this) {
     return httpServerRestKit(port);
   }
 }
@@ -63,7 +63,7 @@ export const makeHtmlResponse = (html: string, init? : ResponseInit) =>
     headers: {'Content-Type': 'text/html; charset=utf-8'}
   }, init ?? {}))
 
-export const httpServerRestKit = (port: HttpServerRestPort) =>
+const httpServerRestKit = (port: HttpServerRestPort) =>
   merge(
     requestKit(port),
     responseKit.call(port, port),
