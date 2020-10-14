@@ -3,36 +3,53 @@ import {Observable, Subject, GroupedObservable, merge, of} from 'rxjs'
 import {filter, map, switchMap, share, groupBy, tap} from 'rxjs/operators'
 import type {LifecyclePort} from './'
 
-type SocketX<T> = WritableSocket<T> | ReadableSocket<T>
+export type Socket<T> = {
+  source$: Observable<T>;
+  sink: Sink<T>;
+} & WritableSocket<T> & ReadableSocket<T>
 
-const SocketX = (function (this: any) {
+export const Socket = (function (this: any) {
   this.source$ = undefined;
   this.sink = undefined;
-} as unknown) as {new<T>(): SocketX<T>}
+} as unknown) as {new<T>(): Socket<T>}
 
-class ReadableSocket<T> {
+export class ReadableSocket<T> {
   public readonly source$!: Observable<T>;
   protected readonly sink!: Sink<T>;
+  getSink () {
+    return this.sink;
+  }
 }
 
-class WritableSocket<T> {
+export class WritableSocket<T> {
   protected readonly source$!: Observable<T>;
   public readonly sink!: Sink<T>;
+  getSource () {
+    return this.source$;
+  }
 }
 
-export class Socket<T> {
-  source$!: Observable<T>;
-  sink!: Sink<T>;
-}
+// const m = (s: Socket<string>) =>
+//   s.source$;
+//
+// type X = ReadableSocket<string>;
+// type Y = SocketData<X>;
+// type Z = Y;
+
+// export class Socket<T> {
+//   source$!: Observable<T>;
+//   sink!: Sink<T>;
+// }
+
 
 export type Sink<T> = (value?: T) => PortMessage<T>
 
 export type PortMessage<T> = [string, T]
 
-export const source = <T>(sock: Socket<T>) =>
+export const source = <T>(sock: Socket<T> | ReadableSocket<T>) =>
   sock.source$;
 
-export const sink = <T>(sock: Socket<T>) =>
+export const sink = <T>(sock: Socket<T> | WritableSocket<T>) =>
   sock.sink;
 
 export type RootCircuit<U> = (port: U) => Observable<PortMessage<any>>

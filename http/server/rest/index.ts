@@ -3,7 +3,7 @@ import {OutgoingHttpHeaders, ServerResponse} from "http";
 import {mergeDeepLeft} from 'ramda'
 import {fromEvent, merge, race} from "rxjs";
 import {reduce, takeUntil, map, mergeMap, take, filter} from "rxjs/operators";
-import {LifecyclePort, sink, Socket, source, latestMergeMapProc, mapProc, mapToProc, mergeMapProc} from "pkit";
+import {LifecyclePort, sink, Socket, WritableSocket, ReadableSocket, source, latestMergeMapProc, mapProc, mapToProc, mergeMapProc} from "pkit";
 import {HttpServerContext} from "pkit/http/server/processors";
 
 export class HttpServerRestResponse {
@@ -34,20 +34,20 @@ type ResponseInit = {
 
 // JSON.parseが例外の場合があるよ
 export class HttpServerRestPort extends LifecyclePort<HttpServerContext> {
-  request = new class {
-    body = new class {
-      raw = new Socket<Buffer>();
-      json = new Socket<any>();
+  readonly request = new class {
+    readonly body = new class {
+      readonly raw = new ReadableSocket<Buffer>();
+      readonly json = new ReadableSocket<any>();
     }
   }
-  response = new class {
-    raw = new Socket<HttpServerRestResponse>();
-    json = new Socket<any>();
-    html = new Socket<string>();
+  readonly response = new class {
+    readonly raw = new WritableSocket<HttpServerRestResponse>();
+    readonly json = new WritableSocket<any>();
+    readonly html = new WritableSocket<string>();
   }
 
-  circuit () {
-    return httpServerRestKit(this);
+  circuit (port: this) {
+    return httpServerRestKit(port);
   }
 }
 
@@ -66,7 +66,7 @@ export const makeHtmlResponse = (html: string, init? : ResponseInit) =>
 export const httpServerRestKit = (port: HttpServerRestPort) =>
   merge(
     requestKit(port),
-    responseKit(port),
+    responseKit.call(port, port),
 
     mapToProc(source(port.init).pipe(
       mergeMap(([req, res]) =>
@@ -79,7 +79,7 @@ export const httpServerRestKit = (port: HttpServerRestPort) =>
 
 const requestKit = (port: HttpServerRestPort) =>
   merge(
-    mergeMapProc(source(port.init), sink(port.request.body.raw), ([req]) =>
+    mergeMapProc(source(port.init), port.request.body.raw.getSink(), ([req]) =>
       fromEvent<Buffer>(req, 'data').pipe(
         takeUntil(fromEvent(req, 'end')),
         reduce((acc, chunk) =>
@@ -93,16 +93,16 @@ const requestKit = (port: HttpServerRestPort) =>
           `${req.headers['content-type']}`.startsWith('application/json')),
         mergeMap(() =>
           source(port.request.body.raw).pipe(take(1)))),
-      sink(port.request.body.json), async (body) =>
+      port.request.body.json.getSink(), async (body) =>
         JSON.parse(body as any), sink(port.err)),
   );
 
 const responseKit = (port: HttpServerRestPort) =>
   merge(
-    mapProc(source(port.response.json), sink(port.response.raw), makeJsonResponse),
-    mapProc(source(port.response.html), sink(port.response.raw), makeHtmlResponse),
+    mapProc(port.response.json.getSource(), sink(port.response.raw), makeJsonResponse),
+    mapProc(port.response.html.getSource(), sink(port.response.raw), makeHtmlResponse),
 
-    latestMergeMapProc(source(port.response.raw), sink(port.info), [source(port.init)],
+    latestMergeMapProc(port.response.raw.getSource(), sink(port.info), [source(port.init)],
       async ([response, [, res]]) => ({
         response: {
           writeHead: res.writeHead.apply(res, response.writeHeadArgs()),
