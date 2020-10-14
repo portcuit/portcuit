@@ -45,7 +45,7 @@ export class NextRestPort<T, U extends NextRestParams<T>> extends NextStatePort<
 
   restKit (port: this) {
     return merge(
-      port.rest.circuit(port.rest),
+      port.rest.httpServerRestKit(port.rest),
       port.stateKit(port),
       mapProc(source(port.init), sink(port.rest.init), ({ctx}) => ctx),
       mapToProc(source(port.rest.terminated), sink(port.terminated))
