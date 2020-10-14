@@ -69,49 +69,6 @@ export const preflightProc = (source$: Observable<HttpServerContext>, sink: Sink
           sink({name: 'preflight',
             ...pick(['url'], req)})))));
 
-export const notFoundProc = (source$: Observable<HttpServerContext>, sink: Sink<any>) =>
-  source$.pipe(
-    filter(([,res]) =>
-      !res.hasHeader('X-Request-Id')),
-    tap(([,res]) =>
-      res.writeHead(404, {
-        'Access-Control-Allow-Origin': '*',
-        'X-Request-Id': (new Date).getTime().toString()
-      })),
-    mergeMap(([req,res]) =>
-      from(promisify(res.end).bind(res)()).pipe(
-        map(() =>
-          sink({name: 'notFound',
-            ...pick(['url', 'method'], req)})))));
-
-export const remoteReceiveProc = (source$: Observable<HttpServerContext>, sink: Sink<void>, errSink: Sink<Error>) =>
-  source$.pipe(
-    mergeMap(([req, res]) =>
-      fromEvent<Buffer>(req, 'data').pipe(
-        takeUntil(fromEvent(req, 'end')),
-        toArray(),
-        mergeMap((chunks: Buffer[]) =>
-          merge(
-            of(JSON.parse(Buffer.concat(chunks).toString())),
-            of([200, JSON.stringify({error: false})] as const).pipe(
-              tap(([statusCode]) =>
-                res.writeHead(statusCode, {'Content-Type': 'application/json; charset=utf-8'})),
-              mergeMap(([, payload]) =>
-                promisify<string>(res.end).call(res, payload)),
-              map(() =>
-                sink())))),
-        catchError(err =>
-          merge(
-            of(errSink(err)),
-            ...err instanceof SyntaxError ? [
-              of([400, JSON.stringify({error: true, message: err.message})] as const).pipe(
-                tap(([statusCode]) =>
-                  res.writeHead(statusCode, {'Content-Type': 'application/json; charset=utf-8'})),
-                mergeMap(([, payload]) =>
-                  promisify<string>(res.end).call(res, payload)),
-                map(() =>
-                  sink()))] : [])))));
-
 export const promiseJsonProc = <T, U>(source$: Observable<HttpServerContext>, sink: Sink<void>, fn: (data: T) => Promise<U>) =>
   source$.pipe(
     mergeMap(([req, res]) =>

@@ -5,7 +5,7 @@ import {delay} from "rxjs/operators";
 import {source, sink, Socket, EndpointPort, LifecyclePort} from 'pkit/core'
 import {mapProc, latestMapProc, latestMergeMapProc, mergeMapProc, mapToProc} from 'pkit/processors'
 import {RunPort, runKit} from 'pkit/run'
-import {HttpServerContext, remoteReceiveProc, notFoundProc} from './processors'
+import {HttpServerContext} from './processors'
 
 export * from './processors'
 export * from './sse/'
@@ -47,9 +47,3 @@ const httpServerKit = (port: HttpServerPort) =>
       ([,server]) =>
         promisify(server.close).call(server)),
   );
-
-export const httpServerRemoteKit = (port: EndpointPort<HttpServerContext, void>) =>
-  remoteReceiveProc(source(port.req), sink(port.res), sink(port.err));
-
-export const notFoundKit = (port: HttpServerPort) =>
-  notFoundProc(source(port.event.request), sink(port.info));

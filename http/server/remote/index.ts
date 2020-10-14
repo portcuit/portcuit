@@ -12,9 +12,9 @@ import {
   sourceSinkMapSocket
 } from "pkit/core";
 import {directProc, mapProc, mapToProc, latestMergeMapProc} from "pkit/processors";
-import {HttpServerRestPort} from "../rest/";
-import {httpServerSseKit, HttpServerSseParams, HttpServerSsePort} from "../sse/";
 import {HttpServerContext} from "../processors";
+import {HttpServerRestPort} from "../rest/";
+import {HttpServerSseParams, HttpServerSsePort} from "../sse/";
 
 export type HttpServerRemoteParams<T> = {
   mapping: PortSourceOrSink<T>;
@@ -32,21 +32,21 @@ export class HttpServerRemotePort<T, U extends HttpServerRemoteParams<T> = HttpS
   constructor(public shadow: T) { super(); }
 
   circuit (port: HttpServerRemotePort<T>) {
-    return httpServerRemoteKit<T>(port);
+    return circuit<T>(port);
   }
 }
 
-const httpServerRemoteKit = <T>(port: HttpServerRemotePort<T>) =>
+const circuit = <T>(port: HttpServerRemotePort<T>) =>
   merge(
-    httpServerSseKit(port.sse),
-    port.rest.httpServerRestKit(port.rest),
+    HttpServerSsePort.prototype.circuit(port.sse),
+    HttpServerRestPort.prototype.circuit(port.rest),
     sendKit<T>(port),
     receiveKit<T>(port),
 
-    mapProc(source(port.init), sink(port.ctx), ({ctx}) =>
-      ctx),
+    mapProc(source(port.init), sink(port.ctx), ({ctx}) => ctx),
 
-    mapToProc(race(source(port.rest.terminated), source(port.sse.terminated)),
+    mapToProc(race(source(port.rest.terminated),
+      source(port.sse.terminated)),
       sink(port.terminated)),
   )
 
@@ -92,6 +92,9 @@ const receiveKit = <T>(port: HttpServerRemotePort<T>) =>
 
       return merge(
         directProc(source(port.rest.request.body.json), sink(port.msg.receive)),
+
+        mapToProc(source(port.rest.request.body.raw), sink(port.rest.response.json),
+          {received: true}),
 
         source(port.msg.receive).pipe(
           filter(([path]) =>

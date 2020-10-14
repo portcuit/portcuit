@@ -21,7 +21,7 @@ export class LifecyclePort<T=any> {
 
   entry(...args: any[]) {
     let circuit, params, logger;
-    if (args[0] instanceof Observable) {
+    if (typeof args[0] === 'function') {
       circuit = args[0];
       params = args[1];
       logger = args[2] || defaultLogger;

@@ -45,14 +45,11 @@ export class HttpServerRestPort extends LifecyclePort<HttpServerContext> {
     readonly json = new WritableSocket<any>();
     readonly html = new WritableSocket<string>();
   }
-
-  circuit (port: this) {
-    return port.httpServerRestKit(port);
+  readonly event = new class {
+    readonly close = new Socket<{writeHead: ServerResponse, end: void}>();
   }
 
-  httpServerRestKit (port: this) {
-    return httpServerRestKit(port);
-  }
+  circuit (port: this) { return circuit(port); }
 }
 
 export const makeJsonResponse = (json: any, init?: ResponseInit) =>
@@ -67,18 +64,18 @@ export const makeHtmlResponse = (html: string, init? : ResponseInit) =>
     headers: {'Content-Type': 'text/html; charset=utf-8'}
   }, init ?? {}))
 
-const httpServerRestKit = (port: HttpServerRestPort) =>
+const circuit = (port: HttpServerRestPort) =>
   merge(
     requestKit(port),
-    responseKit.call(port, port),
+    responseKit(port),
 
     mapToProc(source(port.init).pipe(
-      mergeMap(([req, res]) =>
+      mergeMap(([req]) =>
         race(
-          fromEvent(res, 'close'),
+          source(port.event.close),
           fromEvent(req, 'abort')).pipe(
           take(1)))),
-      sink(port.terminated)),
+      sink(port.terminated))
   )
 
 const requestKit = (port: HttpServerRestPort) =>
@@ -98,7 +95,7 @@ const requestKit = (port: HttpServerRestPort) =>
         mergeMap(() =>
           source(port.request.body.raw).pipe(take(1)))),
       port.request.body.json.getSink(), async (body) =>
-        JSON.parse(body as any), sink(port.err)),
+        JSON.parse(body as any), sink(port.err))
   );
 
 const responseKit = (port: HttpServerRestPort) =>
@@ -106,11 +103,9 @@ const responseKit = (port: HttpServerRestPort) =>
     mapProc(port.response.json.getSource(), sink(port.response.raw), makeJsonResponse),
     mapProc(port.response.html.getSource(), sink(port.response.raw), makeHtmlResponse),
 
-    latestMergeMapProc(port.response.raw.getSource(), sink(port.info), [source(port.init)],
+    latestMergeMapProc(port.response.raw.getSource(), sink(port.event.close), [source(port.init)],
       async ([response, [, res]]) => ({
-        response: {
-          writeHead: res.writeHead.apply(res, response.writeHeadArgs()),
-          end: await promisify<any, any, any>(res.end).apply(res, response.endArgs())
-        }
+        writeHead: res.writeHead.apply(res, response.writeHeadArgs()),
+        end: await promisify<any, any, any>(res.end).apply(res, response.endArgs())
       }))
   )
