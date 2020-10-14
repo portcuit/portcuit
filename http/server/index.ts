@@ -10,6 +10,7 @@ import {HttpServerContext, remoteReceiveProc, notFoundProc} from './processors'
 export * from './processors'
 export * from './sse/'
 export * from './rest/'
+export * from './remote/'
 
 export type HttpServerParams = {
   server?: http.ServerOptions;
@@ -17,14 +18,18 @@ export type HttpServerParams = {
 }
 
 export class HttpServerPort extends LifecyclePort<HttpServerParams> {
-  run = new RunPort;
-  server = new Socket<http.Server>();
-  event = new class {
-    request = new Socket<HttpServerContext>();
+  readonly run = new RunPort;
+  readonly server = new Socket<http.Server>();
+  readonly event = new class {
+    readonly request = new Socket<HttpServerContext>();
+  }
+
+  circuit (port: this) {
+    return httpServerKit(port);
   }
 }
 
-export const httpServerKit = (port: HttpServerPort) =>
+const httpServerKit = (port: HttpServerPort) =>
   merge(
     runKit(port.run, port.running),
     mapProc(source(port.init), sink(port.server), ({server={}}) =>

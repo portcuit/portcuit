@@ -20,7 +20,7 @@ export type HttpServerRemoteParams<T> = {
   mapping: PortSourceOrSink<T>;
 } & HttpServerSseParams
 
-export class HttpServerRemotePort<T> extends LifecyclePort<HttpServerRemoteParams<T>> {
+export class HttpServerRemotePort<T, U extends HttpServerRemoteParams<T> = HttpServerRemoteParams<T>> extends LifecyclePort<U> {
   sse = new HttpServerSsePort;
   rest = new HttpServerRestPort;
   ctx = new Socket<HttpServerContext>();
@@ -30,14 +30,18 @@ export class HttpServerRemotePort<T> extends LifecyclePort<HttpServerRemoteParam
   }
   expose = new Socket<PortMessage<any>>();
   constructor(public shadow: T) { super(); }
+
+  circuit (port: HttpServerRemotePort<T>) {
+    return httpServerRemoteKit<T>(port);
+  }
 }
 
-export const httpServerRemoteKit = <T>(port: HttpServerRemotePort<T>) =>
+const httpServerRemoteKit = <T>(port: HttpServerRemotePort<T>) =>
   merge(
     httpServerSseKit(port.sse),
     port.rest.httpServerRestKit(port.rest),
-    sendKit(port),
-    receiveKit(port),
+    sendKit<T>(port),
+    receiveKit<T>(port),
 
     mapProc(source(port.init), sink(port.ctx), ({ctx}) =>
       ctx),

@@ -29,19 +29,6 @@ export class WritableSocket<T> {
   }
 }
 
-// const m = (s: Socket<string>) =>
-//   s.source$;
-//
-// type X = ReadableSocket<string>;
-// type Y = SocketData<X>;
-// type Z = Y;
-
-// export class Socket<T> {
-//   source$!: Observable<T>;
-//   sink!: Sink<T>;
-// }
-
-
 export type Sink<T> = (value?: T) => PortMessage<T>
 
 export type PortMessage<T> = [string, T]
@@ -225,28 +212,6 @@ type Nested<T> = {
   | { [P in number | string]?: { [P in number | string]?: { [P in number | string]?: T }}}
 }
 
-export type Ns<T extends {}> = T
-
-export type NsPath = string[]
-
-export const ns2path = <T>(ns: Ns<DeepPartial<T>>): string[][] => {
-  const products: any[] = [];
-
-  const walk = (ns: any, path: any[]=[]): any => {
-    if (ns === null || isEmpty(ns)) {
-      products.push(path);
-      return;
-    } else {
-// TODO: 配列型にも対応!!
-      return Object.entries(ns).map(([key, val]) =>
-        walk(val, path.concat(key)));
-    }
-  };
-  walk(ns);
-
-  return products;
-};
-
 export type MappedWrapObservable<T> = {[P in keyof T]: Observable<T[P]>}
 export type MappedWrapSocket<T> = {[P in keyof T]: Socket<T[P]>}
 
@@ -259,7 +224,5 @@ export const throwErrorIfUndefined = <T>(data: T): T => {
 
 export const tuple = <T extends any[]>(...args: T) =>
   args;
-
-export type InferPortMessageFromSocket<T> = T extends Socket<infer I> ? PortMessage<I> : never;
 
 export type InferSinkObservable<T> = T extends Socket<infer I> ? Observable<PortMessage<I>> : never;

@@ -1,7 +1,7 @@
 import {PortMessage, Socket} from './processors'
 import {entry, defaultLogger} from './processors'
 import {tap} from "rxjs/operators";
-import {Observable, Subject} from "rxjs";
+import {Observable, of, Subject} from "rxjs";
 
 export * from './processors'
 
@@ -38,17 +38,13 @@ export class LifecyclePort<T=any> {
       .subscribe({error: this.error.bind(this)})
 
     return subject$;
-
-
-    // const subject$ = new Subject<PortMessage<any>>();
-    // return subject$
   }
 
   error (err: Error) {
     throw err;
   }
 
-  circuit (port: this) {
+  circuit (port: any) {
     throw new Error('need implement')
   }
 }

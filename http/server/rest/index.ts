@@ -28,8 +28,8 @@ export class HttpServerRestResponse {
 
 type ResponseInit = {
   status?: number;
-  statusText?: string,
-  headers?: OutgoingHttpHeaders
+  statusText?: string;
+  headers?: OutgoingHttpHeaders;
 }
 
 // JSON.parseが例外の場合があるよ
@@ -44,6 +44,10 @@ export class HttpServerRestPort extends LifecyclePort<HttpServerContext> {
     readonly raw = new WritableSocket<HttpServerRestResponse>();
     readonly json = new WritableSocket<any>();
     readonly html = new WritableSocket<string>();
+  }
+
+  circuit (port: this) {
+    return port.httpServerRestKit(port);
   }
 
   httpServerRestKit (port: this) {
