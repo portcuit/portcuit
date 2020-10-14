@@ -95,12 +95,16 @@ export type NextSsrParams<T> = NextRenderParams<T> & NextRestParams<T>;
 export class NextSsrPort<T extends IState, U extends NextSsrParams<T> = NextSsrParams<T>> extends NextRestPort<T, U> {
   vdom = new SnabbdomSsrPort;
 
-  circuit (port: this) {
+  nextSsrKit (port: this) {
     return merge(
       port.restKit(port),
       nextRenderKit(port),
       directProc(source(port.vdom.html), sink(port.rest.response.html))
     )
+  }
+
+  circuit (port: this) {
+    return port.nextSsrKit(port)
   }
 }
 

@@ -5,7 +5,7 @@ import handler from "serve-handler";
 import {from, merge} from "rxjs";
 import {delay, map, switchMap} from "rxjs/operators";
 import {sink, source, mergeMapProc, entry, terminatedComplete, mapToProc, mount, LifecyclePort, mapProc} from "pkit";
-import {HttpServerPort, httpServerKit, route, HttpServerParams} from "pkit/http/server";
+import {HttpServerPort, route, HttpServerParams} from "pkit/http/server";
 import {CreateSsr} from "./ssr/";
 
 export * from './ssr/'
@@ -21,7 +21,8 @@ export class NextHttpPort extends LifecyclePort<NextHttpParams> {
 
 export const nextHttpKit = (port: NextHttpPort) =>
   merge(
-    httpServerKit(port.server),
+    HttpServerPort.prototype.circuit(port.server),
+
     source(port.init).pipe(
       switchMap(({pages}) =>
         from(promisify(glob)(`${pages}/**/[!_]*.tsx`)).pipe(
