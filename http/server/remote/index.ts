@@ -11,8 +11,8 @@ import {
   sourceSinkMap,
   sourceSinkMapSocket
 } from "pkit/core";
-import {directProc, mapProc, mapToProc, latestMergeMapProc, mergeMapProc} from "pkit/processors";
-import {httpServerRestKit, HttpServerRestPort} from "../rest/";
+import {directProc, mapProc, mapToProc, latestMergeMapProc} from "pkit/processors";
+import {HttpServerRestPort} from "../rest/";
 import {httpServerSseKit, HttpServerSseParams, HttpServerSsePort} from "../sse/";
 import {HttpServerContext} from "../processors";
 
@@ -22,7 +22,7 @@ export type HttpServerRemoteParams<T> = {
 
 export class HttpServerRemotePort<T> extends LifecyclePort<HttpServerRemoteParams<T>> {
   sse = new HttpServerSsePort;
-  api = new HttpServerRestPort;
+  rest = new HttpServerRestPort;
   ctx = new Socket<HttpServerContext>();
   msg = new class {
     receive = new Socket<PortMessage<any>>();
@@ -35,14 +35,14 @@ export class HttpServerRemotePort<T> extends LifecyclePort<HttpServerRemoteParam
 export const httpServerRemoteKit = <T>(port: HttpServerRemotePort<T>) =>
   merge(
     httpServerSseKit(port.sse),
-    httpServerRestKit(port.api),
+    port.rest.circuit(port.rest),
     sendKit(port),
     receiveKit(port),
 
     mapProc(source(port.init), sink(port.ctx), ({ctx}) =>
       ctx),
 
-    mapToProc(race(source(port.api.terminated), source(port.sse.terminated)),
+    mapToProc(race(source(port.rest.terminated), source(port.sse.terminated)),
       sink(port.terminated)),
   )
 
@@ -87,7 +87,7 @@ const receiveKit = <T>(port: HttpServerRemotePort<T>) =>
       const [shadowSourceMap, shadowSinkMap] = sourceSinkMapSocket(port.shadow);
 
       return merge(
-        directProc(source(port.api.request.body.json), sink(port.msg.receive)),
+        directProc(source(port.rest.request.body.json), sink(port.msg.receive)),
 
         source(port.msg.receive).pipe(
           filter(([path]) =>
@@ -102,7 +102,7 @@ const receiveKit = <T>(port: HttpServerRemotePort<T>) =>
                 sink(data))))),
           sink(port.expose)),
 
-        directProc(source(port.ctx), sink(port.api.init)),
+        directProc(source(port.ctx), sink(port.rest.init)),
       )
     }));
 
