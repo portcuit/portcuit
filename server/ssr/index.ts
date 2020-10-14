@@ -14,7 +14,7 @@ import {
   Portcuit,
   latestMergeMapProc, Patch, Socket, EncodedPatch, encodePatch, decodePatch, latestMapProc
 } from 'pkit'
-import {HttpServerContext, httpServerRestKit, HttpServerRestPort} from "pkit/http/server";
+import {HttpServerContext, HttpServerRestPort} from "pkit/http/server";
 import {FC} from "@pkit/snabbdom";
 import {snabbdomSsrKit, SnabbdomSsrPort} from "@pkit/snabbdom/ssr";
 import {IState} from "../../";
@@ -26,12 +26,12 @@ type NextStateParams<T> = {
 class NextStatePort<T, U extends NextStateParams<T>> extends LifecyclePort<U> {
   state = new StatePort<T>();
 
-  stateKit () {
+  stateKit (port: this) {
     return merge(
-      stateKit(this.state),
-      mapProc(source(this.init).pipe(delay(0)),
-        sink(this.state.init), ({state}) => state),
-      mapToProc(source(this.init), sink(this.ready))
+      stateKit(port.state),
+      mapProc(source(port.init).pipe(delay(0)),
+        sink(port.state.init), ({state}) => state),
+      mapToProc(source(port.init), sink(port.ready))
     )
   }
 }
@@ -43,12 +43,12 @@ export type NextRestParams<T> = {
 export class NextRestPort<T, U extends NextRestParams<T>> extends NextStatePort<T, U> {
   rest = new HttpServerRestPort;
 
-  restKit () {
+  restKit (port: this) {
     return merge(
-      httpServerRestKit(this.rest),
-      this.stateKit(),
-      mapProc(source(this.init), sink(this.rest.init), ({ctx}) => ctx),
-      mapToProc(source(this.rest.terminated), sink(this.terminated))
+      port.rest.circuit(port.rest),
+      port.stateKit(port),
+      mapProc(source(port.init), sink(port.rest.init), ({ctx}) => ctx),
+      mapToProc(source(port.rest.terminated), sink(port.terminated))
     )
   }
 }
@@ -59,11 +59,11 @@ export class NextApiPort<T, U extends NextRestParams<T> = NextRestParams<T>> ext
     decode = new Socket<EncodedPatch>();
   }
 
-  apiKit () {
+  apiKit (port: this) {
     return merge(
-      this.restKit(),
-      mapProc(source(this.patch.encode), sink(this.rest.response.json), encodePatch),
-      mapProc(source(this.patch.decode), sink(this.state.patch), decodePatch),
+      port.restKit(port),
+      mapProc(source(port.patch.encode), sink(port.rest.response.json), encodePatch),
+      mapProc(source(port.patch.decode), sink(port.state.patch), decodePatch),
     )
   }
 }
@@ -95,11 +95,11 @@ export type NextSsrParams<T> = NextRenderParams<T> & NextRestParams<T>;
 export class NextSsrPort<T extends IState, U extends NextSsrParams<T> = NextSsrParams<T>> extends NextRestPort<T, U> {
   vdom = new SnabbdomSsrPort;
 
-  circuit () {
+  circuit (port: this) {
     return merge(
-      this.restKit(),
-      nextRenderKit(this),
-      directProc(source(this.vdom.html), sink(this.rest.response.html))
+      port.restKit(port),
+      nextRenderKit(port),
+      directProc(source(port.vdom.html), sink(port.rest.response.html))
     )
   }
 }
@@ -112,19 +112,19 @@ type NextSsgParams<T> = {
   info: NextSsgInfo,
 } & NextRenderParams<T> & NextStateParams<T>
 
-export class NextSsgPort<T, U extends NextSsgParams<T> = NextSsgParams<T>> extends NextStatePort<T, U> {
+export class NextSsgPort<T extends IState, U extends NextSsgParams<T> = NextSsgParams<T>> extends NextStatePort<T, U> {
   vdom = new SnabbdomSsrPort;
+  ssgKit (port: this) {
+    return merge(
+      port.stateKit(port),
+      nextRenderKit(port),
+    );
+  }
 }
 
-export const nextSsgKit = <T extends IState>(port: NextSsgPort<T>) =>
-  merge(
-    port.stateKit.call(port),
-    nextRenderKit(port),
-  )
+export type CreateSsg<T extends IState> = (...ssgInfo: NextSsgInfo) => Portcuit<NextSsgPort<T>>
 
-export type CreateSsg<T> = (...ssgInfo: NextSsgInfo) => Portcuit<NextSsgPort<T>>
-
-export const ssgPublishKit = <T>(port: NextSsgPort<T>) =>
+export const ssgPublishKit = <T extends IState>(port: NextSsgPort<T>) =>
   latestMergeMapProc(source(port.vdom.html), sink(port.terminated),
     [source(port.init)], async ([html,{info: [fileName, input, output]}]) => {
       const path = `${output}${fileName.substr(input.length).replace(/\/ui/, '')}.html`;
