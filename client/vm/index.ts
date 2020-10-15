@@ -2,10 +2,9 @@ import {merge} from "rxjs";
 import {
   childRemoteWorkerKit, EncodedPatch, latestMapProc,
   LifecyclePort,
-  mapToProc, Patch, Portcuit,
+  mapToProc, Patch,
   sink, Socket,
   source,
-  stateKit,
   StatePort
 } from "pkit";
 import {snabbdomActionPatchKit, SnabbdomPort} from "@pkit/snabbdom/csr";
@@ -26,7 +25,7 @@ export const vmKit = <T>(port: VmPort<T>) =>
     childRemoteWorkerKit<VmPort<T>>({
       ready: source(port.ready),
       state: {
-        raw: source(port.state.raw),
+        data: source(port.state.data),
         init: sink(port.state.init)
       },
       vdom: {
@@ -34,7 +33,7 @@ export const vmKit = <T>(port: VmPort<T>) =>
         action: sink(port.vdom.action)
       }
     }, port, self as any),
-    stateKit(port.state),
+    StatePort.prototype.circuit(port.state),
     snabbdomActionPatchKit(port.vdom, port.state),
     latestMapProc(source(port.state.data), sink(port.vdom.render),
       [source(port.init)], ([state, Body]) =>

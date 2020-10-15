@@ -9,7 +9,6 @@ import {
   mapToProc,
   sink,
   source,
-  stateKit,
   StatePort,
   Portcuit,
   latestMergeMapProc, Patch, Socket, EncodedPatch, encodePatch, decodePatch, latestMapProc
@@ -28,7 +27,7 @@ class NextStatePort<T, U extends NextStateParams<T>> extends LifecyclePort<U> {
 
   stateKit (port: this) {
     return merge(
-      stateKit(port.state),
+      StatePort.prototype.circuit(port.state),
       mapProc(source(port.init).pipe(delay(0)),
         sink(port.state.init), ({state}) => state),
       mapToProc(source(port.init), sink(port.ready))

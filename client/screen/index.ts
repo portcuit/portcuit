@@ -44,7 +44,7 @@ const useAppKit = (port: ScreenPort) =>
     parentRemoteWorkerKit<VmPort<any>>({
       ready: sink(port.app.vm.ready),
       state: {
-        raw: sink(port.state),
+        data: sink(port.state),
         init: source(port.app.vm.state.init)
       },
       vdom: {
