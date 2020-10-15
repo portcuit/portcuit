@@ -13,6 +13,36 @@ import {LifecyclePort, sink, Socket, source, directProc, fromEventProc, latestMa
 
 export * from './processors'
 
+export type PuppeteerParams = Omit<PuppeteerBrowserParams & PuppeteerPageParams, 'browser'>;
+
+export class PuppeteerPort extends LifecyclePort<PuppeteerParams> {
+  run = new RunPort;
+  browser = new PuppeteerBrowserPort;
+  page = new PuppeteerPagePort;
+
+  circuit (port: this) {
+    return puppeteerKit(port)
+  }
+}
+
+const puppeteerKit = (port: PuppeteerPort) =>
+  merge(
+    runKit(port.run, port.running),
+    PuppeteerBrowserPort.prototype.circuit(port.browser),
+    PuppeteerPagePort.prototype.circuit(port.page),
+    directProc(source(port.init), sink(port.browser.init)),
+    directProc(source(port.browser.ready), sink(port.ready)),
+    latestMapProc(source(port.run.start), sink(port.page.init),
+      [source(port.init), source(port.browser.browser)] as const, ([,page, browser]) =>
+        ({browser, ...page, createNewPage: false})),
+    directProc(source(port.page.ready), sink(port.run.started)),
+    directProc(source(port.run.stop), sink(port.page.terminate)),
+    directProc(source(port.page.terminated), sink(port.run.stopped)),
+    mapToProc(source(port.run.stopped), sink(port.browser.terminate)),
+    directProc(source(port.terminate), sink(port.browser.terminate)),
+    directProc(source(port.browser.terminated), sink(port.terminated)),
+  )
+
 export type PuppeteerBrowserParams = {
   launch?: Readonly<Parameters<typeof puppeteer.launch>>
 }
@@ -23,9 +53,29 @@ export class PuppeteerBrowserPort extends LifecyclePort<PuppeteerBrowserParams> 
     targetcreated = new Socket<Target>();
     disconnected = new Socket<void>();
   }
+
+  circuit (port: this) {
+    return puppeteerBrowserKit(port);
+  }
 }
 
+const puppeteerBrowserKit = (port: PuppeteerBrowserPort) =>
+  merge(
+    mergeMapProc(source(port.init).pipe(
+      filter(({launch}) =>
+        !!launch)),
+      sink(port.browser), ({launch}) =>
+        puppeteer.launch(...launch!)),
+    mapToProc(source(port.browser).pipe(delay(0)), sink(port.ready)),
+    latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.browser)],
+      async ([,browser]) => ({close: await browser.close()})),
+    fromEventProc(source(port.browser), sink(port.event.targetcreated), 'targetcreated'),
+    fromEventProc(source(port.browser), sink(port.event.disconnected), 'disconnected'),
+    mapToProc(source(port.event.disconnected), sink(port.terminated)),
+  )
+
 export type PuppeteerPageParams = {
+  browser: Browser;
   userAgent?: string;
   viewport?: Viewport;
   goto?: Parameters<Page['goto']>;
@@ -41,71 +91,29 @@ export class PuppeteerPagePort extends LifecyclePort<PuppeteerPageParams> {
     request = new Socket<HTTPRequest>();
     dialog = new Socket<Dialog>();
   }
-  info = new Socket<any>();
+
+  circuit (port: this) {
+    return puppeteerPageKit(port);
+  }
 }
 
-export type PuppeteerParams = PuppeteerBrowserParams & PuppeteerPageParams
-
-export class PuppeteerPort extends LifecyclePort<PuppeteerParams> {
-  run = new RunPort;
-  browser = new  PuppeteerBrowserPort;
-  page = new PuppeteerPagePort;
-}
-
-export const puppeteerKit = (port: PuppeteerPort) =>
+const puppeteerPageKit = (port: PuppeteerPagePort) =>
   merge(
-    runKit(port.run, port.running),
-    puppeteerBrowserKit(port.browser),
-    puppeteerPageKit(port.page, port.browser),
-    directProc(source(port.init), sink(port.browser.init)),
-    directProc(source(port.browser.ready), sink(port.ready)),
-    latestMapProc(source(port.run.start), sink(port.page.init),
-      [source(port.init)], ([,page]) =>
-        ({...page, createNewPage: false})),
-    directProc(source(port.page.ready), sink(port.run.started)),
-    directProc(source(port.run.stop), sink(port.page.terminate)),
-    directProc(source(port.page.terminated), sink(port.run.stopped)),
-    mapToProc(source(port.run.stopped), sink(port.browser.terminate)),
-    directProc(source(port.terminate), sink(port.browser.terminate)),
-    directProc(source(port.browser.terminated), sink(port.terminated)),
-  )
-
-export const puppeteerBrowserKit = (port: PuppeteerBrowserPort) =>
-  merge(
-    mergeMapProc(source(port.init).pipe(
-      filter(({launch}) =>
-        !!launch)),
-      sink(port.browser), ({launch}) =>
-        puppeteer.launch(...launch!)),
-    mapToProc(source(port.browser).pipe(delay(0)), sink(port.ready)),
-    latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.browser)],
-      async ([,browser]) => ({close: await browser.close()})),
-    fromEventProc(source(port.browser), sink(port.event.targetcreated), 'targetcreated'),
-    fromEventProc(source(port.browser), sink(port.event.disconnected), 'disconnected'),
-    mapToProc(source(port.event.disconnected), sink(port.terminated)),
-  )
-
-export const puppeteerPageKit = (port: PuppeteerPagePort, browser: PuppeteerBrowserPort) =>
-  merge(
-    latestMergeMapProc(source(port.init), sink(port.page),
-      [source(browser.browser)], async ([{createNewPage = true}, browser]) =>
+    mergeMapProc(source(port.init), sink(port.page),
+      async ({browser, createNewPage = true}) =>
         createNewPage ?
           (await browser.newPage()) :
           (await browser.pages())[0]),
 
-    latestMergeMapProc(source(port.page).pipe(
-      tap((page) =>
-        page)
-      )
-      , sink(port.ready), [source(port.init)],
+    latestMergeMapProc(source(port.page), sink(port.ready), [source(port.init)],
       ([page, {userAgent, viewport, goto}]) =>
-          concat(...[
-            Promise.resolve('ready'),
-            userAgent && page.setUserAgent(userAgent),
-            viewport && page.setViewport(viewport),
-            goto && page.goto(...goto),
-          ].filter(identity) as Promise<any>[]).pipe(
-            toArray())),
+        concat(...[
+          Promise.resolve('ready'),
+          userAgent && page.setUserAgent(userAgent),
+          viewport && page.setViewport(viewport),
+          goto && page.goto(...goto),
+        ].filter(identity) as Promise<any>[]).pipe(
+          toArray())),
 
     fromEventProc(source(port.page), sink(port.event.load), 'load'),
     fromEventProc(source(port.page), sink(port.event.close), 'close'),
