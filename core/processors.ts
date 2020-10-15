@@ -6,7 +6,7 @@ import type {LifecyclePort} from './'
 export type Socket<T> = {
   source$: Observable<T>;
   sink: Sink<T>;
-} & WritableSocket<T> & ReadableSocket<T>
+}
 
 export const Socket = (function (this: any) {
   this.source$ = undefined;
@@ -158,8 +158,14 @@ export type PortSourceOrSink<T> = {
 export type SocketData<T> = T extends Socket<infer I> ? I : never;
 
 export type PortData<T> = {
-  [P in keyof T]?: T[P] extends Socket<infer I> ? I : PortData<T[P]>
+  [P in keyof T]: T[P] extends Socket<infer I> ? I : PortData<T[P]>
 }
+
+export type PortObservable<T=any> = Observable<PortMessage<T>>
+
+export type PortMessages<T> = {[P in keyof T]:
+  T[P] extends Socket<infer I> ? PortMessage<I> :
+    (T[P] extends Function ? never : PortMessages<T[P]>)}[keyof T]
 
 export type SourceMap = ReadonlyMap<string, Observable<any>>;
 export type SinkMap = ReadonlyMap<string, Sink<any>>;
