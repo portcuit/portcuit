@@ -1,7 +1,4 @@
-import {Observable, of} from 'rxjs'
-import {scan, switchMap, startWith, mergeMap} from 'rxjs/operators'
-import {Sink, DeepPartial, tuple} from 'pkit/core'
-// import type {Compute} from './'
+import {DeepPartial, tuple} from 'pkit/core'
 
 export type StatePatch<T> = DeepPartial<T>
 
@@ -135,25 +132,6 @@ export const patch = (
     return data;
   }
 };
-
-// export const initProc = <T, U>(init$: Observable<T>,
-//                              patch$: Observable<U>,
-//                              rawSink: Sink<T>,
-//                              dataSink: Sink<T>,
-//                              compute: Compute<T>) =>
-//   init$.pipe(
-//     switchMap((initial) =>
-//       patch$.pipe(
-//         scan((acc, curr) =>
-//           patch(curr, JSON.parse(JSON.stringify(acc))), initial),
-//         mergeMap((raw) =>
-//           of(
-//             rawSink(JSON.parse(JSON.stringify(raw))),
-//             dataSink(compute(raw))
-//           )),
-//         startWith(
-//           rawSink(initial),
-//           dataSink(compute(initial))))));
 
 export const splice = <T>(start: number, deleteCount=0, items: T[]=[]): T[] =>
   Array(start).concat(Array(deleteCount).fill(undefined)).concat(...items);
