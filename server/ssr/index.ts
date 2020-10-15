@@ -62,7 +62,7 @@ export class NextApiPort<T, U extends NextRestParams<T> = NextRestParams<T>> ext
     return merge(
       port.restKit(port),
       mapProc(source(port.patch.encode), sink(port.rest.response.json), encodePatch),
-      mapProc(source(port.patch.decode), sink(port.state.patch), decodePatch),
+      mapProc(source(port.patch.decode), sink(port.state.update), decodePatch),
     )
   }
 }
