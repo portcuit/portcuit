@@ -44,7 +44,7 @@ export class LifecyclePort<T=any> {
     throw err;
   }
 
-  circuit (port: any) {
+  circuit (...args: any[]) {
     throw new Error('need implement')
   }
 }
