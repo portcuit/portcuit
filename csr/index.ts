@@ -81,7 +81,7 @@ export const snabbdomKit = (port: SnabbdomPort) =>
   );
 
 export const snabbdomActionPatchKit = <T>(port: SnabbdomPort, state: StatePort<T>) =>
-  mapProc(source(port.action), sink(state.patch), decodePatch)
+  mapProc(source(port.action), sink(state.update), decodePatch)
 
 const optionsKit = (port: SnabbdomPort) =>
   source(port.init).pipe(
