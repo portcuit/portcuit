@@ -67,13 +67,14 @@ export const run_worker = (src: string, params?: any) => {
 }
 
 export const run = (src: string, params?: any) => {
-  const mode = require(src.startsWith('./') ? resolve(src) : src);
-  const portcuit: Portcuit<LifecyclePort> = mode.portcuit || mode.default;
-  if (!portcuit) {
+  const {Port} = require(src.startsWith('./') ? resolve(src) : src);
+
+  if (!(Port && Port.prototype.circuit)) {
     throw new Error(`portcuit is undefined: ${src}`);
   }
-  const subject$ = entry(new (createDevPort(portcuit.Port)), createDevKit(portcuit.circuit), params || portcuit.params,
+  const subject$ = entry(new (createDevPort(Port)), createDevKit(Port.prototype.circuit), params || Port.params,
     createLogger('/dev/'));
+
   subject$.subscribe({error: console.error});
   subject$.next(['console.init', consoleParams]);
   return subject$;
