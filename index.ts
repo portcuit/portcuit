@@ -56,6 +56,9 @@ const consoleParams = {
   createLogger
 }
 
+// みたいな感じでpuppeteerはここで起動させた方が良さそうな気がする
+// export const run_worker_pptr
+
 export const run_worker = (src: string, params?: any) => {
   const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker}, workerData: {src, params}} as any,
     createLogger('/top/'));
@@ -66,17 +69,24 @@ export const run_worker = (src: string, params?: any) => {
   return subject$;
 }
 
-export const run = (src: string, params?: any) => {
+export const run = (src: string, consoleState = {}, params?: any) => {
   const {Port} = require(src.startsWith('./') ? resolve(src) : src);
-
   if (!(Port && Port.prototype.circuit)) {
     throw new Error(`portcuit is undefined: ${src}`);
   }
+
+  console.log(consoleState);
+  process.exit();
+
+
   const subject$ = entry(new (createDevPort(Port)), createDevKit(Port.prototype.circuit), params || Port.params,
     createLogger('/dev/'));
 
   subject$.subscribe({error: console.error});
   subject$.next(['console.init', consoleParams]);
+
+  Object.assign(globalThis, {subject$});
+
   return subject$;
 }
 
