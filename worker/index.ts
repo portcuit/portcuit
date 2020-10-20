@@ -1,4 +1,3 @@
-import type {Worker as NodeWorker} from 'worker_threads'
 import {merge, of, timer} from 'rxjs'
 import {map, mergeMap} from 'rxjs/operators'
 import {source, sink, Socket, LifecyclePort} from 'pkit/core'
@@ -8,13 +7,13 @@ import {RunPort, runKit} from 'pkit/run'
 export * from './remote/'
 
 export type WorkerParams = {
-  ctor: typeof NodeWorker;
-  args: ConstructorParameters<typeof NodeWorker>
+  ctor: typeof Worker;
+  args: ConstructorParameters<typeof Worker>
 }
 
 export class WorkerPort extends LifecyclePort<WorkerParams> {
   run = new RunPort;
-  worker = new Socket<NodeWorker>();
+  worker = new Socket<Worker>();
   postMessage = new Socket<any>();
   err = new Socket<Error>();
 }
@@ -25,6 +24,7 @@ export const workerKit = (port: WorkerPort) =>
 
     latestMapProc(source(port.run.start), sink(port.worker), [source(port.init)],
       ([,{ctor, args}]) =>
+        // @ts-ignore
         new ctor(...args)),
 
     mapToProc(source(port.worker), sink(port.run.started)),

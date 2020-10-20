@@ -47,3 +47,7 @@ const httpServerKit = (port: HttpServerPort) =>
       ([,server]) =>
         promisify(server.close).call(server)),
   );
+
+export namespace HttpServerPort {
+  export type Params = HttpServerParams;
+}
