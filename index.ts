@@ -3,7 +3,7 @@ import minimatch from 'minimatch'
 import chalk from "chalk";
 import {LifecyclePort, mapProc, mergeMapProc, PortMessage, sink, Socket, source, StatePort} from "pkit";
 import {fromEvent, merge, Observable, of} from "rxjs";
-import {filter, startWith, tap, withLatestFrom} from "rxjs/operators";
+import {filter, tap, withLatestFrom} from "rxjs/operators";
 
 type ConsoleFilter = {
   include: string[];
