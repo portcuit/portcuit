@@ -1,30 +1,22 @@
-import {fromEvent, Observable, merge, of} from 'rxjs'
-import {map, mergeMap, catchError, switchMap} from 'rxjs/operators'
-import {Sink, SourceSink, PortMessage} from 'pkit/core'
+import {fromEvent, Observable, merge} from 'rxjs'
+import {map, switchMap, filter} from 'rxjs/operators'
+import {Sink, PortMessage, SinkMap, SourceMap} from 'pkit/core'
 
-export const receiveProc = (worker$: Observable<Worker>, prefixPath:string[]=[]) =>
+export const receiveProc = (worker$: Observable<Worker>, sinkMap: SinkMap) =>
   worker$.pipe(
     switchMap((worker) =>
-      fromEvent(worker, 'message').pipe(
+      fromEvent<PortMessage<any>>(worker, 'message').pipe(
         map((ev) =>
           'data' in ev ? ev['data'] : ev),
-        map(([type, data]: any) =>
-          [prefixPath.concat(type).join('.'), data] as PortMessage<any>)
-      )));
+        filter(([path]) =>
+          sinkMap.has(path)),
+        map(([path,data]) =>
+          sinkMap.get(path)!(data)))));
 
-export const sendProc = (worker$: Observable<Worker>, msg$: Observable<PortMessage<any>>, infoSink: Sink<any>, errSink: Sink<Error>, sourceSinks: SourceSink[], prefixPath:string[]=[]) =>
+export const sendProc = (worker$: Observable<Worker>, sink: Sink<PortMessage<any>>, sourceMap: SourceMap) =>
   worker$.pipe(
     switchMap((worker) =>
-      merge(msg$,
-        ...sourceSinks.map(([source$, sink]) =>
-          source$.pipe(
-            map((data) =>
-              sink(data)),
-            map(([type, data]) =>
-              [type.split('.').slice(prefixPath.length).join('.'), data])))).pipe(
-        mergeMap((data) =>
-          of(data).pipe(
-            map((data) =>
-              infoSink({send: worker.postMessage(data), data})),
-            catchError((err) =>
-              of(errSink(err))))))));
+      merge(...Array.from(sourceMap.entries()).map(([path, source$]) =>
+        source$.pipe(
+          map((data) =>
+            sink([path, data])))))))

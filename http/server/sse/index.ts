@@ -1,42 +1,56 @@
-import type {IncomingMessage} from "http";
-import {merge} from "rxjs";
 import {promisify} from "util";
-import {LifecyclePort, sink, Socket, source} from 'pkit/core'
-import {directProc, fromEventProc, latestMapProc, latestMergeMapProc, mapProc, mergeMapProc} from "pkit/processors";
-import {RequestArgs} from "../processors";
-import {connectProc, sendProc} from "./processors";
+import {fromEvent, merge} from "rxjs";
+import {LifecyclePort, sink, Socket, source} from "pkit/core";
+import {latestMergeMapProc, mapToProc, directProc, mergeMapProc} from "pkit/processors";
+import {HttpServerContext} from "../processors";
 
-export type SseServerParams = {
-  args: RequestArgs;
-  retry: number;
+export type HttpServerSseParams = {
+  ctx: HttpServerContext;
+  retry?: number;
 }
 
-export class SseServerPort extends LifecyclePort<SseServerParams> {
-  id = new Socket<string>();
-  client = new Socket<IncomingMessage>();
+export class HttpServerSsePort extends LifecyclePort<HttpServerSseParams> {
+  ctx = new Socket<HttpServerContext>();
   event = new class {
+    connect = new Socket<void>();
     close = new Socket<void>();
-  }
+  };
+
+  circuit (port: this) { return circuit(port); }
 }
 
-export const sseServerKit = (port: SseServerPort) =>
+const circuit = (port: HttpServerSsePort) =>
   merge(
-    connectProc(source(port.init), sink(port.id)),
-    mapProc(source(port.init), sink(port.client), ({args:[req]}) => req),
-    directProc(source(port.id), sink(port.ready)),
-    fromEventProc(source(port.client), sink(port.event.close), 'close'),
-    latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.init)],
-      async ([,{args:[,res]}]) => ({
-        end: await promisify<void>(res.end).call(res)
-      })),
-    latestMapProc(source(port.event.close), sink(port.terminated), [source(port.id)],
-      ([,id]) => ({
-        sse: id
-      })),
+    mapToProc(source(port.event.connect), sink(port.ready)),
+
+    connectKit(port),
+
+    mergeMapProc(source(port.init), sink(port.event.close),
+      ({ctx: [req]}) =>
+        fromEvent<void>(req, 'close')),
+
+    latestMergeMapProc(source(port.terminate), sink(port.info),
+      [source(port.init)], async ([,{ctx: [,res]}]) =>
+        ({
+          end: await promisify(res.end).call(res)
+        })),
+
+    directProc(source(port.event.close), sink(port.terminated))
   )
 
-export const sseServerRemoteKit = (port: SseServerPort, socks: Socket<any>[]) =>
-  merge(
-    sendProc(source(port.init), source(port.event.close), sink(port.debug),
-      socks.map(sock =>
-        [source(sock), sink(sock)])))
+const connectKit = (port: HttpServerSsePort) =>
+  mergeMapProc(source(port.init), sink(port.event.connect),
+    async ({ctx: [, res], retry=3000}) => {
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform no-store',
+        'X-Accel-Buffering': 'no',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Methods': '*'
+      });
+
+      return await promisify<string>(res.write).call(res, `retry: ${retry}\n\n`);
+    }
+  )

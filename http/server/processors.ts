@@ -3,41 +3,44 @@ import minimatch from 'minimatch'
 import {pick} from 'ramda'
 import {IncomingMessage, ServerResponse} from 'http'
 import {Observable, from, of, fromEvent, merge} from 'rxjs'
-import {mergeMap, map, catchError, takeUntil, toArray, tap, filter} from 'rxjs/operators'
+import {mergeMap, map, catchError, takeUntil, toArray, tap, filter, delay} from 'rxjs/operators'
 import {Sink} from 'pkit/core'
 
-export type RequestArgs = [IncomingMessage, ServerResponse]
+export type HttpServerContext = [IncomingMessage, ServerResponse]
+
+export const reqToUrl = ({url, headers:{origin}, method}: IncomingMessage) =>
+  new URL(`${origin || 'file://'}${url}`)
 
 export const reserveResponse = (id = (new Date).getTime().toString()) =>
-  ([,res]: RequestArgs) =>
+  ([,res]: HttpServerContext) =>
     res.setHeader('X-Request-Id', id);
 
-export const isNotReserved = ([,res]: RequestArgs) =>
+export const isNotReserved = ([,res]: HttpServerContext) =>
   !res.hasHeader('X-Request-Id')
 
 export const isMatchEndpoint = (pattern: string, targetMethod?: string) =>
-  ([{url, headers:{origin}, method}]: RequestArgs) =>
-    minimatch((new URL(`${origin || 'file://'}${url}`)).pathname, pattern) &&
-    (targetMethod ? method === targetMethod : true)
+  ([req]: HttpServerContext) =>
+    minimatch(reqToUrl(req).pathname, pattern) &&
+    (targetMethod ? req.method === targetMethod : true)
 
-export const get = (pattern: string, source$: Observable<RequestArgs>) =>
+export const get = (pattern: string, source$: Observable<HttpServerContext>) =>
   route(pattern, source$, 'GET')
 
-export const post = (pattern: string, source$: Observable<RequestArgs>) =>
+export const post = (pattern: string, source$: Observable<HttpServerContext>) =>
   route(pattern, source$, 'POST')
 
-export const route = (pattern: string, source$: Observable<RequestArgs>, method?: string) =>
-  source$.pipe(filter(isNotReserved), filter(isMatchEndpoint(pattern, method)), tap(reserveResponse()))
+export const route = (pattern: string, source$: Observable<HttpServerContext>, method?: string) =>
+  source$.pipe(filter(isNotReserved), filter(isMatchEndpoint(pattern, method)), tap(reserveResponse()), delay(0))
 
 
-export type RouteReq = [{method?: string, url: URL}, RequestArgs]
-export const routeProc = (source$: Observable<RequestArgs>, sink: Sink<RequestArgs>, fn: (data: RouteReq) => boolean) =>
+export type RouteReq = [{method?: string, url: URL}, HttpServerContext]
+export const routeProc = (source$: Observable<HttpServerContext>, sink: Sink<HttpServerContext>, fn: (data: RouteReq) => boolean) =>
   source$.pipe(
     filter(([,res]) =>
       !res.hasHeader('X-Request-Id')),
     filter(([req, res]) => {
       const {method, url, headers:{origin}} = req;
-      return fn([{method, url: new URL(`${origin || 'file://'}${url}`)}, [req, res]])
+      return fn([{method, url: reqToUrl(req)}, [req, res]])
     }),
     tap(([,res]) =>
       res.setHeader('X-Request-Id', (new Date).getTime().toString())),
@@ -46,7 +49,7 @@ export const routeProc = (source$: Observable<RequestArgs>, sink: Sink<RequestAr
     map((data) =>
       sink(data)));
 
-export const preflightProc = (source$: Observable<RequestArgs>, sink: Sink<any>) =>
+export const preflightProc = (source$: Observable<HttpServerContext>, sink: Sink<any>) =>
   source$.pipe(
     filter(([,res]) =>
       !res.hasHeader('X-Request-Id')),
@@ -66,50 +69,7 @@ export const preflightProc = (source$: Observable<RequestArgs>, sink: Sink<any>)
           sink({name: 'preflight',
             ...pick(['url'], req)})))));
 
-export const notFoundProc = (source$: Observable<RequestArgs>, sink: Sink<any>) =>
-  source$.pipe(
-    filter(([,res]) =>
-      !res.hasHeader('X-Request-Id')),
-    tap(([,res]) =>
-      res.writeHead(404, {
-        'Access-Control-Allow-Origin': '*',
-        'X-Request-Id': (new Date).getTime().toString()
-      })),
-    mergeMap(([req,res]) =>
-      from(promisify(res.end).bind(res)()).pipe(
-        map(() =>
-          sink({name: 'notFound',
-            ...pick(['url', 'method'], req)})))));
-
-export const remoteReceiveProc = (source$: Observable<RequestArgs>, sink: Sink<void>, errSink: Sink<Error>) =>
-  source$.pipe(
-    mergeMap(([req, res]) =>
-      fromEvent<Buffer>(req, 'data').pipe(
-        takeUntil(fromEvent(req, 'end')),
-        toArray(),
-        mergeMap((chunks: Buffer[]) =>
-          merge(
-            of(JSON.parse(Buffer.concat(chunks).toString())),
-            of([200, JSON.stringify({error: false})] as const).pipe(
-              tap(([statusCode]) =>
-                res.writeHead(statusCode, {'Content-Type': 'application/json; charset=utf-8'})),
-              mergeMap(([, payload]) =>
-                promisify<string>(res.end).call(res, payload)),
-              map(() =>
-                sink())))),
-        catchError(err =>
-          merge(
-            of(errSink(err)),
-            ...err instanceof SyntaxError ? [
-              of([400, JSON.stringify({error: true, message: err.message})] as const).pipe(
-                tap(([statusCode]) =>
-                  res.writeHead(statusCode, {'Content-Type': 'application/json; charset=utf-8'})),
-                mergeMap(([, payload]) =>
-                  promisify<string>(res.end).call(res, payload)),
-                map(() =>
-                  sink()))] : [])))));
-
-export const promiseJsonProc = <T, U>(source$: Observable<RequestArgs>, sink: Sink<void>, fn: (data: T) => Promise<U>) =>
+export const promiseJsonProc = <T, U>(source$: Observable<HttpServerContext>, sink: Sink<void>, fn: (data: T) => Promise<U>) =>
   source$.pipe(
     mergeMap(([req, res]) =>
       fromEvent<Buffer>(req, 'data').pipe(

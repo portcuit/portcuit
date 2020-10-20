@@ -1,7 +1,6 @@
-import {Observable, of} from 'rxjs'
-import {scan, switchMap, startWith, mergeMap} from 'rxjs/operators'
-import {Sink} from 'pkit/core'
-import type {Compute} from './'
+import {DeepPartial, tuple} from 'pkit/core'
+
+export type StatePatch<T> = DeepPartial<T>
 
 export class PreserveArray<T> extends Array {
   constructor(...props: T[]) {
@@ -32,6 +31,41 @@ export class EphemeralBoolean extends Boolean {
   }
 }
 
+export class EphemeralString extends String {
+  constructor(data: string) {
+    super(data);
+  }
+  toJSON() {
+    return undefined;
+  }
+}
+
+export class EphemeralNumber extends Number {
+  constructor(data: number) {
+    super(data);
+  }
+  toJSON() {
+    return undefined;
+  }
+}
+
+export class EphemeralContainer<T=any> extends Object {
+  constructor(public data: T) {
+    super();
+  }
+  toJSON() {
+    return undefined;
+  }
+}
+
+export type EphemeralObject<T> = T & {readonly brand: unique symbol}
+
+export const EphemeralObject = (function <T>(this: {new(data: any):EphemeralObject<T>}, data: T) {
+  Object.assign(this, data);
+} as unknown) as {new<T>(data: T): EphemeralObject<T>}
+
+EphemeralObject.prototype.toJSON = () => undefined
+
 export const patch = (
   plan: any,
   data: any) => {
@@ -40,6 +74,10 @@ export const patch = (
     || plan === undefined
     || plan.constructor === Boolean
     || plan.constructor === EphemeralBoolean
+    || plan.constructor === EphemeralContainer
+    || plan.constructor === EphemeralObject
+    || plan.constructor === EphemeralString
+    || plan.constructor === EphemeralNumber
     || plan.constructor === String
     || plan.constructor === Number
     || plan.constructor === ReplaceArray
@@ -72,6 +110,10 @@ export const patch = (
       || data === undefined
       || data.constructor === Boolean
       || data.constructor === EphemeralBoolean
+      || plan.constructor === EphemeralContainer
+      || plan.constructor === EphemeralObject
+      || plan.constructor === EphemeralString
+      || plan.constructor === EphemeralNumber
       || data.constructor === String
       || data.constructor === Number
       || data.constructor === Array
@@ -91,27 +133,24 @@ export const patch = (
   }
 };
 
-export const initProc = <T, U>(init$: Observable<U>,
-                             patch$: Observable<U>,
-                             rawSink: Sink<U>,
-                             dataSink: Sink<T>,
-                             compute: Compute<T>) =>
-  init$.pipe(
-    switchMap((initial) =>
-      patch$.pipe(
-        scan((acc, curr) =>
-          patch(curr, JSON.parse(JSON.stringify(acc))), initial),
-        mergeMap((raw) =>
-          of(
-            rawSink(JSON.parse(JSON.stringify(raw))),
-            dataSink(compute(raw))
-          )),
-        startWith(
-          rawSink(initial),
-          dataSink(compute(initial))))));
-
 export const splice = <T>(start: number, deleteCount=0, items: T[]=[]): T[] =>
   Array(start).concat(Array(deleteCount).fill(undefined)).concat(...items);
 
 export const padArray = <T>(start: number, item: T, end: number = 0): T[] =>
   Array(start).concat(item, Array(end))
+
+export const makePatch = <T, U, V extends (data: T) => U>(fn: V, data: T) =>
+  tuple(fn, data)
+
+export type Patch<T, U=any> = [(data: U) => DeepPartial<T>, U]
+
+export const encodePatch = <T>([fn, data]: Patch<T>): EncodedPatch =>
+  [fn.toString(), data]
+
+export type EncodedPatch = [string, any]
+
+const pkit = {ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralObject, EphemeralContainer, splice, padArray}
+const pkit_1 = pkit;
+export const decodePatch = <T>([fn, data]: EncodedPatch) =>
+  new Function(`return ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, EphemeralObject, splice, padArray, pkit, pkit_1}) => ${fn};`)()
+  ({ReplaceObject, ReplaceArray, EphemeralBoolean, EphemeralString, EphemeralNumber, EphemeralContainer, EphemeralObject, splice, padArray, pkit, pkit_1})(data) as DeepPartial<T>
