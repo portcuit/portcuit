@@ -18,18 +18,22 @@ export const reserveResponse = (id = (new Date).getTime().toString()) =>
 export const isNotReserved = ([,res]: HttpServerContext) =>
   !res.hasHeader('X-Request-Id')
 
-export const isMatchEndpoint = (pattern: string, targetMethod?: string) =>
+export const isMatchEndpoint = (pattern: string, targetMethod?: HttpMethod[]) =>
   ([req]: HttpServerContext) =>
     minimatch(reqToUrl(req).pathname, pattern) &&
-    (targetMethod ? req.method === targetMethod : true)
+    (targetMethod ? targetMethod.includes(req.method as HttpMethod) : true)
+
+type HttpMethod = 'GET' | 'POST'
+
+export type Route = {path: string, method: HttpMethod[]}
 
 export const get = (pattern: string, source$: Observable<HttpServerContext>) =>
-  route(pattern, source$, 'GET')
+  route(pattern, source$, ['GET'])
 
 export const post = (pattern: string, source$: Observable<HttpServerContext>) =>
-  route(pattern, source$, 'POST')
+  route(pattern, source$, ['POST'])
 
-export const route = (pattern: string, source$: Observable<HttpServerContext>, method?: string) =>
+export const route = (pattern: string, source$: Observable<HttpServerContext>, method?: HttpMethod[]) =>
   source$.pipe(filter(isNotReserved), filter(isMatchEndpoint(pattern, method)), tap(reserveResponse()), delay(0))
 
 
