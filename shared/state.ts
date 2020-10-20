@@ -2,9 +2,11 @@ import {EphemeralBoolean, EphemeralString} from "pkit";
 
 export type IState = {
   post?: boolean;
-  endpoint: string;
-  jsAppRoot: string;
-  entryPoint: string;
+  ssr?: {
+    endpoint: string;
+    jsAppRoot: string;
+    entryPoint: string;
+  },
   flag: {
     method?: EphemeralString;
     render?: EphemeralBoolean;
