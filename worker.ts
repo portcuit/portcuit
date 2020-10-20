@@ -16,8 +16,8 @@ import {chokidarKit, ChokidarPort} from "@pkit/chokidar";
 import {consoleKit, ConsolePort} from "@pkit/console";
 import type {IDevPort} from "./index";
 
-export type DevWorkerRunParams = {
-  worker: WorkerParams;
+type DevWorkerRunParams = {
+  worker: Omit<WorkerParams, 'args'>;
   workerData: {
     src: string;
     params: any;
@@ -29,9 +29,13 @@ export class DevWorkerRunPort extends LifecyclePort<DevWorkerRunParams> implemen
   console = new ConsolePort;
   app = new WorkerPort;
   chokidar = new ChokidarPort;
+
+  circuit(port: this) {
+    return devWorkerRunKit(port);
+  }
 }
 
-export const devWorkerRunKit = (port: DevWorkerRunPort) =>
+const devWorkerRunKit = (port: DevWorkerRunPort) =>
   merge(
     consoleKit(port.console),
     workerKit(port.app),
@@ -56,3 +60,7 @@ export const devWorkerRunKit = (port: DevWorkerRunPort) =>
           directProc(of(false), sink(port.app.running)),
           mapToProc(source(port.app.run.stopped), sink(port.terminated)))))
   )
+
+export namespace DevWorkerRunPort {
+  export type Params = DevWorkerRunParams;
+}

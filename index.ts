@@ -3,15 +3,11 @@ import util from 'util'
 import {resolve} from 'path'
 import {EventEmitter} from "events";
 import {Worker, parentPort, workerData, isMainThread} from 'worker_threads'
-import {entry, LifecyclePort, Portcuit, PortMessage, source} from 'pkit'
-import {consoleKit, ConsolePort} from "@pkit/console";
 import {fromEvent, merge, Observable} from "rxjs";
-import {filter, map, mergeMap, switchMap} from "rxjs/operators";
-import {DevWorkerRunPort, devWorkerRunKit} from './worker'
-
-if (!isMainThread) {
-  process.stdout.isTTY = process.stderr.isTTY = process.stdin.isTTY = true;
-}
+import {filter, map, switchMap} from "rxjs/operators";
+import {LifecyclePort, PortMessage, source} from 'pkit'
+import {consoleKit, ConsolePort} from "@pkit/console";
+import {DevWorkerRunPort} from './worker'
 
 util.inspect.defaultOptions.depth = parseInt(process.env.depth || '1', 10);
 util.inspect.defaultOptions.breakLength = Infinity
@@ -45,48 +41,47 @@ const createLogger = (prefix: string = '') =>
   (type: string, data: any) =>
     emitter.emit('debug', [`${prefix}${type}`, data])
 
-const consoleParams = {
+const defaultConsoleParams = {
   emitter,
-  include: process.env.include ?
-    process.env.include.split(',') :
-    ['**/*'],
-  exclude: process.env.exclude ?
-    process.env.exclude.split(',') :
-    [],
+  include: ['**/*'],
+  exclude: [],
   createLogger
 }
 
 // みたいな感じでpuppeteerはここで起動させた方が良さそうな気がする
+// puppeteer終了（ページ閉じる）でプロセス終了
 // export const run_worker_pptr
 
 export const run_worker = (src: string, params?: any) => {
-  const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker}, workerData: {src, params}} as any,
-    createLogger('/top/'));
+  const subject$ = new DevWorkerRunPort().entry({
+    worker: {ctor: Worker},
+    workerData: {src, params}
+  }, createLogger('/top/'))
+
   // const watch: string = 'server/*.js'
   // const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker},workerData:{src, params}, watch} as any, createLogger('/top/'));
-  subject$.subscribe({error: console.error});
+
+  const consoleParams = params?.console ? {...defaultConsoleParams, ...params.console} : defaultConsoleParams;
   subject$.next(['console.init', consoleParams]);
+
+  subject$.subscribe({complete: () => process.exit()});
   return subject$;
 }
 
-export const run = (src: string, consoleState = {}, params?: any) => {
+export const run = (src: string, params?: any) => {
   const {Port} = require(src.startsWith('./') ? resolve(src) : src);
   if (!(Port && Port.prototype.circuit)) {
     throw new Error(`portcuit is undefined: ${src}`);
   }
+  params ??= Port.params
 
-  console.log(consoleState);
-  process.exit();
+  const DevPort = createDevPort(Port);
+  const subject$ = new DevPort().entry(createDevKit(Port.prototype.circuit), params, createLogger('/dev/'));
 
-
-  const subject$ = entry(new (createDevPort(Port)), createDevKit(Port.prototype.circuit), params || Port.params,
-    createLogger('/dev/'));
-
-  subject$.subscribe({error: console.error});
+  const consoleParams = params?.console ? {...defaultConsoleParams, ...params.console} : defaultConsoleParams;
   subject$.next(['console.init', consoleParams]);
 
-  Object.assign(globalThis, {subject$});
-
+  subject$.subscribe({complete: () => process.exit()})
   return subject$;
 }
 
