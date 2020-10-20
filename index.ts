@@ -56,7 +56,7 @@ export const run_worker = (src: string, params?: any) => {
   const subject$ = new DevWorkerRunPort().entry({
     worker: {ctor: Worker},
     workerData: {src, params}
-  }, createLogger('/top/'))
+  } as any, createLogger('/top/'))
 
   // const watch: string = 'server/*.js'
   // const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker},workerData:{src, params}, watch} as any, createLogger('/top/'));
