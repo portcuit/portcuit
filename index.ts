@@ -1,31 +1,35 @@
 import {EventEmitter} from "events";
 import minimatch from 'minimatch'
 import chalk from "chalk";
-import {LifecyclePort, mergeMapProc, PortMessage, sink, Socket, source} from "pkit";
+import {LifecyclePort, mapProc, mergeMapProc, PortMessage, sink, Socket, source, StatePort} from "pkit";
 import {fromEvent, merge, Observable, of} from "rxjs";
 import {filter, startWith, tap, withLatestFrom} from "rxjs/operators";
 
-export type ConsoleParams = {
-  emitter: EventEmitter;
+type ConsoleFilter = {
   include: string[];
   exclude: string[];
-  createLogger: (prefix: string) => typeof console.debug
 }
 
+export type ConsoleParams = {
+  emitter: EventEmitter;
+  createLogger: (prefix: string) => typeof console.debug
+} & ConsoleFilter;
+
 export class ConsolePort extends LifecyclePort<ConsoleParams> {
+  state = new StatePort<ConsoleFilter>();
   include = new Socket<string[]>();
   exclude = new Socket<string[]>();
 }
 
 export const consoleKit = (port: ConsolePort) =>
   merge(
+    StatePort.prototype.circuit(port.state),
+
     mergeMapProc(source(port.init), sink(port.debug),
       ({emitter, include, exclude}) =>
         fromEvent<PortMessage<any>>(emitter, 'debug').pipe(
-          withLatestFrom(
-            source(port.include).pipe(startWith(include)),
-            source(port.exclude).pipe(startWith(exclude))),
-          tap(([[type, data],include, exclude]) =>
+          withLatestFrom(source(port.state.data)),
+          tap(([[type, data], {include, exclude}]) =>
             include.some((ptn) =>
               minimatch(type, ptn)) &&
             !exclude.some((ptn) =>
@@ -33,6 +37,9 @@ export const consoleKit = (port: ConsolePort) =>
             console.debug(chalk.bgBlackBright.bold(type), data)),
           filter(() =>
             false))),
+
+    mapProc(source(port.init), sink(port.state.init), ({include, exclude}) =>
+      ({include, exclude})),
   )
 
 export const consoleInitOrDefault = (port: any): Observable<ConsoleParams> =>
