@@ -1,3 +1,4 @@
+import type {Worker as NodeWorker} from 'worker_threads'
 import {merge, of, timer} from 'rxjs'
 import {map, mergeMap} from 'rxjs/operators'
 import {source, sink, Socket, LifecyclePort} from 'pkit/core'
@@ -7,13 +8,13 @@ import {RunPort, runKit} from 'pkit/run'
 export * from './remote/'
 
 export type WorkerParams = {
-  ctor: typeof Worker;
-  args: ConstructorParameters<typeof Worker>
+  ctor: typeof NodeWorker;
+  args: ConstructorParameters<typeof NodeWorker>
 }
 
 export class WorkerPort extends LifecyclePort<WorkerParams> {
   run = new RunPort;
-  worker = new Socket<Worker>();
+  worker = new Socket<NodeWorker>();
   postMessage = new Socket<any>();
   err = new Socket<Error>();
 }
