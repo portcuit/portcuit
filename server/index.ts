@@ -27,11 +27,11 @@ export * from './ssr/'
 
 interface ISsrPort<T> {
   new (...args: any[]): {
-    entry: <U extends NextSsrPort.Params<T>>(params: U) => Observable<PortMessage<any>>
+    entry: <U extends NextSsrPort.Params<T>>(params: U) => Observable<PortMessage<any>>;
   }
 }
 
-export const createCreatePortProc = <T extends IState>(Port: ISsrPort<T>) =>
+export const createCreatePortProc = <T extends IState, U extends ISsrPort<T>>(Port: U) =>
   (Html: FC<T>, state: T, matchRoute: Route) =>
     (source$: Observable<HttpServerContext>, sink: Sink<any>) =>
       mergeMapProc(route(matchRoute.path, source$, matchRoute.method), sink, (ctx) =>

@@ -10,7 +10,7 @@ export const main = <T>(createCsr: CreateCsr<T>) => {
     const params: ScreenParams = {
       worker: {
         ctor: Worker,
-        args: [state.entryPoint, {type: 'module'}]
+        args: [state.ssr!.entryPoint, {type: 'module'}]
       },
       snabbdom: {
         container: document.body,
