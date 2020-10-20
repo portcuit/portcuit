@@ -48,7 +48,7 @@ export class NextRestPort<T, U extends NextRestParams<T>> extends NextStatePort<
       HttpServerRestPort.prototype.circuit(port.rest),
       port.stateKit(port),
       mapProc(source(port.init), sink(port.rest.init), ({ctx}) => ctx),
-      mapToProc(source(port.rest.terminated), sink(port.terminated))
+      mapToProc(source(port.rest.terminated), sink(port.terminated)) // これをパラメータ制御
     )
   }
 }
@@ -106,6 +106,10 @@ export class NextSsrPort<T extends IState, U extends NextSsrParams<T> = NextSsrP
   circuit (port: this) {
     return port.nextSsrKit(port)
   }
+}
+
+export namespace NextSsrPort {
+  export type Params<T> = NextSsrParams<T>
 }
 
 export type CreateSsr<T extends IState> = (ctx: HttpServerContext) => Portcuit<NextSsrPort<T>>

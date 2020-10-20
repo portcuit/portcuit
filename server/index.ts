@@ -2,13 +2,45 @@ import {promisify} from 'util'
 import {resolve} from 'path'
 import glob from 'glob'
 import handler from "serve-handler";
-import {from, merge} from "rxjs";
+import {from, merge, Observable} from "rxjs";
 import {delay, map, switchMap} from "rxjs/operators";
-import {sink, source, mergeMapProc, entry, terminatedComplete, mapToProc, mount, LifecyclePort, mapProc} from "pkit";
-import {HttpServerPort, route, HttpServerParams} from "pkit/http/server";
+import {
+  sink,
+  source,
+  mergeMapProc,
+  entry,
+  terminatedComplete,
+  mapToProc,
+  mount,
+  LifecyclePort,
+  mapProc,
+  PortMessage, Sink, EphemeralString
+} from "pkit";
+import {HttpServerPort, route, HttpServerParams, Route} from "pkit/http/server";
 import {CreateSsr} from "./ssr/";
+import {NextSsrPort} from "@pkit/next/server/index";
+import {IState} from "@pkit/next";
+import {HttpServerContext} from "pkit/http/server/index";
+import {FC} from "@pkit/snabbdom";
 
 export * from './ssr/'
+
+interface ISsrPort<T> {
+  new (...args: any[]): {
+    entry: <U extends NextSsrPort.Params<T>>(params: U) => Observable<PortMessage<any>>
+  }
+}
+
+export const createCreatePortProc = <T extends IState>(Port: ISsrPort<T>) =>
+  (Html: FC<T>, state: T, matchRoute: Route) =>
+    (source$: Observable<HttpServerContext>, sink: Sink<any>) =>
+      mergeMapProc(route(matchRoute.path, source$, matchRoute.method), sink, (ctx) =>
+        new Port().entry({
+          Html, ctx,
+          state: {...state,
+            flag: {method: new EphemeralString(ctx[0].method!)}
+          }
+        }))
 
 export type NextHttpParams = {
   server: HttpServerParams;
