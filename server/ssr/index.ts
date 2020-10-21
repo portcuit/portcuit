@@ -1,7 +1,7 @@
 import {promisify} from "util";
 import {writeFile} from "fs";
 import {merge} from "rxjs";
-import {delay, filter} from "rxjs/operators";
+import {delay, filter, switchMap} from "rxjs/operators";
 import {
   directProc,
   LifecyclePort,
@@ -38,6 +38,9 @@ class NextStatePort<T, U extends NextStateParams<T>> extends LifecyclePort<U> {
 
 export type NextRestParams<T> = {
   ctx: HttpServerContext;
+  rest?: {
+    preventTerminate?: boolean
+  }
 } & NextStateParams<T>
 
 export class NextRestPort<T, U extends NextRestParams<T>> extends NextStatePort<T, U> {
@@ -48,9 +51,19 @@ export class NextRestPort<T, U extends NextRestParams<T>> extends NextStatePort<
       HttpServerRestPort.prototype.circuit(port.rest),
       port.stateKit(port),
       mapProc(source(port.init), sink(port.rest.init), ({ctx}) => ctx),
-      mapToProc(source(port.rest.terminated), sink(port.terminated)) // これをパラメータ制御
+
+      mapToProc(source(port.init).pipe(
+        switchMap(({rest}) =>
+          source(port.rest.terminated).pipe(
+            filter(() =>
+              !rest?.preventTerminate)))),
+        sink(port.terminated))
     )
   }
+}
+
+export namespace NextRestPort {
+  export type Params<T> = NextRestParams<T>
 }
 
 export class NextApiPort<T, U extends NextRestParams<T> = NextRestParams<T>> extends NextRestPort<T, U> {
