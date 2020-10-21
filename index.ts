@@ -9,6 +9,10 @@ import {LifecyclePort, PortMessage, source} from 'pkit'
 import {consoleKit, ConsolePort} from "@pkit/console";
 import {DevWorkerRunPort} from './worker'
 
+if (!isMainThread) {
+  process.stdout.isTTY = process.stderr.isTTY = process.stdin.isTTY = true;
+}
+
 util.inspect.defaultOptions.depth = parseInt(process.env.depth || '1', 10);
 util.inspect.defaultOptions.breakLength = Infinity
 
@@ -56,7 +60,7 @@ export const run_worker = (src: string, params?: any) => {
   const subject$ = new DevWorkerRunPort().entry({
     worker: {ctor: Worker},
     workerData: {src, params}
-  } as any, createLogger('/top/'))
+  } as any, createLogger('/dev/'))
 
   // const watch: string = 'server/*.js'
   // const subject$ = entry(new DevWorkerRunPort, devWorkerRunKit, {worker:{ctor: Worker},workerData:{src, params}, watch} as any, createLogger('/top/'));
@@ -76,7 +80,7 @@ export const run = (src: string, params?: any) => {
   params ??= Port.params
 
   const DevPort = createDevPort(Port);
-  const subject$ = new DevPort().entry(createDevKit(Port.prototype.circuit), params, createLogger('/dev/'));
+  const subject$ = new DevPort().entry(createDevKit(Port.prototype.circuit), params, createLogger('/app/'));
 
   const consoleParams = params?.console ? {...defaultConsoleParams, ...params.console} : defaultConsoleParams;
   subject$.next(['console.init', consoleParams]);
