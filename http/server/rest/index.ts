@@ -73,7 +73,7 @@ const circuit = (port: HttpServerRestPort) =>
       mergeMap(([req]) =>
         race(
           source(port.event.close),
-          fromEvent(req, 'abort')).pipe(
+          fromEvent(req, 'aborted')).pipe(
           take(1)))),
       sink(port.terminated))
   )
