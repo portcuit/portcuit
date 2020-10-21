@@ -51,3 +51,8 @@ export const consoleInitOrDefault = (port: any): Observable<ConsoleParams> =>
       exclude: [] as string[],
       createLogger: () => () => null
     })
+
+export namespace ConsolePort {
+  export type Params = ConsoleParams;
+  export type Filter = {console: ConsoleFilter};
+}
