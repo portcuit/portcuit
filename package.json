@@ -16,7 +16,7 @@
     "url": "https://github.com/portcuit/chokidar/issues"
   },
   "homepage": "https://github.com/portcuit/chokidar#readme",
-  "dependencies": {
+  "peerDependencies": {
     "chokidar": "^3.4.2"
   }
 }
