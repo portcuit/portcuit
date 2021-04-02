@@ -2,7 +2,7 @@ import assert from 'assert'
 import {merge} from "rxjs";
 import {switchMap, take, toArray} from "rxjs/operators";
 import {source, sink, mapToProc, Socket, PortParams} from "@pkit/core";
-import {HttpServerPort} from "./index";
+import {HttpServerPort} from "./";
 import {findLogsStopped, findLogsTerminate} from "@pkit/core/lifecycle/index.test";
 
 class HttpServerTestPort extends HttpServerPort {
@@ -19,7 +19,7 @@ class HttpServerTestPort extends HttpServerPort {
     )
   }
 
-  includes() { return []; }
+  log() {}
 }
 
 const scenarioKit = (port: HttpServerTestPort) =>
@@ -41,9 +41,9 @@ const scenarioKit = (port: HttpServerTestPort) =>
       }
     }));
 
-const exec = (data: Pick<PortParams<HttpServerTestPort>, 'scenario'>) =>
+export const exec = (params: Pick<PortParams<HttpServerTestPort>, 'scenario'>) =>
   new HttpServerTestPort().stream({
-    ...data,
+    ...params,
     listen: [18080]
   }).pipe(toArray()).toPromise();
 

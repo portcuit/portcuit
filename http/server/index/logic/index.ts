@@ -5,32 +5,26 @@ import {startWith, switchMap, withLatestFrom} from "rxjs/operators";
 import {
   source,
   sink,
-  mapProc,
   latestMergeMapProc,
   mapToProc,
-  fromEventProc, mergePrototypeKit, ofProc, ForcePublicPort
+  fromEventProc, ofProc, ForcePublicPort, mergeParamsPrototypeKit, IKit
 } from '@pkit/core'
 import {HttpServerPort} from "../";
 
 export type IHttpServerPort = ForcePublicPort<HttpServerPort>
 
-const httpServerShortKit = (port: IHttpServerPort) =>
-  merge(
-    mapToProc(source(port.server), sink(port.ready)),
-  )
+const httpServerReadyKit: IKit<IHttpServerPort> = (port) =>
+  mapToProc(source(port.server), sink(port.ready))
 
-const httpServerEventKit = (port: IHttpServerPort) =>
-  merge(
-    fromEventProc(source(port.server), source(port.terminated), sink(port.event.request), 'request')
-  )
+const httpServerEventKit: IKit<IHttpServerPort> = (port) =>
+  fromEventProc(source(port.server), source(port.terminated), sink(port.event.request), 'request')
 
-const httpServerEffectKit = (port: IHttpServerPort) =>
+const httpServerEffectKit: IKit<IHttpServerPort> = (port, {server={}, listen=[]}) =>
   merge(
-    mapProc(source(port.init), sink(port.server), ({server={}}) =>
-      http.createServer(server)),
+    ofProc(sink(port.server), http.createServer(server)),
 
-    latestMergeMapProc(source(port.start), sink(port.started), [source(port.init), source(port.server)] as const,
-      async ([,{listen = []}, server]) =>
+    latestMergeMapProc(source(port.start), sink(port.started), [source(port.server)] as const,
+      async ([,server]) =>
         ({
           'server.listen': await promisify(server.listen).apply(server, listen as any),
           listen
@@ -41,7 +35,7 @@ const httpServerEffectKit = (port: IHttpServerPort) =>
         promisify(server.close).call(server)),
   )
 
-const httpServerTerminateKit = (port: IHttpServerPort) =>
+const httpServerTerminateKit: IKit<IHttpServerPort> = (port) =>
   source(port.terminate).pipe(
     withLatestFrom(source(port.running).pipe(startWith(false))),
     switchMap(([,running]) =>
@@ -54,9 +48,11 @@ const httpServerTerminateKit = (port: IHttpServerPort) =>
 
 export namespace IHttpServerPort {
   export const prototype = {
-    httpServerShortKit, httpServerEventKit, httpServerEffectKit,
+    httpServerReadyKit,
+    httpServerEventKit,
+    httpServerEffectKit,
     httpServerTerminateKit
   };
   export const circuit = (port: IHttpServerPort) =>
-    mergePrototypeKit(port, prototype)
+    mergeParamsPrototypeKit(port, prototype)
 }

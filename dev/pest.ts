@@ -21,9 +21,9 @@ Object.assign(globalThis, {
     console.log(`\n### through ${label}`)
 })
 
-require(resolve(process.argv[2]));
+await import(resolve(process.argv[2]));
 
-from(tests).pipe(concatMap(({fn, label}) => {
+await from(tests).pipe(concatMap(({fn, label}) => {
   console.log(`\n##### ${label} #####`);
   return fn();
-})).subscribe();
+})).toPromise()

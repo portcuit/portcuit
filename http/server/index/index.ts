@@ -2,7 +2,7 @@ import http from 'http';
 import {merge} from 'rxjs'
 import {Socket, LifecyclePort, DeepPartialPort, PrivateSocket, PrivateSinkSocket} from '@pkit/core'
 import {HttpServerContext} from './processors'
-import {IHttpServerPort} from "./circuits/";
+import {IHttpServerPort} from "./logic/";
 
 export * from './processors'
 
