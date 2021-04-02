@@ -1,0 +1,33 @@
+{
+  "name": "@pkit/snabbdom",
+  "version": "0.1.2",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portcuit/snabbdom.git"
+  },
+  "author": "pkit <info@subak.jp> (https://github.com/portcuit)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/portcuit/snabbdom/issues"
+  },
+  "homepage": "https://github.com/portcuit/snabbdom#readme",
+  "peerDependencies": {
+    "@pkit/core": "~0",
+    "rehype": "^11.0.0",
+    "rehype-format": "^3.1.0",
+    "rehype-stringify": "^8.0.0",
+    "remark-frontmatter": "^2.0.0",
+    "remark-parse": "^8.0.3",
+    "remark-render": "0.0.16",
+    "remark-vdom": "^9.0.1",
+    "snabbdom": "^1.0.1",
+    "snabbdom-to-html": "^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "types": "./index.d.ts"
+}
