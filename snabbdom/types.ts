@@ -3,11 +3,11 @@ declare module 'snabbdom/init' {
 }
 
 declare module 'snabbdom/jsx' {
-  export * from 'snabbdom/build/package/jsx.js'
+  export * from 'snabbdom/build/package/jsx'
 }
 
 declare module 'snabbdom/h' {
-  export * from 'snabbdom/build/package/h.js'
+  export * from 'snabbdom/build/package/h'
 }
 
 declare module 'snabbdom/vnode' {
@@ -22,12 +22,12 @@ declare module 'snabbdom/modules/module' {
   export * from 'snabbdom/build/package/modules/module'
 }
 
-declare module 'snabbdom/modules/class' {
-  export * from 'snabbdom/build/package/modules/class'
-}
-
 declare module 'snabbdom/modules/props' {
   export * from 'snabbdom/build/package/modules/props'
+}
+
+declare module 'snabbdom/modules/class' {
+  export * from 'snabbdom/build/package/modules/class'
 }
 
 declare module 'snabbdom/modules/attributes' {
