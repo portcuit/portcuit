@@ -4,13 +4,13 @@ import {ForcePublicPort, IKit, mapProc, mergeParamsPrototypeKit, sink, source} f
 import {SnabbdomServerPort} from "../";
 import {jsxModule, classNamesModule} from '../../modules/'
 
-const toHTML = init([jsxModule, classNamesModule]);
-
 export type ISnabbdomServerPort = ForcePublicPort<SnabbdomServerPort>;
 
-const renderKit: IKit<ISnabbdomServerPort> = (port, {fragment} = {fragment: true}) =>
-  mapProc(source(port.render), sink(port.html),
+const renderKit: IKit<ISnabbdomServerPort> = (port, {fragment} = {fragment: true}) => {
+  const toHTML = init([jsxModule, classNamesModule]);
+  return mapProc(source(port.render), sink(port.html),
     (vnode) => (fragment ? '<!DOCTYPE html>' : '') + toHTML(vnode))
+}
 
 export namespace ISnabbdomServerPort {
   export const prototype = {renderKit}

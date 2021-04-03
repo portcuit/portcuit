@@ -134,6 +134,14 @@ export const fromEventProc = <T, U extends T>(source$: Observable<FromEventTarge
     takeUntil(terminated$)
   )
 
+export const onEventProc = <T>(source$: Observable<FromEventTarget<T>>, sink: Sink<T>, eventName: string) =>
+  source$.pipe(
+    switchMap((target) =>
+      fromEvent(target, eventName)),
+    map((data) =>
+      sink(data)))
+
+
 export const preparePatchProc = <T, U, V extends (data: T) => U>(source$: Observable<T>, sink: Sink<[V, T]>, fn: V) =>
   source$.pipe(
     map((data) =>

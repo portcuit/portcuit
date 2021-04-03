@@ -1,5 +1,5 @@
 import {Observable, merge} from 'rxjs'
-import {switchMap, takeUntil} from "rxjs/operators";
+import {switchMap, takeUntil, take} from "rxjs/operators";
 
 export class Socket<T> {
   source$!: Observable<T>
@@ -140,8 +140,10 @@ export const mergePrototypeKit = <T, U extends {[key: string]: (port: T) => Obse
 export const mergeParamsPrototypeKit = <T extends {init: Socket<any>, terminated: Socket<any>}, U extends {[key: string]: (port: T, params: PortParams<T>) => Observable<PortMessage<any>>}>(port: T, prototype: U): Observable<PortMessage<any>> => {
   const mergedPort = port as T & U;
   return source(port.init).pipe(
-    switchMap((params) => merge(...(Object.keys(prototype).map((key) =>
-      mergedPort[key](port, params)))).pipe(takeUntil(source(port.terminated)))))
+    switchMap((params) =>
+      merge(...(Object.keys(prototype).map((key) =>
+            mergedPort[key](port, params)))).pipe(
+        takeUntil(source(port.terminated)))))
 }
 
 export type IKit<T extends {init: Socket<any>}> = {

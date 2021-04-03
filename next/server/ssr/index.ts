@@ -86,7 +86,8 @@ export namespace INextApiPort {
         withLatestFrom(source<NextState>(port.state.data as any)),
         filter(([,state]) =>
           shouldSsrMethodPost(state))),
-        sink(port.rest.response.json), ([patch]) => encodePatch(patch)),
+        sink(port.rest.response.json),
+        ([patch]) => encodePatch(patch)),
 
       mapProc(source(port.patch.decode), sink(port.state.update), decodePatch)
     )
