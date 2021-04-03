@@ -1,6 +1,6 @@
 import {LifecyclePort, Socket} from "@pkit/core";
 import Peer, {PeerConstructorOption, SfuRoom, MeshRoom, RoomStream} from "skyway-js";
-import {ISkywayClientPort} from "./logic/";
+import {ISkywayClientLogicPort} from "./logic/";
 
 export class SkywayClientPort extends LifecyclePort {
   init = new Socket<{
@@ -9,8 +9,8 @@ export class SkywayClientPort extends LifecyclePort {
       options: PeerConstructorOption;
     };
     room: {
-      name: string,
-      options?: NonNullable<Parameters<typeof Peer.prototype.joinRoom>[1]>
+      roomName: string,
+      roomOptions: NonNullable<Parameters<typeof Peer.prototype.joinRoom>[1]>
     }
   }>();
 
@@ -31,8 +31,8 @@ export class SkywayClientPort extends LifecyclePort {
   }
 
   circuit() {
-    return ISkywayClientPort.circuit(this)
+    return ISkywayClientLogicPort.circuit(this)
   }
 }
 
-Object.assign(SkywayClientPort.prototype, ISkywayClientPort.prototype);
+Object.assign(SkywayClientPort.prototype, ISkywayClientLogicPort.prototype);
