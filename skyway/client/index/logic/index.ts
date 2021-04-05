@@ -36,6 +36,7 @@ const roomEventKit: IKit<ISkywayClientLogicPort> = (port) =>
   merge(
     onEventProc(source(port.room), sink(port.event.room.open), 'open'),
     onEventProc(source(port.room), sink(port.event.room.stream), 'stream'),
+    onEventProc(source(port.room), sink(port.event.room.data), 'data'),
     onEventProc(source(port.room), sink(port.event.room.peerLeave), 'peerLeave'),
     onEventProc(source(port.room), sink(port.event.room.close), 'close'),
   )
@@ -50,6 +51,12 @@ const peerDestroyKit: IKit<ISkywayClientLogicPort> = (port) =>
   latestMergeMapProc(source(port.stopped), sink(port.info),
     [source(port.peer)], ([,peer]) =>
       Promise.resolve({closePeer: peer.destroy()}),
+    sink(port.err))
+
+const sendKit: IKit<ISkywayClientLogicPort> = (port) =>
+  latestMergeMapProc(source(port.send), sink(port.info),
+    [source(port.room)], ([data,room]) =>
+      Promise.resolve({sendRoom: room.send(data)}),
     sink(port.err))
 
 const lifecycleKit: IKit<ISkywayClientLogicPort> = (port) =>
@@ -69,6 +76,7 @@ export namespace ISkywayClientLogicPort {
     roomEventKit,
     roomCloseKit,
     peerDestroyKit,
+    sendKit,
     lifecycleKit,
   }
   export const circuit = (port: ISkywayClientLogicPort) =>
