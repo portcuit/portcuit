@@ -1,6 +1,6 @@
 import handler from "serve-handler";
 import {merge, Observable, zip} from "rxjs";
-import {delay, filter, switchMap, withLatestFrom} from "rxjs/operators";
+import {delay, filter, switchMap, takeUntil, withLatestFrom} from "rxjs/operators";
 import {
   LifecyclePort,
   sink,
@@ -121,15 +121,19 @@ export namespace INextRenderPort {
 export abstract class NextSsrPort<T extends NextState> extends NextRestPort<T> implements INextRenderPort<T> {
   vdom = new SnabbdomServerPort();
 
-  abstract renderKit (port: Pick<this, 'state' | 'vdom'>): Observable<PortMessage<VNode>>
+  abstract renderKit (port: Pick<this, 'state' | 'vdom'>, params: PortParams<NextSsrPort<T>>): Observable<PortMessage<VNode>>
 
   circuit() {
     const port = this;
     return merge(
       super.circuit(),
       INextRenderPort.circuit(port),
-      directProc(source(port.vdom.html), sink(port.rest.response.html)),
-      this.renderKit(port)
+      source(port.init).pipe(
+        switchMap((params) =>
+          merge(
+            directProc(source(port.vdom.html), sink(port.rest.response.html)),
+            this.renderKit(port, params)
+          ).pipe(takeUntil(source(port.terminated)))))
     )
   }
 }
