@@ -32,24 +32,28 @@ export type NextCsrState = {
     docRoot: string;
     endpoint: string;
     entrypoint: string;
-  },
+  };
   req: {
     externalApi?: EphemeralBoolean;
-  }
+  };
   doing: {
     hydrate: boolean;
     externalApi?: boolean
+  };
+  done: {
+    hydrate: false
   }
   res: {
     hydrate?: EphemeralBoolean;
     externalApi?: EphemeralBoolean;
-  }
+  };
 } & NextState
 
 export namespace NextCsrState {
   export const initialState  = (): Omit<NextCsrState, 'csr'> =>
     ({
       ...NextState.initialState(),
-      doing: {hydrate: true}
+      doing: {hydrate: true},
+      done: {hydrate: false}
     });
 }
