@@ -14,6 +14,8 @@ export class SkywayClientPort extends LifecyclePort {
     }
   }>();
 
+  err = new Socket<Error & {type: string}>();
+
   peer = new Socket<Peer>();
   room = new Socket<SfuRoom | MeshRoom>();
   send = new Socket<any>();
