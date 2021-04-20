@@ -3,7 +3,7 @@ import {Module} from 'snabbdom-to-html-common'
 export const jsxModule: Module = (vnode, attributes) => {
   if (!vnode.data) return;
 
-  for (const [key, value] of Object.entries(vnode.data)) {
+  for (const [key, value] of Object.entries(vnode.data as object)) {
     if (['sel', 'classNames', 'bind'].includes(key)) {
 
     } else if (vnode.sel === 'textarea' && key === 'value') {

@@ -1,4 +1,4 @@
-import type {VNode} from 'snabbdom/vnode'
+import type {VNode} from 'snabbdom'
 import {
   Socket,
   LifecyclePort,

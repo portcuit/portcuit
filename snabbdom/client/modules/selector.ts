@@ -1,5 +1,4 @@
-import type {Module} from 'snabbdom/modules/module'
-import type {VNode} from 'snabbdom/vnode'
+import type {VNode, Module} from 'snabbdom'
 
 const createOrUpdate = (oldVNode: VNode, vnode: VNode) => {
   if (!vnode.data) return;

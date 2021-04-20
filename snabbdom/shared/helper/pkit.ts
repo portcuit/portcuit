@@ -1,5 +1,4 @@
-import {VNode, VNodeData} from "snabbdom/vnode";
-import {jsx} from 'snabbdom/jsx'
+import {VNode, VNodeData, jsx} from "snabbdom";
 
 export type FC<T extends VNodeData = VNodeData> =
   {fc(data: T, children?: VNode): VNode}['fc']

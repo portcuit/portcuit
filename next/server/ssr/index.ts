@@ -1,3 +1,4 @@
+import {VNode} from "snabbdom";
 import handler from "serve-handler";
 import {merge, Observable, zip} from "rxjs";
 import {delay, filter, switchMap, takeUntil, withLatestFrom} from "rxjs/operators";
@@ -21,7 +22,6 @@ import {
 import {HttpServerContext, HttpServerRestPort, makeHtmlResponse, route} from "@pkit/http/server";
 import {SnabbdomServerPort} from "@pkit/snabbdom/server";
 import {NextState} from "../../";
-import {VNode} from "snabbdom/jsx-global";
 import {shouldSsrMethodPost} from "../../shared";
 
 export abstract class NextStatePort<T> extends LifecyclePort {

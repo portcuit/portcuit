@@ -1,8 +1,7 @@
-import type {VNode} from 'snabbdom/vnode'
+import type {VNode, h} from 'snabbdom'
 import unified from 'unified'
 import parse from 'remark-parse'
 import vdom from 'remark-vdom'
-import {h} from 'snabbdom/h'
 
 export * from './pkit'
 export * from './fc'

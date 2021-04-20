@@ -1,3 +1,4 @@
+import {VNode} from "snabbdom";
 import {merge, Observable} from "rxjs";
 import {
   decodePatch,
@@ -11,7 +12,6 @@ import {
   StatePort
 } from "@pkit/core";
 import {NextCsrState} from "@pkit/next";
-import {VNode} from "snabbdom/jsx-global";
 import {SnabbdomClientPort} from "@pkit/snabbdom/client/";
 import {filter} from "rxjs/operators";
 

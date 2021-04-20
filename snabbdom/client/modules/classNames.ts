@@ -1,5 +1,4 @@
-import { VNode, VNodeData } from 'snabbdom/vnode'
-import { Module } from 'snabbdom/modules/module'
+import { VNode, Module } from 'snabbdom'
 import {difference} from "ramda";
 
 type ClassNames = {[key: string]: boolean}

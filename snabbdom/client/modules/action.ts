@@ -1,5 +1,4 @@
-import type {Module} from 'snabbdom/modules/module'
-import type {VNode} from 'snabbdom/vnode'
+import type {Module, VNode} from 'snabbdom'
 import type {PartialState} from "@pkit/core";
 
 type ClonedEvent<T=any> = {

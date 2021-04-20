@@ -1,5 +1,4 @@
-import {init} from 'snabbdom/init'
-import {toVNode} from "snabbdom/tovnode";
+import {init, toVNode} from 'snabbdom'
 import {fromEvent} from 'rxjs'
 import {map, scan} from "rxjs/operators";
 import {
