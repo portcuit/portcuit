@@ -154,3 +154,13 @@ export type PortPrototype<T> = {[key: string]: (port: T) => Observable<PortMessa
 
 export const tuple = <T extends any[]>(...args: T) =>
   args;
+
+export class PkitError extends Error {
+  constructor(message?: string) {
+    super(message);
+    Object.setPrototypeOf(this, new.target.prototype);
+    this.name = new.target.name
+  }
+}
+
+

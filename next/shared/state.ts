@@ -11,7 +11,7 @@ export type NextState = {
   res: {
     init?: EphemeralBoolean;
   };
-  err: object;
+  // err: object;
 }
 
 export namespace NextState {
@@ -23,7 +23,7 @@ export namespace NextState {
       res: {
         init: new EphemeralBoolean(true),
       },
-      err: {}
+      // err: {}
     });
 }
 
