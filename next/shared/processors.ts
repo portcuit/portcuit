@@ -31,6 +31,14 @@ export const hasRes = <T extends {res: any}, U extends keyof T['res']>(prop: U) 
   (target: T): boolean =>
     !!target?.res?.[prop]?.valueOf()
 
+export const hasNotReq = <T extends {req: any}, U extends keyof T['req']>(prop: U) =>
+  (target: T): boolean =>
+    !target?.req?.[prop]?.valueOf()
+
+export const hasNotRes = <T extends {res: any}, U extends keyof T['res']>(prop: U) =>
+  (target: T): boolean =>
+    !target?.res?.[prop]?.valueOf()
+
 export const isDoing = <T extends {doing: any}, U extends keyof T['doing']>(prop: U) =>
   (target: T): boolean =>
     target?.doing?.[prop] === true
