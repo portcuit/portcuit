@@ -7,6 +7,7 @@ export type Trigger = {
   copy: boolean;
   play: boolean;
   pause: boolean;
+  stop: boolean;
   currentTime: number;
   srcObject: MediaStream;
   setSinkId: string;
@@ -41,6 +42,12 @@ const createOrUpdate = (oldVNode: VNode, vnode: VNode) => {
 
   if (trigger.pause) {
     const res = (elm as HTMLMediaElement).pause();
+  }
+
+  if (trigger.stop) {
+    ((elm as HTMLMediaElement)?.srcObject as MediaStream)?.getTracks()
+      .forEach((track) =>
+        track.stop())
   }
 
   if (trigger.currentTime !== undefined) {
