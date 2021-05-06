@@ -38,10 +38,10 @@ export type NextCsrState = {
   };
   doing: {
     hydrate: boolean;
-    externalApi?: boolean
+    externalApi?: boolean;
   };
   done: {
-    hydrate: false
+    hydrate: boolean;
   }
   res: {
     hydrate?: EphemeralBoolean;
