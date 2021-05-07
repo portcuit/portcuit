@@ -11,6 +11,6 @@
   "license": "ISC",
   "peerDependencies": {
     "@pkit/core": "~0",
-    "dotenv": "^9.0.0"
+    "dotenv": "^8.2.0"
   }
 }
