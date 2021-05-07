@@ -1,0 +1,33 @@
+{
+  "name": "@pkit/electron",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portcuit/electron.git"
+  },
+  "author": "pkit <info@subak.jp> (https://github.com/portcuit)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/portcuit/electron/issues"
+  },
+  "homepage": "https://github.com/portcuit/electron#readme",
+  "dependencies": {
+    "ramda": "^0.26.1",
+    "@pkit/core": "~0.1.0",
+    "@pkit/helper": "~0.1.0",
+    "rxjs": "^6.5.3",
+    "electron": "^7.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^3.7.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
