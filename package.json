@@ -1,0 +1,26 @@
+{
+  "name": "portcuit",
+  "version": "0.2.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/portcuit/portcuit.git"
+  },
+  "author": "Subak Systems",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/portcuit/portcuit/issues"
+  },
+  "homepage": "https://github.com/portcuit/portcuit#readme",
+  "workspaces": [
+    "*"
+  ],
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "typescript": "4.1.3"
+  }
+}

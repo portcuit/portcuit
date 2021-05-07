@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "sourceMap": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "rootDir": ".",
+    "outDir": ".",
+    "baseUrl": "node_modules",
+    "resolveJsonModule": true,
+    "target": "es2020",
+    "module": "esnext",
+    "jsx": "react",
+    "jsxFactory": "Pkit.jsxFactory",
+    "jsxFragmentFactory": "Pkit.jsxFragmentFactory",
+    "useDefineForClassFields": true,
+    "preserveSymlinks": true,
+    "noErrorTruncation": true,
+    "lib": ["dom", "es2020"],
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["**/*"],
+  "exclude": ["node_modules"]
+}

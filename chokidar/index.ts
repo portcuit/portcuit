@@ -1,5 +1,5 @@
 import type {Stats} from 'fs'
-import chokidar, {FSWatcher} from 'chokidar'
+import {watch, FSWatcher} from 'chokidar'
 import {
   directProc,
   fromEventProc,
@@ -14,7 +14,7 @@ import {
 import {merge} from "rxjs";
 
 export class ChokidarPort extends LifecyclePort {
-  init = new Socket<Parameters<typeof chokidar.watch>>();
+  init = new Socket<Parameters<typeof watch>>();
   watcher = new Socket<FSWatcher>();
   event = new class {
     all = new Socket<[eventName: 'add'|'addDir'|'change'|'unlink'|'unlinkDir', path: string, stats?: Stats]>();
@@ -36,7 +36,7 @@ export class ChokidarPort extends LifecyclePort {
 const chokidarKit = (port: ChokidarPort) =>
   merge(
     mapProc(source(port.init), sink(port.watcher), (args) =>
-      chokidar.watch(...args)),
+      watch(...args)),
     merge(...Object.entries(port.event).map(([key, value]) =>
       fromEventProc(source(port.watcher), source(port.terminated), sink(value), key, (...args) => args)
     )),

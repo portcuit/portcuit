@@ -2,9 +2,9 @@
   "name": "@pkit/core",
   "version": "0.2.0",
   "description": "Portcuit",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "type": "module",
+  "main": "index.js",
+  "types":  "index.d.ts",
   "author": "pkit <info@subak.jp> (https://github.com/portcuit)",
   "license": "ISC",
   "peerDependencies": {
@@ -12,7 +12,10 @@
     "rxjs": "^6.6.3",
     "setimmediate": "^1.0.5"
   },
-  "type": "module",
-  "main": "index.js",
-  "types":  "index.d.ts"
+  "devDependencies": {
+    "@types/ramda": "^0.27.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -13,6 +13,10 @@ declare module 'snabbdom/jsx-global' {
   }
 }
 
+declare module 'snabbdom/vnode' {
+  export {VNode} from "snabbdom";
+}
+
 declare module 'remark-vdom' {
   import {Plugin} from 'unified'
   const vdom: Plugin;

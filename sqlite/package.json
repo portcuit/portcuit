@@ -12,5 +12,8 @@
   "peerDependencies": {
     "@pkit/core": "~0",
     "sql.js": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/sql.js": "^1.4.0"
   }
 }
