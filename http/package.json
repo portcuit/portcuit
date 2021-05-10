@@ -1,6 +1,6 @@
 {
   "name": "@pkit/http",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
   "type": "module",
   "main": "index.js",
@@ -8,11 +8,11 @@
   "author": "Subak Systems",
   "license": "ISC",
   "peerDependencies": {
-    "@pkit/core": "^0.2.0",
-    "node-fetch": "^2.6.1"
-  },
-  "devDependencies": {
-    "@types/node-fetch": "^2.5.10"
+    "@pkit/core": "0.2.1",
+    "node-fetch": "^2.6.1",
+    "@types/node-fetch": "^2.5.10",
+    "minimatch": "^3.0.4",
+    "@types/minimatch": "^3.0.4"
   },
   "publishConfig": {
     "access": "public"
