@@ -1,10 +1,9 @@
 {
   "name": "@pkit/core",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Portcuit",
   "type": "module",
   "main": "index.js",
-  "types":  "index.d.ts",
   "author": "pkit <info@subak.jp> (https://github.com/portcuit)",
   "license": "ISC",
   "peerDependencies": {
