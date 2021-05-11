@@ -169,4 +169,14 @@ export const staticProc = (source$: Observable<HttpServerContext>, sink: Sink<an
       req.url = doc.prefix + req.url
     }
     return ({handler: await handler(req, res, {public: doc.root, cleanUrls: false, symlinks: true})})
-  })
+  });
+
+export const serveHandlerProc = (source$: Observable<HttpServerContext>, sink: Sink<any>, config: NonNullable<Parameters<typeof handler>[2]>) =>
+  mergeMapProc(source$, sink,
+    async ([req, res]) => {
+      const tmp = global.encodeURIComponent;
+      global.encodeURIComponent = (value) => value as string;
+      const status = await handler(req, res, config);
+      global.encodeURIComponent = tmp;
+      return status;
+  });
