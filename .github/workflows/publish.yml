@@ -22,7 +22,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          can-npm-publish ./core && npm publish ./core
-          can-npm-publish ./http && npm publish ./http
+          can-npm-publish ./core --verbose && npm publish ./core
+          can-npm-publish ./http --verbose && npm publish ./http
           can-npm-publish ./snabbdom && npm publish ./snabbdom
           can-npm-publish ./next && npm publish ./next
