@@ -12,7 +12,7 @@
     "rehype-format": "^3.1.0",
     "rehype-stringify": "^8.0.0",
     "remark-frontmatter": "^2.0.0",
-    "remark-parse": "^8.0.3",
+    "remark-parse": "^9.0.0",
     "remark-render": "0.0.16",
     "remark-vdom": "^9.0.1",
     "snabbdom": "^3.0.1",
