@@ -11,7 +11,7 @@
   "license": "ISC",
   "peerDependencies": {
     "@pkit/core": "~0",
-    "sql.js": "^1.4.0",
-    "@types/sql.js": "^1.4.0"
+    "sql.js": "^1.5.0",
+    "@types/sql.js": "^1.4.2"
   }
 }
