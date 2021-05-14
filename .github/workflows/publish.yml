@@ -14,6 +14,15 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 14
-      - run: npm i -g npm
+          registry-url: https://registry.npmjs.org
+      - run: npm i -g npm can-npm-publish
       - run: npm i
       - run: npm run build
+      - name: publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          can-npm-publish ./core && npm publish ./core
+          can-npm-publish ./http && npm publish ./http
+          can-npm-publish ./snabbdom && npm publish ./snabbdom
+          can-npm-publish ./next && npm publish ./next
