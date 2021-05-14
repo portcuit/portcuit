@@ -24,5 +24,6 @@ jobs:
         run: |
           can-npm-publish ./core --verbose && npm publish ./core
           can-npm-publish ./http --verbose && npm publish ./http
-          can-npm-publish ./snabbdom && npm publish ./snabbdom
-          can-npm-publish ./next && npm publish ./next
+          can-npm-publish ./snabbdom --verbose && npm publish ./snabbdom
+          can-npm-publish ./next --verbose && npm publish ./next
+          echo 'done.'
