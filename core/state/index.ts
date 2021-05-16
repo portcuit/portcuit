@@ -26,17 +26,37 @@ export const initialStateFlow = (): StateFlow =>
     done: false
   });
 
+export const startFlow = <T extends string>(p: T) =>
+  [
+    {flow: {[p]: {start: true}}},
+    {flow: {[p]: {start: false}}}
+  ] as {flow: {[P in T]: {start: boolean}}}[]
+
+export const isStartFlow = <T extends string>(p: T) =>
+  <U extends {flow: {[P in T]: StateFlow}}>([state]: U[]) => {
+    if (!(p in state.flow)) { return false }
+    return state.flow[p].start
+  }
+
 export const finishFlow = <T extends string>(p: T) =>
   [
     {flow: {[p]: {finish: true}}},
     {flow: {[p]: {finish: false}}}
   ] as {flow: {[P in T]: {finish: boolean}}}[]
 
-export const flowIsFinish = <T extends string>(p: T) =>
-  <U extends {flow: {[P in T]: StateFlow}}>(state: U) => {
+export const isFinishFlow = <T extends string>(p: T) =>
+  <U extends {flow?: {[P in T]?: any }}>([state]: U[]) => {
+    if (!state.flow) { return false; }
+    if ( !(p in state.flow) ) { return false }
+    return (state.flow[p] as any).finish === true;
+  }
+
+export const xisFinishFlow = <T extends string>(p: T) =>
+  <U extends {flow: {[P in T]: {finish: boolean} }}>([state]: U[]) => {
     if (!(p in state.flow)) { return false }
     return state.flow[p].finish
   }
+
 
 export const flowIsNotFinish = <T extends string>(p: T) =>
   <U extends {flow: {[P in T]: StateFlow}}>(state: U) => {
@@ -44,13 +64,15 @@ export const flowIsNotFinish = <T extends string>(p: T) =>
     return !state.flow[p].finish
   }
 
+
+
 export const singlePatch = <T>(patch: T) =>
   [[patch]]
 
 export class StatePort<T extends FlowState> {
   init = new Socket<T>();
   update = new Socket<PartialState<T>[][]>();
-  data = new Socket<T>();
+  data = new Socket<[T, T]>();
 
   circuit () {
     const port = this;
@@ -76,8 +98,7 @@ export class StatePort<T extends FlowState> {
 
             return [data, postData] as [T, T]
           }, [{}, initial] as [T, T])
-        )),
-      map(([data]) => data)),
+        ))),
       sink(port.data))
   }
 }

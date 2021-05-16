@@ -57,6 +57,8 @@ const circuit = (port: HttpServerRestPort) =>
     requestKit(port),
     responseKit(port),
 
+    mapToProc(source(port.request.body.raw), sink(port.ready)),
+
     mapToProc(source(port.init).pipe(
       mergeMap(([req]) =>
         race(
