@@ -2,8 +2,8 @@ import {LifecyclePort} from "../lifecycle/";
 import {merge} from "rxjs";
 import {sink, source} from "../core/";
 import {filter, switchMap, take, takeUntil, tap, toArray} from "rxjs/operators";
-import {mapToProc, ofProc} from "../processors";
-import {StatePort, finishFlow, FlowState, StateFlow, initialStateFlow} from "./";
+import {mapProc, mapToProc, ofProc} from "../processors";
+import {StatePort, FlowState, StateFlow, initialStateFlow, finishFlow, flowIsFinish, singlePatch} from "./";
 
 type StateTestState = {
   talkId?: string;
@@ -34,21 +34,24 @@ class StateTestPort extends LifecyclePort {
     return merge(
       port.state.circuit(),
       source(port.init).pipe(
-        switchMap((params) => merge(
+        switchMap(() => merge(
           ofProc(sink(port.state.init), initialState()),
 
-          mapToProc(source(port.state.data).pipe(take(1)),
+          mapToProc(source(port.state.data), sink(port.state.update),
+            singlePatch({talkId: '5'})),
+
+          mapToProc(source(port.state.data).pipe(
+            filter(flowIsFinish('init'))),
             sink(port.state.update), [
               [{
-                talkId: 'abc',
+                talkId: '3',
                 talk: {talentId: 3}
               }],
-
-              // finishFlow('findTalk'),
+              finishFlow('findTalk')
             ]),
 
           mapToProc(source(port.state.data).pipe(
-            filter((state) => state?.flow?.findTalk?.finish)),
+            filter(flowIsFinish('findTalk'))),
             sink(port.terminated))
         ).pipe(takeUntil(source(port.terminated)))))
     )

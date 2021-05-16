@@ -1,7 +1,7 @@
 import json8 from 'json8'
 import mergePatch from 'json8-merge-patch'
-import {sink, Socket, source} from "../core/";
-import {merge, of} from "rxjs";
+import {Sink, sink, Socket, source} from "../core/";
+import {merge, Observable, of} from "rxjs";
 import {directProc} from "../processors";
 import {map, scan, startWith, switchMap} from "rxjs/operators";
 
@@ -26,21 +26,30 @@ export const initialStateFlow = (): StateFlow =>
     done: false
   });
 
-const actionFlow = (action: keyof StateFlow, prop: string) =>
+export const finishFlow = <T extends string>(p: T) =>
   [
-    {flow: {[prop]: {[action]: true}}},
-    {flow: {[prop]: {[action]: false}}}
-  ]
+    {flow: {[p]: {finish: true}}},
+    {flow: {[p]: {finish: false}}}
+  ] as {flow: {[P in T]: {finish: boolean}}}[]
 
-export const finishFlow = (prop: string) =>
-  [
-    {flow: {[prop]: {'finish': true} as const}},
-    {flow: {[prop]: {'finish': false} as const}}
-  ]
+export const flowIsFinish = <T extends string>(p: T) =>
+  <U extends {flow: {[P in T]: StateFlow}}>(state: U) => {
+    if (!(p in state.flow)) { return false }
+    return state.flow[p].finish
+  }
+
+export const flowIsNotFinish = <T extends string>(p: T) =>
+  <U extends {flow: {[P in T]: StateFlow}}>(state: U) => {
+    if (!(p in state.flow)) { return false }
+    return !state.flow[p].finish
+  }
+
+export const singlePatch = <T>(patch: T) =>
+  [[patch]]
 
 export class StatePort<T extends FlowState> {
   init = new Socket<T>();
-  update = new Socket<Partial<T>[][]>();
+  update = new Socket<PartialState<T>[][]>();
   data = new Socket<T>();
 
   circuit () {
@@ -72,3 +81,17 @@ export class StatePort<T extends FlowState> {
       sink(port.data))
   }
 }
+
+type Primitive<T> =
+  T extends Boolean ? T :
+    T extends Number ? T :
+      T extends String ? T :
+        never
+
+declare const extra: unique symbol;
+
+type PartialState<T> =
+  T extends Primitive<T> ? T :
+    T extends object ?
+      { [P in keyof T]?: PartialState<T[P]>; } & {[extra]?: Error}
+      : T;
