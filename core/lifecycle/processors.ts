@@ -1,6 +1,6 @@
 import {Observable, GroupedObservable, Subject} from "rxjs";
 import {map, mergeMap, startWith, take, switchMap, filter, share} from "rxjs/operators";
-import {Sink, PortMessage, PortObject, isSocket} from "@pkit/core";
+import {Sink, PortMessage, PortObject, isSocket} from "../core/";
 
 // It needs to have being started for restarting.
 export const restartProc = (restart$: Observable<void>, stopped$: Observable<void>, started$: Observable<void>,

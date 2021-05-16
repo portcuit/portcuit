@@ -5,7 +5,7 @@ import {
   mapToProc, Patch,
   sink, Socket,
   source,
-  StatePort
+  StateLegacyPort
 } from "@pkit/core";
 import {FC} from "@pkit/snabbdom";
 import {SnabbdomClientPort} from "@pkit/snabbdom/client";
@@ -13,7 +13,7 @@ import {SnabbdomClientPort} from "@pkit/snabbdom/client";
 
 export class VmPort<T> extends LifecyclePort {
   init = new Socket<FC<T>>();
-  state = new StatePort<T>();
+  state = new StateLegacyPort<T>();
   vdom = new SnabbdomClientPort;
   patch = new class {
     encode = new Socket<Patch<T>>();

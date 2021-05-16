@@ -6,13 +6,12 @@ import {
   sink,
   Socket,
   PrivateSinkSocket,
-  PrivateSourceSocket,
   source,
-  mapToProc,
   SocketData,
   DeepPartialPort,
   PortLogFilters,
-} from "@pkit/core";
+} from "../core/";
+import {mapToProc} from '../processors/'
 import {restartProc, inject} from "./processors";
 
 export abstract class LifecyclePort {

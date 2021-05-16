@@ -1,7 +1,7 @@
 import {EventEmitter} from "events";
 import minimatch from 'minimatch'
 import chalk from "chalk";
-import {LifecyclePort, mapProc, mergeMapProc, PortMessage, sink, Socket, source, StatePort, PortParams} from "@pkit/core";
+import {LifecyclePort, mapProc, mergeMapProc, PortMessage, sink, Socket, source, StateLegacyPort, PortParams} from "@pkit/core";
 import {fromEvent, merge, Observable, of} from "rxjs";
 import {filter, tap, withLatestFrom} from "rxjs/operators";
 
@@ -10,7 +10,7 @@ export class ConsolePort extends LifecyclePort {
     emitter: EventEmitter;
     createLogger: (prefix: string) => typeof console.debug
   } & ConsolePort.Filter['console']>();
-  state = new StatePort<ConsolePort.Filter['console']>();
+  state = new StateLegacyPort<ConsolePort.Filter['console']>();
   include = new Socket<string[]>();
   exclude = new Socket<string[]>();
 }

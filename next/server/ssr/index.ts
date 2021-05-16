@@ -13,7 +13,7 @@ import {
   mapProc,
   mapToProc,
   mergeMapProc,
-  StatePort,
+  StateLegacyPort,
   encodePatch,
   decodePatch,
   PortParams,
@@ -28,7 +28,7 @@ export abstract class NextStatePort<T> extends LifecyclePort {
   init = new Socket<{
     state: T
   }>();
-  state: Omit<StatePort<T>, 'constructor'> = new StatePort<T>();
+  state: Omit<StateLegacyPort<T>, 'constructor'> = new StateLegacyPort<T>();
 
   circuit() {
     const port = this;
@@ -70,7 +70,7 @@ export class NextRestPort<T> extends NextStatePort<T> {
 
 export interface INextApiPort<T> {
   init: Socket<PortParams<NextRestPort<T>>>;
-  state: StatePort<T>;
+  state: StateLegacyPort<T>;
   rest: HttpServerRestPort;
   patch: Omit<PatchPort<T>, 'constructor'>;
 }
@@ -106,7 +106,7 @@ export class NextApiPort<T> extends NextRestPort<T> implements INextApiPort<T> {
 }
 
 export interface INextRenderPort<T> extends Omit<LifecyclePort, 'circuit'> {
-  state: StatePort<T>;
+  state: StateLegacyPort<T>;
   vdom: SnabbdomServerPort;
 }
 

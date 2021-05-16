@@ -1,5 +1,5 @@
 import {AppState} from "@pkit/app";
-import {ForcePublicPort, InjectPort, LifecyclePort, PortMessage, PortParams, Socket, StatePort} from "@pkit/core";
+import {ForcePublicPort, InjectPort, LifecyclePort, PortMessage, PortParams, Socket, StateLegacyPort} from "@pkit/core";
 import {FC} from "@pkit/snabbdom";
 import {SnabbdomServerPort} from "@pkit/snabbdom/server";
 import {IAppServerRenderLogicPort} from "./logic/index";
@@ -11,7 +11,7 @@ export class AppServerRenderPort<T extends AppState> extends LifecyclePort {
     View: FC<T>;
     snabbdom: PortParams<SnabbdomServerPort>
   }>();
-  state: StatePort<T>
+  state: StateLegacyPort<T>
   vdom = new SnabbdomServerPort
 
   constructor(port: InjectPort<AppServerRenderPort<T>, 'state'>) {

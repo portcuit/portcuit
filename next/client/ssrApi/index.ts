@@ -9,7 +9,7 @@ import {
   PortMessage,
   PortParams, sink,
   Socket, source,
-  StatePort
+  StateLegacyPort
 } from "@pkit/core";
 import {NextCsrState} from "@pkit/next";
 import {SnabbdomClientPort} from "@pkit/snabbdom/client/";
@@ -21,7 +21,7 @@ export abstract class NextClientSsrApiPort<T extends NextCsrState> extends Lifec
     state: T;
   }>();
   vdom = new SnabbdomClientPort;
-  state: Omit<StatePort<T>, 'constructor'> = new StatePort<T>();
+  state: Omit<StateLegacyPort<T>, 'constructor'> = new StateLegacyPort<T>();
   patch: Omit<PatchPort<T>, 'constructor'> = new PatchPort<T>();
 
   abstract renderKit (port: Pick<NextClientSsrApiPort<NextCsrState>, 'vdom' | 'state'>): Observable<PortMessage<VNode>>;
