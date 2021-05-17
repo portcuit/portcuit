@@ -1,0 +1,16 @@
+{
+  "name": "@pkit/spa",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "author": "pkit <info@subak.jp> (https://github.com/portcuit)",
+  "license": "ISC",
+  "peerDependencies": {
+    "@pkit/http": "0.2.2",
+    "@pkit/snabbdom": "0.2.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -33,9 +33,10 @@ export const startFlow = <T extends string>(p: T) =>
   ] as {flow: {[P in T]: {start: boolean}}}[]
 
 export const isStartFlow = <T extends string>(p: T) =>
-  <U extends {flow: {[P in T]: StateFlow}}>([state]: U[]) => {
-    if (!(p in state.flow)) { return false }
-    return state.flow[p].start
+  <U extends {flow?: {[P in T]?: any }}>([state]: U[]) => {
+    if (!state.flow) { return false; }
+    if ( !(p in state.flow) ) { return false }
+    return (state.flow[p] as any).start === true;
   }
 
 export const finishFlow = <T extends string>(p: T) =>
@@ -51,35 +52,22 @@ export const isFinishFlow = <T extends string>(p: T) =>
     return (state.flow[p] as any).finish === true;
   }
 
-export const xisFinishFlow = <T extends string>(p: T) =>
-  <U extends {flow: {[P in T]: {finish: boolean} }}>([state]: U[]) => {
-    if (!(p in state.flow)) { return false }
-    return state.flow[p].finish
-  }
-
-
-export const flowIsNotFinish = <T extends string>(p: T) =>
-  <U extends {flow: {[P in T]: StateFlow}}>(state: U) => {
-    if (!(p in state.flow)) { return false }
-    return !state.flow[p].finish
-  }
-
-
-
 export const singlePatch = <T>(patch: T) =>
   [[patch]]
 
-export class StatePort<T extends FlowState> {
-  init = new Socket<T>();
-  update = new Socket<PartialState<T>[][]>();
+export type UpdateBatch<T extends {}> = PartialState<T>[][]
+
+export class StatePort<T extends {}> {
+  init = new Socket<[T, UpdateBatch<T>?]>();
+  update = new Socket<UpdateBatch<T>>();
   data = new Socket<[T, T]>();
 
   circuit () {
     const port = this;
     return directProc(source(port.init).pipe(
-      switchMap((initial) =>
+      switchMap(([initial, initialUpdateBatch=[finishFlow('init')]]) =>
         source(port.update).pipe(
-          startWith([finishFlow('init')]),
+          startWith(initialUpdateBatch),
           map((batch) => {
             const pres = [];
             const posts = [];

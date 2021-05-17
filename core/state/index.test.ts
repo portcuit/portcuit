@@ -35,7 +35,7 @@ class StateTestPort extends LifecyclePort {
       port.state.circuit(),
       source(port.init).pipe(
         switchMap(() => merge(
-          ofProc(sink(port.state.init), initialState()),
+          ofProc(sink(port.state.init), [initialState()]),
 
           mapToProc(source(port.state.data), sink(port.state.update),
             singlePatch({talkId: '5'})),
