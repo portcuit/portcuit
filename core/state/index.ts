@@ -1,8 +1,7 @@
 import json8 from 'json8'
 import mergePatch from 'json8-merge-patch'
-import {Sink, sink, Socket, source} from "../core/";
-import {merge, Observable, of} from "rxjs";
-import {directProc} from "../processors";
+import {sink, Socket, source} from "../core/";
+import {directProc} from "../processors/";
 import {map, scan, startWith, switchMap} from "rxjs/operators";
 
 export type StateFlow = {
@@ -12,12 +11,6 @@ export type StateFlow = {
   done: boolean;
 }
 
-export type FlowState = {
-  flow: {
-    init: StateFlow
-  }
-}
-
 export const initialStateFlow = (): StateFlow =>
   ({
     start: false,
@@ -25,6 +18,29 @@ export const initialStateFlow = (): StateFlow =>
     doing: false,
     done: false
   });
+
+export namespace StateFlow {
+  export const initialValue = initialStateFlow
+}
+
+export type FlowState = {
+  flow: {
+    init: StateFlow
+  }
+}
+
+export namespace FlowState {
+  export const initialState = () =>
+    ({
+      flow: {
+        init: StateFlow.initialValue()
+      }
+    })
+}
+
+// export const applyJsonPatches = <T>(doc: PartialState<T>, patches: PartialState<T>[]): T =>
+//   patches.reduce((acc, curr) =>
+//     mergePatch.apply(acc, curr), json8.clone(doc)) as any
 
 export const startFlow = <T extends string>(p: T) =>
   [
