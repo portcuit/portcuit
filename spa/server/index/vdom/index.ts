@@ -18,7 +18,7 @@ const initVdomKit: Kit = (port) =>
 const vdomHtmlKit: Kit = (port) =>
   directProc(source(port.vdom.html), sink(port.html))
 
-export namespace ISpaVdomPort {
+export namespace ISpaServerVdomPort {
   export const prototype = {
     initVdomKit,
     vdomHtmlKit

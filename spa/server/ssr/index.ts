@@ -2,11 +2,11 @@ import {merge} from "rxjs";
 import {Socket} from "../../../core";
 import {SnabbdomServerPort} from "../../../snabbdom/server";
 import {SpaState} from "../../shared/state";
-import {ISpaVdomPort} from "../index/vdom/";
-import {SpaApiPort} from "../api/";
-import {ISpaSsrPort} from "./logic/";
+import {ISpaServerVdomPort} from "../index/vdom/";
+import {SpaServerApiPort} from "../api/";
+import {ISpaServerSsrLogicPort} from "./logic/";
 
-export class SpaSsrPort<T extends SpaState> extends SpaApiPort<T> {
+export class SpaServerSsrPort<T extends SpaState> extends SpaServerApiPort<T> {
   vdom = new SnabbdomServerPort;
   html = new Socket<string>()
 
@@ -15,10 +15,10 @@ export class SpaSsrPort<T extends SpaState> extends SpaApiPort<T> {
     return merge(
       port.vdom.circuit(),
       super.circuit(),
-      ISpaVdomPort.circuit(port),
-      ISpaSsrPort.circuit(port)
+      ISpaServerVdomPort.circuit(port),
+      ISpaServerSsrLogicPort.circuit(port)
     )
   }
 }
-Object.assign(SpaSsrPort.prototype, ISpaVdomPort.prototype);
-Object.assign(SpaSsrPort.prototype, ISpaSsrPort.prototype);
+Object.assign(SpaServerSsrPort.prototype, ISpaServerVdomPort.prototype);
+Object.assign(SpaServerSsrPort.prototype, ISpaServerSsrLogicPort.prototype);

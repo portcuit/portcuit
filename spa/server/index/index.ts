@@ -3,9 +3,9 @@ import {LifecyclePort, Socket} from "../../../core/";
 import {HttpServerContext, HttpServerRestPort} from "../../../http/server/";
 import {StatePort} from "../../../core/state/";
 import {SpaState} from "../../shared/state";
-import {ISpaServerRestPort} from "./logic/";
+import {ISpaServerRestPort} from "./rest/";
 
-export abstract class SpaPort<T extends SpaState> extends LifecyclePort {
+export abstract class SpaServerPort<T extends SpaState> extends LifecyclePort {
   init = new Socket<{
     ctx: HttpServerContext;
     state: T;
@@ -22,4 +22,4 @@ export abstract class SpaPort<T extends SpaState> extends LifecyclePort {
     );
   }
 }
-Object.assign(SpaPort.prototype, ISpaServerRestPort.prototype);
+Object.assign(SpaServerPort.prototype, ISpaServerRestPort.prototype);

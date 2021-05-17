@@ -10,11 +10,10 @@ import {
 } from "../../../../core/";
 import {isFinishFlow, startFlow} from "../../../../core/state/";
 import {SpaState} from "../../../shared/state";
-import {SpaApiPort} from "../";
+import {SpaServerApiPort} from "../";
 
-type ISpaApiLogicPort = ForcePublicPort<Omit<SpaApiPort<SpaState>, 'circuit'>>
-
-type Kit = IKit<ISpaApiLogicPort>;
+type ISpaServerApiLogicPort = ForcePublicPort<Omit<SpaServerApiPort<SpaState>, 'circuit'>>
+type Kit = IKit<ISpaServerApiLogicPort>;
 
 const initStateRestPostKit: Kit = (port, {state}) =>
   mergeMapProc(source(port.rest.request.body.json), sink(port.state.init),
@@ -36,12 +35,12 @@ const updatePatchDetectKit: Kit = (port) =>
 const updateBatchResponseKit: Kit = (port) =>
   directProc(source(port.updateBatch), sink(port.rest.response.json));
 
-export namespace ISpaApiLogicPort {
+export namespace ISpaServerApiLogicPort {
   export const prototype = {
     initStateRestPostKit,
     updatePatchDetectKit,
     updateBatchResponseKit
   };
-  export const circuit = (port: ISpaApiLogicPort) =>
+  export const circuit = (port: ISpaServerApiLogicPort) =>
     mergeParamsPrototypeKit(port, prototype)
 }

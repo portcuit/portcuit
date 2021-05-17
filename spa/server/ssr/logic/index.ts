@@ -15,7 +15,7 @@ import {filter, take} from "rxjs/operators";
 import {SpaState} from "../../../shared/state";
 import {startFlow, StatePort} from "../../../../core/state/index";
 
-type ISpaSsrPort = ForcePublicPort<{
+type ISpaServerSsrLogicPort = ForcePublicPort<{
   init: Socket<{
     ctx: HttpServerContext,
     state: SpaState
@@ -26,7 +26,7 @@ type ISpaSsrPort = ForcePublicPort<{
   vdom: SnabbdomServerPort;
   terminated: Socket<any>;
 }>
-type Kit = IKit<ISpaSsrPort>
+type Kit = IKit<ISpaServerSsrLogicPort>
 
 const initStateRestGetKit: Kit = (port, {state, ctx: [{method}]}) =>
   mapProc(zip(of(method === 'GET').pipe(filter(Boolean)),
@@ -37,11 +37,11 @@ const initStateRestGetKit: Kit = (port, {state, ctx: [{method}]}) =>
 const respondHtmlKit: Kit = (port) =>
   directProc(source(port.html), sink(port.rest.response.html))
 
-export namespace ISpaSsrPort {
+export namespace ISpaServerSsrLogicPort {
   export const prototype = {
     initStateRestGetKit,
     respondHtmlKit
   };
-  export const circuit = (port: ISpaSsrPort) =>
+  export const circuit = (port: ISpaServerSsrLogicPort) =>
     mergeParamsPrototypeKit(port, prototype)
 }

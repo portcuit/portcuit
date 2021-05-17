@@ -1,8 +1,8 @@
 import {ForcePublicPort, IKit, mapToProc, mergeParamsPrototypeKit, ofProc, sink, source} from "../../../../core";
 import {SpaState} from "../../../shared/state";
-import {SpaPort} from "../";
+import {SpaServerPort} from "../";
 
-type ISpaServerRestPort = ForcePublicPort<Omit<SpaPort<SpaState> ,'circuit'>>;
+type ISpaServerRestPort = ForcePublicPort<Omit<SpaServerPort<SpaState> ,'circuit'>>;
 type Kit = IKit<ISpaServerRestPort>;
 
 // const initStateRestKit: Kit = (port, {ctx: [{method, headers}], state}) =>　{
