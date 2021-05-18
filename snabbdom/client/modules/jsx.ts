@@ -19,7 +19,7 @@ const createOrUpdate = (oldVNode: VNode, vnode: VNode) => {
       if ([
         'for', 'href', 'class',
         'viewBox', 'd', 'xmlns', 'fill', 'fill-rule', 'clip-rule', 'points', 'stroke-width', 'stroke',
-        'playsinline', 'autoplay', 'src', 'rowspan', 'nowrap'
+        'playsinline', 'autoplay', 'src', 'rowspan', 'nowrap', 'data-bind'
       ].includes(key)) {
         if ((vnode.elm as any).getAttribute(key) != value) {
           (vnode.elm as any).setAttribute(key, value as any);

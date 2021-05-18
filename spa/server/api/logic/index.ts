@@ -9,7 +9,7 @@ import {
   source, tuple
 } from "../../../../core/";
 import {isFinishFlow, startFlow} from "../../../../core/state/";
-import {SpaState} from "../../../shared/state";
+import {SpaState} from "../../../shared/";
 import {SpaServerApiPort} from "../";
 
 type ISpaServerApiLogicPort = ForcePublicPort<Omit<SpaServerApiPort<SpaState>, 'circuit'>>

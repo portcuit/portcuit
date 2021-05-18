@@ -19,6 +19,11 @@ export const initialStateFlow = (): StateFlow =>
     done: false
   });
 
+export type StateEventFlow<T> = {
+  event?: Event | null;
+  detail?: T | null;
+} & StateFlow
+
 export namespace StateFlow {
   export const initialValue = initialStateFlow
 }
@@ -49,7 +54,7 @@ export const startFlow = <T extends string>(p: T) =>
   ] as {flow: {[P in T]: {start: boolean}}}[]
 
 export const isStartFlow = <T extends string>(p: T) =>
-  <U extends {flow?: {[P in T]?: any }}>([state]: U[]) => {
+  <U extends {flow?: {[P in T]?: any } | null}>([state]: U[]) => {
     if (!state.flow) { return false; }
     if ( !(p in state.flow) ) { return false }
     return (state.flow[p] as any).start === true;
@@ -62,7 +67,7 @@ export const finishFlow = <T extends string>(p: T) =>
   ] as {flow: {[P in T]: {finish: boolean}}}[]
 
 export const isFinishFlow = <T extends string>(p: T) =>
-  <U extends {flow?: {[P in T]?: any }}>([state]: U[]) => {
+  <U extends {flow?: {[P in T]?: any } | null}>([state]: U[]) => {
     if (!state.flow) { return false; }
     if ( !(p in state.flow) ) { return false }
     return (state.flow[p] as any).finish === true;
@@ -72,6 +77,7 @@ export const singlePatch = <T>(patch: T) =>
   [[patch]]
 
 export type UpdateBatch<T extends {}> = PartialState<T>[][]
+export type InferUpdateBatch<T> = T extends UpdateBatch<infer I> ? I : never
 
 export class StatePort<T extends {}> {
   init = new Socket<[T, UpdateBatch<T>?]>();
@@ -115,7 +121,13 @@ type Primitive<T> =
 
 declare const extra: unique symbol;
 
-type PartialState<T> =
+export type PartialState<T> =
+  T extends object ?
+    { [P in keyof T]?: PartialState<T[P]> | null; } & {[extra]?: Error}
+    : T | null;
+
+
+export type PartialStateX<T> =
   T extends Primitive<T> ? T :
     T extends object ?
       { [P in keyof T]?: PartialState<T[P]>; } & {[extra]?: Error}
