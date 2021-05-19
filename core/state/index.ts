@@ -130,7 +130,7 @@ export type PartialStateX<T> =
       { [P in keyof T]?: PartialState<T[P]>; } & {[extra]?: Error}
       : T;
 
-export const toRecord = <T extends {[key: string]: any}, U extends keyof T>(rows: Array<T>, id: U) => {
+export const toRecord = <T extends {[key: string]: any}, U extends keyof T>(id: U, rows: Array<T>) => {
   return rows.reduce((memo, curr) =>
     ({
       ...memo,
