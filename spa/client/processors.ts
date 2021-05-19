@@ -33,6 +33,7 @@ export const bindMapProc = <
   sink: Sink<U>,
   markObj: PartialState<V>,
   fn: (ev: T, data: V) => W) => {
+
   const markStr = JSON.stringify(markObj);
   const index = markStr.indexOf(':null');
   if (index < 0) { throw new Error('invalid mark') }
@@ -43,6 +44,6 @@ export const bindMapProc = <
       bind.startsWith(mark)),
     map((ev) =>
       fn(ev, JSON.parse(ev.target.dataset.bind))),
-    map((data) => sink(data))
-  )
+    map((data) =>
+      sink(data)))
 }

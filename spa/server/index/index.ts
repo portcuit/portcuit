@@ -2,7 +2,7 @@ import {merge} from "rxjs";
 import {LifecyclePort, Socket} from "../../../core/";
 import {HttpServerContext, HttpServerRestPort} from "../../../http/server/";
 import {StatePort} from "../../../core/state/";
-import {SpaState} from "../../shared/state";
+import {SpaState} from "../../shared/";
 import {ISpaServerRestPort} from "./rest/";
 
 export abstract class SpaServerPort<T extends SpaState> extends LifecyclePort {
