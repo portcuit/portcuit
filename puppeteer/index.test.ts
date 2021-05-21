@@ -24,7 +24,7 @@ const testAssert = (res: PortMessage<any>[]) => {
 }
 
 export const test = async () => {
-  let res = await new PuppeteerTestPort().stream({
+  let res = await new PuppeteerTestPort().run({
     launch: tuple({
       headless: false,
       executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'

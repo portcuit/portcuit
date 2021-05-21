@@ -60,7 +60,7 @@ const defaultConsoleParams = {
 // export const run_worker_pptr
 
 export const run_worker = (src: string, params?: any) => {
-  const subject$ = new DevWorkerRunPort().stream({
+  const subject$ = new DevWorkerRunPort().run({
     worker: {ctor: Worker},
     workerData: {src, params}
   } as any)

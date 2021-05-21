@@ -59,7 +59,7 @@ class StateTestPort extends LifecyclePort {
 }
 
 test('test', async () => {
-  const logs = await new StateTestPort().stream(null).pipe(toArray()).toPromise();
+  const logs = await new StateTestPort().run(null).pipe(toArray()).toPromise();
   console.log(JSON.stringify(logs, undefined, 2));
 })
 

@@ -69,7 +69,7 @@ const restartAssert = (res: PortMessage<any>[]) => {
 }
 
 test('it should restart', async () => {
-  let res = await new LifecycleTestPort().stream().pipe(toArray()).toPromise();
+  let res = await new LifecycleTestPort().run().pipe(toArray()).toPromise();
   restartAssert(res);
 })
 

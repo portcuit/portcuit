@@ -25,7 +25,7 @@ class ElectronTestPort extends ElectronPort {
 }
 
 export const test = async () => {
-  await new ElectronTestPort().stream({
+  await new ElectronTestPort().run({
     app: {},
     create: {width: 800, height: 800},
     loadURL: tuple('https://www.google.co.jp')

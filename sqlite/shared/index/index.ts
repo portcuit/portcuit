@@ -31,7 +31,7 @@ export class SqlitePort extends LifecyclePort {
       delayWhen(() =>
         from(new Promise((resolve) => client.injectedHook = resolve))),
       switchMap(() =>
-        source(client.agent.exec.res).pipe(
+        source(client.agent.query.res).pipe(
           map((result) =>
             asObject(result, jsonKeys)))),
       take(1)).toPromise();
@@ -43,7 +43,7 @@ export class SqlitePort extends LifecyclePort {
       delayWhen(() =>
         from(new Promise((resolve) => client.injectedHook = resolve))),
       switchMap(() =>
-        source(client.agent.run.res).pipe(
+        source(client.agent.command.res).pipe(
           mapTo(undefined))),
       take(1)).toPromise();
   }
@@ -56,8 +56,8 @@ export class SqlitePort extends LifecyclePort {
         client.agent = agent
 
         return merge(
-          agent.stream({db, saveOnCommand}),
-          client.stream(prepare)
+          agent.run({db, saveOnCommand}),
+          client.run(prepare)
         )
       })
   }
@@ -94,8 +94,8 @@ export class SqlitePort extends LifecyclePort {
 }
 
 export abstract class ISqliteAgentPort extends LifecyclePort {
-  exec = new EndpointPort<Prepare, any>();
-  run = new EndpointPort<Prepare, void>();
+  query = new EndpointPort<Prepare, any>();
+  command = new EndpointPort<Prepare, void>();
 }
 
 class SqliteAgentPort extends ISqliteAgentPort {
@@ -116,21 +116,21 @@ class SqliteAgentPort extends ISqliteAgentPort {
     return merge(
       source(port.init).pipe(
         switchMap(({db, saveOnCommand}) => merge(
-          mapProc(source(port.exec.req), sink(port.exec.res),
+          mapProc(source(port.query.req), sink(port.query.res),
             ({sql, params}) =>
               db.exec(sql, params)),
 
-          mapProc(source(port.run.req), sink(port.run.res),
+          mapProc(source(port.command.req), sink(port.command.res),
             ({sql, params}) =>
               db.run(sql, params)),
 
-          mapProc(source(port.run.res).pipe(
+          mapProc(source(port.command.res).pipe(
             filter(() => !!saveOnCommand)),
             sink(port.storage.save.req),
             () => db.export()),
         ))),
 
-      mapToProc(race(source(port.exec.res), source(port.run.res)),
+      mapToProc(race(source(port.query.res), source(port.command.res)),
         sink(port.terminate)),
 
       mapToProc(source(port.terminate), sink(port.terminated))
@@ -150,26 +150,26 @@ export class SqliteClientPort extends LifecyclePort {
     return merge(
       source(this.init).pipe(
         switchMap((params) =>
-          ofProc(sink(this.agent[params.method].req), params))),
+          ofProc(sink(this.agent[params.type].req), params))),
       mapToProc(source(this.agent.terminated).pipe(take(1)), sink(this.terminated)),
     );
   }
 }
 
 export type SqliteQueryUnit<T, U> = {
-  prepare: (arg: T) => Prepare<'exec'>;
+  prepare: (arg: T) => Prepare<'query'>;
   asObject: AsObject<U>;
   jsonKeys?: ReadonlyArray<keyof U>;
 }
 
 export type SqliteCommandUnit<T> = {
-  prepare: (arg: T) => Prepare<'run'>
+  prepare: (arg: T) => Prepare<'command'>
 }
 
-type Prepare<T extends string = 'exec' | 'run'> = {
+type Prepare<T extends string = 'query' | 'command'> = {
   sql: string;
   params?: Array<string | number | Uint8Array | null>,
-  method: T
+  type: T
 }
 
 type AsObject<T extends {[key: string]: any}> = {

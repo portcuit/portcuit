@@ -62,7 +62,7 @@ export abstract class LifecyclePort {
   injectedHook (data: boolean) {}
   initHook (data: boolean) {}
 
-  stream (params: SocketData<this['init']>) {
+  run (params: SocketData<this['init']>) {
     const subject$ = new Subject<PortMessage<any>>();
 
     this.next = (type, data) =>

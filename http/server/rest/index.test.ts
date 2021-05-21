@@ -39,7 +39,7 @@ class HttpServerTestPort extends HttpServerPort {
       }),
 
       mergeMapProc(source(port.event.request), sink(port.debug), (ctx) =>
-        new HttpServerRestTestPort().stream(ctx)),
+        new HttpServerRestTestPort().run(ctx)),
 
       mapToProc(source(port.info).pipe(
         filter((data) =>
@@ -57,7 +57,7 @@ const basicTest = (res: PortMessage<any>[]) => {
 
 
 test('test', async () => {
-  let res = await new HttpServerTestPort().stream({listen: [18080]}).pipe(toArray()).toPromise()
+  let res = await new HttpServerTestPort().run({listen: [18080]}).pipe(toArray()).toPromise()
 
   basicTest(res);
 });

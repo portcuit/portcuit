@@ -55,7 +55,7 @@ const itShouldTerminatedWithRunning: Assert = (logs) => {
 }
 
 const exec = ({run}: {run: boolean}) =>
-  new WorkerTestPort().stream({
+  new WorkerTestPort().run({
     run,
     ctor: Worker as any,
     args: [`${__dirname}/index.test.js`]
