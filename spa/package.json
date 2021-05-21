@@ -8,7 +8,8 @@
   "license": "ISC",
   "peerDependencies": {
     "@pkit/http": "0.2.2",
-    "@pkit/snabbdom": "0.2.2"
+    "@pkit/snabbdom": "0.2.2",
+    "serve-handler": "^6.1.3"
   },
   "publishConfig": {
     "access": "public"
