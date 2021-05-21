@@ -1,8 +1,8 @@
 import 'snabbdom-to-html'
 import init from 'snabbdom-to-html/init'
-import {ForcePublicPort, IKit, mapProc, mapToProc, mergeParamsPrototypeKit, ofProc, sink, source} from "@pkit/core";
+import {ForcePublicPort, IKit, mapProc, mergeParamsPrototypeKit, ofProc, sink, source} from "@pkit/core";
 import {SnabbdomServerPort} from "../";
-import {jsxModule, classNamesModule} from '../../modules/'
+import {jsxModule, classNamesModule} from '../modules/'
 
 export type ISnabbdomServerPort = ForcePublicPort<SnabbdomServerPort>;
 type Kit = IKit<ISnabbdomServerPort>
