@@ -10,7 +10,9 @@
     "ramda": "^0.27.1",
     "@types/ramda": "^0.27.1",
     "rxjs": "^6.6.3",
-    "setimmediate": "^1.0.5"
+    "setimmediate": "^1.0.5",
+    "json8": "^1.0.3",
+    "json8-merge-patch": "^1.0.4"
   },
   "publishConfig": {
     "access": "public"
