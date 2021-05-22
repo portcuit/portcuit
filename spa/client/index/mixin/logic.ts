@@ -10,8 +10,8 @@ import {
 import {SpaState} from "../../../shared/";
 import {SpaClientPort} from "../";
 
-type SpaClientLogicPort = ForcePublicPort<SpaClientPort<SpaState>>
-type Kit = IKit<SpaClientLogicPort>
+type ISpaClientLogicPort = ForcePublicPort<SpaClientPort<SpaState>>
+type Kit = IKit<ISpaClientLogicPort>
 
 const initVdomKit: Kit = (port, {vdom}) =>
   ofProc(sink(port.vdom.init), vdom)
@@ -31,7 +31,7 @@ const initDomKit: Kit = (port, {dom}) =>
 const bffUpdateKit: Kit = (port) =>
   directProc(source(port.bff.update.res), sink(port.state.update))
 
-export namespace SpaClientLogicPort {
+export namespace ISpaClientLogicPort {
   export const prototype = {
     initVdomKit,
     initStateKit,
@@ -40,6 +40,6 @@ export namespace SpaClientLogicPort {
     initDomKit,
     bffUpdateKit
   }
-  export const circuit = (port: SpaClientLogicPort) =>
+  export const circuit = (port: ISpaClientLogicPort) =>
     mergeParamsPrototypeKit(port, prototype)
 }

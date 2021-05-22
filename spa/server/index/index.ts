@@ -1,9 +1,10 @@
 import {merge} from "rxjs";
-import {LifecyclePort, Socket} from "../../../core/";
-import {HttpServerContext, HttpServerRestPort} from "../../../http/server/";
-import {StatePort} from "../../../core/state/";
+import {LifecyclePort, Socket, StatePort} from "@pkit/core";
+import {HttpServerContext, HttpServerRestPort} from "@pkit/http/server";
 import {SpaState} from "../../shared/";
-import {ISpaServerRestPort} from "./rest/";
+import {ISpaServerRestPort} from "./mixin/";
+
+export * from './mixin/'
 
 export abstract class SpaServerPort<T extends SpaState> extends LifecyclePort {
   init = new Socket<{

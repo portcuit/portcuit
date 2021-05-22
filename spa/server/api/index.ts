@@ -1,8 +1,8 @@
 import {merge} from "rxjs";
-import {Socket} from "../../../core/";
-import {SpaState} from "../../shared/state";
+import {Socket} from "@pkit/core";
+import {SpaState} from '../../shared/'
 import {SpaServerPort} from "../index/";
-import {ISpaServerApiLogicPort} from "./logic/";
+import {ISpaServerApiLogicPort} from "./mixin/logic";
 
 export class SpaServerApiPort<T extends SpaState> extends SpaServerPort<T> {
   updateBatch = new Socket<object>();

@@ -3,8 +3,8 @@ import {filter} from "rxjs/operators";
 import {directProc, ForcePublicPort, IKit, mergeParamsPrototypeKit, sink} from "@pkit/core";
 import {SpaClientDomPort} from "../";
 
-type SpaClientDomLogicPort = ForcePublicPort<SpaClientDomPort>
-type Kit = IKit<SpaClientDomLogicPort>
+type ISpaClientDomLogicPort = ForcePublicPort<SpaClientDomPort>
+type Kit = IKit<ISpaClientDomLogicPort>
 
 const delegateEventClickKit: Kit = (port, {doc}) =>
   directProc(fromEvent<MouseEvent & {target: HTMLElement}>(doc, 'click').pipe(
@@ -18,11 +18,11 @@ const delegateEventChangeKit: Kit = (port, {doc}) =>
       !!target && !!target.dataset.bind)),
     sink(port.event.change));
 
-export namespace SpaClientDomLogicPort {
+export namespace ISpaClientDomLogicPort {
   export const prototype = {
     delegateEventClickKit,
     delegateEventChangeKit
   }
-  export const circuit = (port: SpaClientDomLogicPort) =>
+  export const circuit = (port: ISpaClientDomLogicPort) =>
     mergeParamsPrototypeKit(port, prototype)
 }

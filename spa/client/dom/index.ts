@@ -1,5 +1,5 @@
 import {LifecyclePort, Socket} from "@pkit/core";
-import {SpaClientDomLogicPort} from "./mixin/logic";
+import {ISpaClientDomLogicPort} from "./mixin/logic";
 
 export class SpaClientDomPort extends LifecyclePort {
   init = new Socket<{
@@ -13,7 +13,7 @@ export class SpaClientDomPort extends LifecyclePort {
 
   circuit() {
     const port = this;
-    return SpaClientDomLogicPort.circuit(port)
+    return ISpaClientDomLogicPort.circuit(port)
   }
 }
-Object.assign(SpaClientDomPort.prototype, SpaClientDomLogicPort.prototype)
+Object.assign(SpaClientDomPort.prototype, ISpaClientDomLogicPort.prototype)

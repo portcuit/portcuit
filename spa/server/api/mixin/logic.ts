@@ -6,7 +6,7 @@ import {
   mergeMapProc,
   mergeParamsPrototypeKit,
   sink,
-  source, tuple,
+  source,
   isFinishFlow, startFlow, mapToProc
 } from "@pkit/core/";
 import {SpaState} from "../../../shared/";
@@ -22,7 +22,6 @@ const initStateRestPostKit: Kit = (port, {state}) =>
         throw new Error(`invalid updateBatch: ${JSON.stringify(updateBatch)}`);
       }
       return state;
-      // return tuple(state, [...updateBatch, startFlow('api')])
     },
     sink(port.err))
 

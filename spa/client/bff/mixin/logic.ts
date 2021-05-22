@@ -8,8 +8,8 @@ import {
 } from "@pkit/core";
 import {SpaClientBffPort} from "../";
 
-type SpaClientBffLogicPort = ForcePublicPort<SpaClientBffPort>
-type Kit = IKit<SpaClientBffLogicPort>
+type ISpaClientBffLogicPort = ForcePublicPort<SpaClientBffPort>
+type Kit = IKit<ISpaClientBffLogicPort>
 
 const postKit: Kit = (port, {endpoint}) =>
   mergeMapProc(source(port.update.req), sink(port.update.res),
@@ -25,10 +25,10 @@ const postKit: Kit = (port, {endpoint}) =>
       return await res.json()
     }, sink(port.err));
 
-export namespace SpaClientBffLogicPort {
+export namespace ISpaClientBffLogicPort {
   export const prototype = {
     postKit
   };
-  export const circuit = (port: SpaClientBffLogicPort) =>
+  export const circuit = (port: ISpaClientBffLogicPort) =>
     mergeParamsPrototypeKit(port, prototype)
 }

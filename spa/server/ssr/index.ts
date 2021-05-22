@@ -1,10 +1,10 @@
 import {merge} from "rxjs";
-import {Socket} from "../../../core";
-import {SnabbdomServerPort} from "../../../snabbdom/server";
-import {SpaState} from "../../shared/state";
-import {ISpaServerVdomPort} from "../index/vdom/";
+import {Socket} from "@pkit/core";
+import {SnabbdomServerPort} from "@pkit/snabbdom/server";
+import {SpaState} from "../../shared/";
+import {ISpaServerVdomPort} from "../index/";
 import {SpaServerApiPort} from "../api/";
-import {ISpaServerSsrLogicPort} from "./logic/";
+import {ISpaServerSsrLogicPort} from "./mixin/logic";
 
 export class SpaServerSsrPort<T extends SpaState> extends SpaServerApiPort<T> {
   vdom = new SnabbdomServerPort;
