@@ -1,5 +1,5 @@
-import {merge, Observable} from "rxjs";
-import {LifecyclePort, PortMessage, PortParams, Socket, StatePort} from "@pkit/core";
+import {merge} from "rxjs";
+import {LifecyclePort, PortParams, Socket, StatePort} from "@pkit/core";
 import {SnabbdomClientPort} from "@pkit/snabbdom/client";
 import {SpaCsr, SpaState} from "../../shared/";
 import {SpaClientDomPort} from "../dom/";
@@ -20,7 +20,7 @@ export abstract class SpaClientPort<T extends SpaState> extends LifecyclePort {
   dom = new SpaClientDomPort();
   bff = new SpaClientBffPort();
 
-  circuit() : Observable<PortMessage<any>> {
+  circuit() {
     const port = this;
     return merge(
       port.state.circuit(),

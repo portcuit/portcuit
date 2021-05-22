@@ -1,16 +1,16 @@
 import {
-  directProc,
+  directProc, finishFlow,
   ForcePublicPort,
   IKit, mapToProc,
   mergeParamsPrototypeKit,
   ofProc,
   sink,
-  source, startFlow,
+  source,
 } from "@pkit/core";
 import {SpaState} from "../../../shared/";
 import {SpaClientPort} from "../";
 
-type ISpaClientLogicPort = ForcePublicPort<SpaClientPort<SpaState>>
+type ISpaClientLogicPort = ForcePublicPort<Omit<SpaClientPort<SpaState>, 'circuit'>>
 type Kit = IKit<ISpaClientLogicPort>
 
 const initVdomKit: Kit = (port, {vdom}) =>
@@ -20,7 +20,7 @@ const initStateKit: Kit = (port, {state}) =>
   ofProc(sink(port.state.init), state)
 
 const initFlowKit: Kit = (port) =>
-  mapToProc(source(port.state.init), sink(port.state.update), [startFlow('init')])
+  mapToProc(source(port.state.init), sink(port.state.update), [finishFlow('init')])
 
 const initBffKit: Kit = (port, {params:{csr}}) =>
   ofProc(sink(port.bff.init), csr)

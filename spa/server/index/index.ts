@@ -2,7 +2,7 @@ import {merge} from "rxjs";
 import {LifecyclePort, Socket, StatePort} from "@pkit/core";
 import {HttpServerContext, HttpServerRestPort} from "@pkit/http/server";
 import {SpaState} from "../../shared/";
-import {ISpaServerRestPort} from "./mixin/";
+import {ISpaServerRestPort, ISpaServerLogicPort} from "./mixin/";
 
 export * from './mixin/'
 
@@ -19,8 +19,10 @@ export abstract class SpaServerPort<T extends SpaState> extends LifecyclePort {
     return merge(
       port.state.circuit(),
       port.rest.circuit(),
+      ISpaServerLogicPort.circuit(port),
       ISpaServerRestPort.circuit(port)
     );
   }
 }
-Object.assign(SpaServerPort.prototype, ISpaServerRestPort.prototype);
+Object.assign(SpaServerPort.prototype, ISpaServerLogicPort.prototype)
+Object.assign(SpaServerPort.prototype, ISpaServerRestPort.prototype)

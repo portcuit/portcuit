@@ -7,7 +7,7 @@ import {
   mergeParamsPrototypeKit,
   sink,
   source,
-  isFinishFlow, startFlow, mapToProc
+  isFinishFlow, startFlow
 } from "@pkit/core/";
 import {SpaState} from "../../../shared/";
 import {SpaServerApiPort} from "../";
@@ -15,22 +15,15 @@ import {SpaServerApiPort} from "../";
 type ISpaServerApiLogicPort = ForcePublicPort<Omit<SpaServerApiPort<SpaState>, 'circuit'>>
 type Kit = IKit<ISpaServerApiLogicPort>;
 
-const initStateRestPostKit: Kit = (port, {state}) =>
-  mergeMapProc(source(port.rest.request.body.json), sink(port.state.init),
-    async (updateBatch) => {
-      if (!(Array.isArray(updateBatch) && updateBatch.every((patches) => Array.isArray(patches)))) {
-        throw new Error(`invalid updateBatch: ${JSON.stringify(updateBatch)}`);
+const initFlowRestPostKit: Kit = (port) =>
+  mergeMapProc(source(port.rest.request.body.json), sink(port.state.update),
+    async (batch) => {
+      if (!(Array.isArray(batch) && batch.every((patches) => Array.isArray(patches)))) {
+        throw new Error(`invalid updateBatch: ${JSON.stringify(batch)}`);
       }
-      return state;
+      return [...batch, startFlow('api')]
     },
-    sink(port.err))
-
-const initFlowRestPostKit: Kit = (port, {ctx: [{method}]}) =>
-  mapToProc(source(port.state.init).pipe(
-    filter(() =>
-      method === 'POST')),
-    sink(port.state.update),
-    [startFlow('api')]);
+    sink(port.err));
 
 const updatePatchDetectKit: Kit = (port) =>
   directProc(source(port.state.update).pipe(
@@ -44,7 +37,6 @@ const updateBatchResponseKit: Kit = (port) =>
 
 export namespace ISpaServerApiLogicPort {
   export const prototype = {
-    initStateRestPostKit,
     initFlowRestPostKit,
     updatePatchDetectKit,
     updateBatchResponseKit
