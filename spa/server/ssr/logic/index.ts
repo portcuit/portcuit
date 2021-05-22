@@ -1,19 +1,19 @@
+import {of, zip} from "rxjs";
+import {filter, take} from "rxjs/operators";
 import {
   directProc,
   ForcePublicPort,
   IKit,
-  mapProc,
+  mapToProc,
   mergeParamsPrototypeKit,
   sink,
   Socket,
-  source, tuple
-} from "../../../../core/";
-import {HttpServerContext, HttpServerRestPort} from "../../../../http/server/";
-import {SnabbdomServerPort} from "../../../../snabbdom/server";
-import {of, zip} from "rxjs";
-import {filter, take} from "rxjs/operators";
-import {SpaState} from "../../../shared/state";
-import {startFlow, StatePort} from "../../../../core/state/index";
+  source,
+  startFlow, StatePort
+} from "@pkit/core";
+import {HttpServerContext, HttpServerRestPort} from "@pkit/http/server";
+import {SnabbdomServerPort} from "@pkit/snabbdom/server";
+import {SpaState} from "../../../shared/";
 
 type ISpaServerSsrLogicPort = ForcePublicPort<{
   init: Socket<{
@@ -29,10 +29,16 @@ type ISpaServerSsrLogicPort = ForcePublicPort<{
 type Kit = IKit<ISpaServerSsrLogicPort>
 
 const initStateRestGetKit: Kit = (port, {state, ctx: [{method}]}) =>
-  mapProc(zip(of(method === 'GET').pipe(filter(Boolean)),
+  mapToProc(zip(of(method === 'GET').pipe(filter(Boolean)),
     source(port.rest.ready), source(port.vdom.ready)).pipe(take(1)),
-    sink(port.state.init),
-    () => tuple(state, [startFlow('render')]))
+    sink(port.state.init), state);
+
+const initFlowRestGetKit: Kit = (port, {ctx: [{method}]}) =>
+  mapToProc(source(port.state.init).pipe(
+    filter(() =>
+      method === 'GET')),
+    sink(port.state.update),
+    [startFlow('render')])
 
 const respondHtmlKit: Kit = (port) =>
   directProc(source(port.html), sink(port.rest.response.html))
@@ -40,6 +46,7 @@ const respondHtmlKit: Kit = (port) =>
 export namespace ISpaServerSsrLogicPort {
   export const prototype = {
     initStateRestGetKit,
+    initFlowRestGetKit,
     respondHtmlKit
   };
   export const circuit = (port: ISpaServerSsrLogicPort) =>

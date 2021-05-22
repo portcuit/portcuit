@@ -1,4 +1,4 @@
-import {FlowState, StateFlow} from "../../core/state/";
+import {FlowState, StateFlow} from "@pkit/core/";
 
 export type SpaState = {
   flow: {
