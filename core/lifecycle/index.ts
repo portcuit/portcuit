@@ -9,7 +9,6 @@ import {
   source,
   SocketData,
   DeepPartialPort,
-  PortLogFilters,
 } from "../core/";
 import {mapToProc} from '../processors/'
 import {restartProc, inject} from "./processors";
@@ -45,17 +44,7 @@ export abstract class LifecyclePort {
     return ''
   }
 
-  includes (): PortLogFilters {
-    return [() => true]
-  }
-
-  excludes (): PortLogFilters {
-    return []
-  }
-
   log (msg: PortMessage<any>) {
-    if (this.excludes().find((exclude) => exclude(msg))) { return; }
-    if (!this.includes().find((include) => include(msg))) { return; }
     console.log(...msg);
   }
 
@@ -99,6 +88,7 @@ export abstract class LifecyclePort {
   }
 
   error (err: Error) {
+    console.error('inner port error', err);
     throw err;
   }
 

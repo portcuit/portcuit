@@ -5,35 +5,13 @@ export type StateFlow = {
   done: boolean;
 }
 
-export const initialStateFlow = (): StateFlow =>
-  ({
-    start: false,
-    finish: false,
-    doing: false,
-    done: false
-  });
-
-export type StateEventFlow<T> = {
-  event?: Event | null;
-  detail?: T | null;
-} & StateFlow
-
 export namespace StateFlow {
-  export const initialValue = initialStateFlow
-}
-
-export type FlowState = {
-  flow: {
-    init: StateFlow
-  }
-}
-
-export namespace FlowState {
-  export const initialState = () =>
+  export const initialValue = (): StateFlow =>
     ({
-      flow: {
-        init: StateFlow.initialValue()
-      }
+      start: false,
+      finish: false,
+      doing: false,
+      done: false
     })
 }
 

@@ -4,7 +4,7 @@ import {sink, source} from "../core/";
 import {filter, switchMap, take, takeUntil, tap, toArray} from "rxjs/operators";
 import {mapProc, mapToProc, ofProc} from "../processors";
 import {StatePort, singlePatch} from './'
-import {FlowState, StateFlow, initialStateFlow, finishFlow, isFinishFlow} from "../flow/";
+import {StateFlow, finishFlow, isFinishFlow} from "../flow/";
 
 type StateTestState = {
   talkId?: string;
@@ -12,9 +12,10 @@ type StateTestState = {
     talentId: number;
   };
   flow: {
+    init: StateFlow;
     findTalk: StateFlow;
   };
-} & FlowState
+}
 
 const initialState = (): StateTestState =>
   ({
@@ -22,8 +23,8 @@ const initialState = (): StateTestState =>
       talentId: 1
     },
     flow: {
-      init: initialStateFlow(),
-      findTalk: initialStateFlow()
+      init: StateFlow.initialValue(),
+      findTalk: StateFlow.initialValue()
     }
   });
 

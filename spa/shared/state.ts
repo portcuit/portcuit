@@ -1,19 +1,19 @@
-import {FlowState, StateFlow} from "@pkit/core/";
+import {StateFlow} from "@pkit/core/";
 
 export type SpaState = {
   flow: {
+    init: StateFlow;
     api: StateFlow;
     render: StateFlow;
     hydration: StateFlow;
   }
-} & FlowState
+}
 
 export namespace SpaState {
-  export const initialState = (base=FlowState.initialState()): SpaState =>
+  export const initialState = (): SpaState =>
     ({
-      ...base,
       flow: {
-        ...base.flow,
+        init: StateFlow.initialValue(),
         api: StateFlow.initialValue(),
         render: StateFlow.initialValue(),
         hydration: StateFlow.initialValue()
