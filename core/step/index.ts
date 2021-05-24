@@ -17,22 +17,22 @@ export namespace StepState {
 
 export const startStep = <T extends string>(p: T) =>
   [
-    {flow: {[p]: {start: true, doing: true}}},
-    {flow: {[p]: {start: false}}}
-  ] as {flow: {[P in T]: {start: boolean}}}[]
+    {step: {[p]: {start: true, doing: true}}},
+    {step: {[p]: {start: false}}}
+  ] as {step: {[P in T]: {start: boolean}}}[]
 
 export const finishStep = <T extends string>(p: T) =>
   [
-    {flow: {[p]: {finish: true, doing: false}}},
-    {flow: {[p]: {finish: false}}}
-  ] as {flow: {[P in T]: {finish: boolean}}}[]
+    {step: {[p]: {finish: true, doing: false}}},
+    {step: {[p]: {finish: false}}}
+  ] as {step: {[P in T]: {finish: boolean}}}[]
 
 const createIsActionStep = (action: string) =>
   <T extends string>(p: T) =>
-    <U extends {flow?: {[P in T]?: any } | null}>([state]: U[]) => {
-      if (!state.flow) { return false; }
-      if ( !(p in state.flow) ) { return false }
-      return (state.flow[p] as any)[action] === true;
+    <U extends {step?: {[P in T]?: any } | null}>([state]: U[]) => {
+      if (!state.step) { return false; }
+      if ( !(p in state.step) ) { return false }
+      return (state.step[p] as any)[action] === true;
     }
 
 export const isStartStep = createIsActionStep('start')

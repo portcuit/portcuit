@@ -11,7 +11,7 @@ type StateTestState = {
   talk?: {
     talentId: number;
   };
-  flow: {
+  step: {
     init: StepState;
     findTalk: StepState;
   };
@@ -22,7 +22,7 @@ const initialState = (): StateTestState =>
     talk: {
       talentId: 1
     },
-    flow: {
+    step: {
       init: StepState.initialState(),
       findTalk: StepState.initialState()
     }

@@ -1,7 +1,7 @@
 import {StepState} from "@pkit/core";
 
 export type SpaState = {
-  flow: {
+  step: {
     init: StepState;
     api: StepState;
     render: StepState;
@@ -12,7 +12,7 @@ export type SpaState = {
 export namespace SpaState {
   export const initialState = (): SpaState =>
     ({
-      flow: {
+      step: {
         init: StepState.initialState(),
         api: StepState.initialState(),
         render: StepState.initialState(),
