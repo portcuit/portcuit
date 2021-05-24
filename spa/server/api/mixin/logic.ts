@@ -7,7 +7,7 @@ import {
   mergeParamsPrototypeKit,
   sink,
   source,
-  isFinishFlow, startFlow
+  isFinishStep, startStep
 } from "@pkit/core/";
 import {SpaState} from "../../../shared/";
 import {SpaServerApiPort} from "../";
@@ -21,7 +21,7 @@ const initFlowRestPostKit: Kit = (port) =>
       if (!(Array.isArray(batch) && batch.every((patches) => Array.isArray(patches)))) {
         throw new Error(`invalid updateBatch: ${JSON.stringify(batch)}`);
       }
-      return [...batch, startFlow('api')]
+      return [...batch, startStep('api')]
     },
     sink(port.err));
 
@@ -29,7 +29,7 @@ const updatePatchDetectKit: Kit = (port) =>
   directProc(source(port.state.update).pipe(
     filter((batch) =>
       batch.some((patches) =>
-        [patches].some(isFinishFlow('api'))))),
+        [patches].some(isFinishStep('api'))))),
     sink(port.updateBatch));
 
 const updateBatchResponseKit: Kit = (port) =>

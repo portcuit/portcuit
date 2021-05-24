@@ -1,12 +1,12 @@
-export type StateFlow = {
+export type StepState = {
   start: boolean;
   finish: boolean;
   doing: boolean;
   done: boolean;
 }
 
-export namespace StateFlow {
-  export const initialValue = (): StateFlow =>
+export namespace StepState {
+  export const initialState = (): StepState =>
     ({
       start: false,
       finish: false,
@@ -15,19 +15,19 @@ export namespace StateFlow {
     })
 }
 
-export const startFlow = <T extends string>(p: T) =>
+export const startStep = <T extends string>(p: T) =>
   [
     {flow: {[p]: {start: true, doing: true}}},
     {flow: {[p]: {start: false}}}
   ] as {flow: {[P in T]: {start: boolean}}}[]
 
-export const finishFlow = <T extends string>(p: T) =>
+export const finishStep = <T extends string>(p: T) =>
   [
     {flow: {[p]: {finish: true, doing: false}}},
     {flow: {[p]: {finish: false}}}
   ] as {flow: {[P in T]: {finish: boolean}}}[]
 
-const createIsActionFlow = (action: string) =>
+const createIsActionStep = (action: string) =>
   <T extends string>(p: T) =>
     <U extends {flow?: {[P in T]?: any } | null}>([state]: U[]) => {
       if (!state.flow) { return false; }
@@ -35,6 +35,6 @@ const createIsActionFlow = (action: string) =>
       return (state.flow[p] as any)[action] === true;
     }
 
-export const isStartFlow = createIsActionFlow('start')
-export const isFinishFlow = createIsActionFlow('finish')
-export const isDoingFlow = createIsActionFlow('doing')
+export const isStartStep = createIsActionStep('start')
+export const isFinishStep = createIsActionStep('finish')
+export const isDoingStep = createIsActionStep('doing')

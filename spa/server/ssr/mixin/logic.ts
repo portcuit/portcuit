@@ -9,7 +9,7 @@ import {
   sink,
   Socket,
   source,
-  startFlow, StatePort
+  startStep, StatePort
 } from "@pkit/core";
 import {HttpServerContext, HttpServerRestPort} from "@pkit/http/server";
 import {SnabbdomServerPort} from "@pkit/snabbdom/server";
@@ -38,7 +38,7 @@ const initFlowRestGetKit: Kit = (port, {ctx: [{method}]}) =>
     filter(() =>
       method === 'GET')),
     sink(port.state.update),
-    [startFlow('render')])
+    [startStep('render')])
 
 const respondHtmlKit: Kit = (port) =>
   directProc(source(port.html), sink(port.rest.response.html))

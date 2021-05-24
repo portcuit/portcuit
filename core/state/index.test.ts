@@ -4,7 +4,7 @@ import {sink, source} from "../core/";
 import {filter, switchMap, take, takeUntil, tap, toArray} from "rxjs/operators";
 import {mapProc, mapToProc, ofProc} from "../processors";
 import {StatePort, singlePatch} from './'
-import {StateFlow, finishFlow, isFinishFlow} from "../flow/";
+import {StepState, finishStep, isFinishStep} from "../flow/";
 
 type StateTestState = {
   talkId?: string;
@@ -12,8 +12,8 @@ type StateTestState = {
     talentId: number;
   };
   flow: {
-    init: StateFlow;
-    findTalk: StateFlow;
+    init: StepState;
+    findTalk: StepState;
   };
 }
 
@@ -23,8 +23,8 @@ const initialState = (): StateTestState =>
       talentId: 1
     },
     flow: {
-      init: StateFlow.initialValue(),
-      findTalk: StateFlow.initialValue()
+      init: StepState.initialState(),
+      findTalk: StepState.initialState()
     }
   });
 
@@ -43,17 +43,17 @@ class StateTestPort extends LifecyclePort {
             singlePatch({talkId: '5'})),
 
           mapToProc(source(port.state.data).pipe(
-            filter(isFinishFlow('init'))),
+            filter(isFinishStep('init'))),
             sink(port.state.update), [
               [{
                 talkId: '3',
                 talk: {talentId: 3}
               }],
-              finishFlow('findTalk')
+              finishStep('findTalk')
             ]),
 
           mapToProc(source(port.state.data).pipe(
-            filter(isFinishFlow('findTalk'))),
+            filter(isFinishStep('findTalk'))),
             sink(port.terminated))
         ).pipe(takeUntil(source(port.terminated)))))
     )

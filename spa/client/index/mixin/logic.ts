@@ -1,5 +1,5 @@
 import {
-  directProc, finishFlow,
+  directProc, finishStep,
   ForcePublicPort,
   IKit, mapToProc,
   mergeParamsPrototypeKit,
@@ -20,7 +20,7 @@ const initStateKit: Kit = (port, {state}) =>
   ofProc(sink(port.state.init), state)
 
 const initFlowKit: Kit = (port) =>
-  mapToProc(source(port.state.init), sink(port.state.update), [finishFlow('init')])
+  mapToProc(source(port.state.init), sink(port.state.update), [finishStep('init')])
 
 const initBffKit: Kit = (port, {params:{csr}}) =>
   ofProc(sink(port.bff.init), csr)
