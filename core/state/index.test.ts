@@ -4,7 +4,7 @@ import {sink, source} from "../core/";
 import {filter, switchMap, take, takeUntil, tap, toArray} from "rxjs/operators";
 import {mapProc, mapToProc, ofProc} from "../processors";
 import {StatePort, singlePatch} from './'
-import {StepState, finishStep, isFinishStep} from "../flow/";
+import {StepState, finishStep, isFinishStep} from "../step/";
 
 type StateTestState = {
   talkId?: string;
@@ -64,5 +64,3 @@ test('test', async () => {
   const logs = await new StateTestPort().run(null).pipe(toArray()).toPromise();
   console.log(JSON.stringify(logs, undefined, 2));
 })
-
-
