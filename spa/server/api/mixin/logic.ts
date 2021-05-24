@@ -7,9 +7,9 @@ import {
   mergeParamsPrototypeKit,
   sink,
   source
-} from "@pkit/core/";
-import {isFinishStep, startStep} from '@pkit/state'
-import {SpaState} from "../../../shared/";
+} from "@pkit/core";
+import {isFinishStep, startStep, UpdateBatch} from '@pkit/state'
+import {SpaState} from "@pkit/spa";
 import {SpaServerApiPort} from "../";
 
 type ISpaServerApiLogicPort = ForcePublicPort<Omit<SpaServerApiPort<SpaState>, 'circuit'>>
@@ -17,11 +17,11 @@ type Kit = IKit<ISpaServerApiLogicPort>;
 
 const initFlowRestPostKit: Kit = (port) =>
   mergeMapProc(source(port.rest.request.body.json), sink(port.state.update),
-    async (batch) => {
+    async (batch: UpdateBatch<SpaState>) => {
       if (!(Array.isArray(batch) && batch.every((patches) => Array.isArray(patches)))) {
         throw new Error(`invalid updateBatch: ${JSON.stringify(batch)}`);
       }
-      return [...batch, startStep('api')]
+      return [...batch, startStep('bff')]
     },
     sink(port.err));
 
@@ -29,7 +29,7 @@ const updatePatchDetectKit: Kit = (port) =>
   directProc(source(port.state.update).pipe(
     filter((batch) =>
       batch.some((patches) =>
-        [patches].some(isFinishStep('api'))))),
+        [patches].some(isFinishStep('bff'))))),
     sink(port.updateBatch));
 
 const updateBatchResponseKit: Kit = (port) =>

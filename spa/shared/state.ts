@@ -3,7 +3,7 @@ import {StepState} from "@pkit/state";
 export type SpaState = {
   step: {
     init: StepState;
-    api: StepState;
+    bff: StepState;
     render: StepState;
     hydration: StepState;
   }
@@ -14,7 +14,7 @@ export namespace SpaState {
     ({
       step: {
         init: StepState.initialState(),
-        api: StepState.initialState(),
+        bff: StepState.initialState(),
         render: StepState.initialState(),
         hydration: StepState.initialState()
       }
