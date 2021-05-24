@@ -46,32 +46,6 @@ export class StatePort<T extends {}> {
           ),
           of([initial, initial])))),
       sink(port.data))
-
-
-    // return directProc(source(port.init).pipe(
-    //   switchMap(([initial, initialUpdateBatch=[finishFlow('init')]]) =>
-    //     source(port.update).pipe(
-    //       startWith(initialUpdateBatch),
-    //       map((batch) => {
-    //         const pres = [];
-    //         const posts = [];
-    //         for (const patches of batch) {
-    //           pres.push(patches[0]);
-    //           if (patches[1]) { posts.push(patches[1]); }
-    //         }
-    //         return [pres, posts] as const;
-    //       }),
-    //       scan(([, fromData], [pres, posts]) => {
-    //         const data = pres.reduce((acc, patch) =>
-    //           mergePatch.apply(acc, patch), json8.clone(fromData));
-    //
-    //         const postData = posts.reduce((acc, patch) =>
-    //           mergePatch.apply(acc, patch), json8.clone(data));
-    //
-    //         return [data, postData] as [T, T]
-    //       }, [{}, initial] as [T, T])
-    //     ))),
-    //   sink(port.data))
   }
 }
 

@@ -1,13 +1,13 @@
 {
   "name": "@pkit/state",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "",
   "type": "module",
   "main": "index.js",
   "author": "pkit <info@subak.jp> (https://github.com/portcuit)",
   "license": "ISC",
   "peerDependencies": {
-    "@pkit/core": "0.2.2",
+    "@pkit/core": "0.3.0",
     "json8": "^1.0.3",
     "json8-merge-patch": "^1.0.4"
   },

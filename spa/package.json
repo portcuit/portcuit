@@ -7,8 +7,9 @@
   "author": "pkit <info@subak.jp> (https://github.com/portcuit)",
   "license": "ISC",
   "peerDependencies": {
-    "@pkit/http": "0.2.2",
-    "@pkit/snabbdom": "0.2.2",
+    "@pkit/http": "0.3.0",
+    "@pkit/state": "0.3.0",
+    "@pkit/snabbdom": "0.3.0",
     "serve-handler": "^6.1.3",
     "@types/serve-handler":"^6.1.0"
   },

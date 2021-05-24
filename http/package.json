@@ -1,12 +1,12 @@
 {
   "name": "@pkit/http",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "",
   "type": "module",
   "author": "Subak Systems",
   "license": "ISC",
   "peerDependencies": {
-    "@pkit/core": "0.2.2",
+    "@pkit/core": "0.3.0",
     "node-fetch": "^2.6.1",
     "@types/node-fetch": "^2.5.10",
     "minimatch": "^3.0.4",
