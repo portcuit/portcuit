@@ -1,5 +1,5 @@
-import {PartialState} from "../../../core/state/";
-import {PkitError} from "../../../core/";
+import {PartialState} from "@pkit/state";
+import {PkitError} from "@pkit/core";
 
 class NotObjectError extends PkitError {}
 class NotFondError extends PkitError {}

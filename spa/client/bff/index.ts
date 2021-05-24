@@ -1,4 +1,5 @@
-import {EndpointPort, LifecyclePort, Socket, UpdateBatch} from "@pkit/core";
+import {EndpointPort, LifecyclePort, Socket} from "@pkit/core";
+import {UpdateBatch} from '@pkit/state'
 import {ISpaClientBffLogicPort} from "./mixin/logic";
 
 export class SpaClientBffPort extends LifecyclePort {

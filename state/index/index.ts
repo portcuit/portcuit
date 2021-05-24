@@ -1,9 +1,8 @@
 import json8 from 'json8'
 import mergePatch from 'json8-merge-patch'
-import {sink, Socket, source} from "../core/";
-import {directProc} from "../processors/";
-import {map, scan, switchMap} from "rxjs/operators";
 import {merge, of} from "rxjs";
+import {map, scan, switchMap} from "rxjs/operators";
+import {sink, Socket, source, directProc} from "@pkit/core";
 
 // export const applyJsonPatches = <T>(doc: PartialState<T>, patches: PartialState<T>[]): T =>
 //   patches.reduce((acc, curr) =>

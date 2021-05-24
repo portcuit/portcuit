@@ -1,5 +1,6 @@
 import {merge} from "rxjs";
-import {LifecyclePort, Socket, StatePort} from "@pkit/core";
+import {LifecyclePort, Socket} from "@pkit/core";
+import {StatePort} from '@pkit/state'
 import {HttpServerContext, HttpServerRestPort} from "@pkit/http/server";
 import {SpaState} from "../../shared/";
 import {ISpaServerRestPort, ISpaServerLogicPort} from "./mixin/";

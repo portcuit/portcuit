@@ -1,10 +1,8 @@
-import {LifecyclePort} from "../lifecycle/";
 import {merge} from "rxjs";
-import {sink, source} from "../core/";
+import {sink, source, LifecyclePort, mapToProc, ofProc} from "@pkit/core";
 import {filter, switchMap, take, takeUntil, tap, toArray} from "rxjs/operators";
-import {mapProc, mapToProc, ofProc} from "../processors";
-import {StatePort, singlePatch} from './'
-import {StepState, finishStep, isFinishStep} from "../step/";
+import {StatePort, singlePatch} from '../index/'
+import {StepState, finishStep, isFinishStep} from "./state";
 
 type StateTestState = {
   talkId?: string;

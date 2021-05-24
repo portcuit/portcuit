@@ -1,4 +1,4 @@
-import {StepState} from "@pkit/core";
+import {StepState} from "@pkit/state";
 
 export type SpaState = {
   step: {

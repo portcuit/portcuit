@@ -6,9 +6,9 @@ import {
   mergeMapProc,
   mergeParamsPrototypeKit,
   sink,
-  source,
-  isFinishStep, startStep
+  source
 } from "@pkit/core/";
+import {isFinishStep, startStep} from '@pkit/state'
 import {SpaState} from "../../../shared/";
 import {SpaServerApiPort} from "../";
 

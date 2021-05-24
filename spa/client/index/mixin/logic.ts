@@ -1,5 +1,5 @@
 import {
-  directProc, finishStep,
+  directProc,
   ForcePublicPort,
   IKit, mapToProc,
   mergeParamsPrototypeKit,
@@ -7,7 +7,8 @@ import {
   sink,
   source,
 } from "@pkit/core";
-import {SpaState} from "../../../shared/";
+import {finishStep} from '@pkit/state'
+import {SpaState} from "@pkit/spa";
 import {SpaClientPort} from "../";
 
 type ISpaClientLogicPort = ForcePublicPort<Omit<SpaClientPort<SpaState>, 'circuit'>>

@@ -8,9 +8,9 @@ import {
   mergeParamsPrototypeKit,
   sink,
   Socket,
-  source,
-  startStep, StatePort
+  source
 } from "@pkit/core";
+import {startStep, StatePort} from '@pkit/state'
 import {HttpServerContext, HttpServerRestPort} from "@pkit/http/server";
 import {SnabbdomServerPort} from "@pkit/snabbdom/server";
 import {SpaState} from "../../../shared/";

@@ -1,5 +1,6 @@
 import {merge} from "rxjs";
-import {LifecyclePort, PortParams, Socket, StatePort} from "@pkit/core";
+import {LifecyclePort, PortParams, Socket} from "@pkit/core";
+import {StatePort} from '@pkit/state'
 import {SnabbdomClientPort} from "@pkit/snabbdom/client";
 import {SpaCsr, SpaState} from "../../shared/";
 import {SpaClientDomPort} from "../dom/";

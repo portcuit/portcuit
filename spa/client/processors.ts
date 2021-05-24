@@ -1,9 +1,9 @@
 import {assocPath} from 'ramda'
-import {FlowEvent} from "../shared/";
-import {PartialState, UpdateBatch, InferUpdateBatch} from "../../core/state/";
 import {Observable} from "rxjs";
-import {Sink} from "../../core";
 import {filter, map} from "rxjs/operators";
+import {Sink} from "@pkit/core";
+import {PartialState, UpdateBatch, InferUpdateBatch} from "@pkit/state";
+import {FlowEvent} from "../shared/";
 
 const objFromTextContent = (doc: Document, selector: string) =>
   JSON.parse(doc.querySelector(selector)!.textContent!)

@@ -5,8 +5,6 @@ import {dispatcherModule} from './dispatcher.js'
 import {jsxModule} from './jsx.js'
 import {propsModule, attributesModule, styleModule, eventListenersModule, datasetModule} from 'snabbdom'
 
-export {createActionModule, ActionDetail} from "./action.js";
-
 export const defaultModules = [
   selectorModule,
   propsModule,
