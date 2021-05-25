@@ -1,0 +1,10 @@
+{
+  "name": "@pkit/ffmpeg",
+  "version": "0.0.1",
+  "main": "index.js",
+  "type": "module",
+  "peerDependencies": {
+    "@ffmpeg/ffmpeg": "^0.10.0",
+    "@ffmpeg/core": "^0.10.0"
+  }
+}

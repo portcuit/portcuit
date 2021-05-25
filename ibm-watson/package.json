@@ -1,0 +1,9 @@
+{
+  "name": "@pkit/ibm-watson",
+  "version": "0.0.1",
+  "main": "index.js",
+  "type": "module",
+  "peerDependencies": {
+    "ibm-watson": "^6.0.4"
+  }
+}
