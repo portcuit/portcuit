@@ -1,18 +1,24 @@
 import {fromEvent} from "rxjs";
 import {filter} from "rxjs/operators";
-import {directProc, ForcePublicPort, IFlow, mergeParamsPrototypeKit, sink} from "@pkit/core";
+import {
+  cycleFlow,
+  directProc,
+  IFlow, IPort,
+  replaceProperty,
+  sink
+} from "@pkit/core";
 import {SpaClientDomPort} from "../";
 
-type ISpaClientDomLogicPort = ForcePublicPort<SpaClientDomPort>
-type Kit = IFlow<ISpaClientDomLogicPort>
+type ISpaClientDomLogicPort = IPort<SpaClientDomPort>
+type Flow = IFlow<ISpaClientDomLogicPort>
 
-const delegateEventClickKit: Kit = (port, {doc}) =>
+const startClickDomEventFlow: Flow = (port, {doc}) =>
   directProc(fromEvent<MouseEvent & {target: HTMLElement}>(doc, 'click').pipe(
     filter(({target}) =>
       !!target && !!target.dataset.bind)),
     sink(port.event.click));
 
-const delegateEventChangeKit: Kit = (port, {doc}) =>
+const startChangeDomEventFlow: Flow = (port, {doc}) =>
   directProc(fromEvent<Event & {target: HTMLElement}>(doc, 'change').pipe(
     filter(({target}) =>
       !!target && !!target.dataset.bind)),
@@ -20,9 +26,9 @@ const delegateEventChangeKit: Kit = (port, {doc}) =>
 
 export namespace ISpaClientDomLogicPort {
   export const prototype = {
-    delegateEventClickKit,
-    delegateEventChangeKit
+    startClickDomEventFlow,
+    startChangeDomEventFlow
   }
-  export const circuit = (port: ISpaClientDomLogicPort) =>
-    mergeParamsPrototypeKit(port, prototype)
+  export const flow = (port: ISpaClientDomLogicPort & typeof prototype) =>
+    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
 }

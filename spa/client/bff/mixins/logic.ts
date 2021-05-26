@@ -1,17 +1,18 @@
 import {
-  ForcePublicPort,
-  IFlow,
+  cycleFlow,
+  IFlow, IPort,
   mergeMapProc,
-  mergeParamsPrototypeKit,
+  replaceProperty,
   sink,
   source
 } from "@pkit/core";
 import {SpaClientBffPort} from "../";
 
-type ISpaClientBffLogicPort = ForcePublicPort<SpaClientBffPort>
-type Kit = IFlow<ISpaClientBffLogicPort>
+type ISpaClientBffLogicPort = IPort<SpaClientBffPort>
+type Flow = IFlow<ISpaClientBffLogicPort>
 
-const postKit: Kit = (port, {endpoint}) =>
+// TODO: エラークラス作る
+const postFlow: Flow = (port, {endpoint}) =>
   mergeMapProc(source(port.update.req), sink(port.update.res),
     async (batch) => {
       const res = await fetch(endpoint, {
@@ -27,8 +28,8 @@ const postKit: Kit = (port, {endpoint}) =>
 
 export namespace ISpaClientBffLogicPort {
   export const prototype = {
-    postKit
+    postFlow
   };
-  export const circuit = (port: ISpaClientBffLogicPort) =>
-    mergeParamsPrototypeKit(port, prototype)
+  export const flow = (port: ISpaClientBffLogicPort & typeof prototype) =>
+    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
 }

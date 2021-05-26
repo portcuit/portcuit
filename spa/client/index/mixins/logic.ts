@@ -1,9 +1,8 @@
 import {
+  cycleFlow,
   directProc,
-  ForcePublicPort,
-  IFlow, mapToProc,
-  mergeParamsPrototypeKit,
-  ofProc,
+  IFlow, IPort, mapToProc,
+  ofProc, replaceProperty,
   sink,
   source,
 } from "@pkit/core";
@@ -11,25 +10,25 @@ import {finishStep} from '@pkit/state'
 import {SpaState} from "@pkit/spa";
 import {SpaClientPort} from "../";
 
-type ISpaClientLogicPort = ForcePublicPort<Omit<SpaClientPort<SpaState>, 'circuit'>>
-type Kit = IFlow<ISpaClientLogicPort>
+type ISpaClientLogicPort = IPort<SpaClientPort<SpaState>>
+type Flow = IFlow<ISpaClientLogicPort>
 
-const initVdomKit: Kit = (port, {vdom}) =>
+const initVdomKit: Flow = (port, {vdom}) =>
   ofProc(sink(port.vdom.init), vdom)
 
-const initStateKit: Kit = (port, {state}) =>
+const initStateKit: Flow = (port, {state}) =>
   ofProc(sink(port.state.init), state)
 
-const initFlowKit: Kit = (port) =>
+const initFlowKit: Flow = (port) =>
   mapToProc(source(port.state.init), sink(port.state.update), [finishStep('init')])
 
-const initBffKit: Kit = (port, {params:{csr}}) =>
+const initBffKit: Flow = (port, {params:{csr}}) =>
   ofProc(sink(port.bff.init), csr)
 
-const initDomKit: Kit = (port, {dom}) =>
+const initDomKit: Flow = (port, {dom}) =>
   ofProc(sink(port.dom.init), dom);
 
-const bffUpdateKit: Kit = (port) =>
+const bffUpdateKit: Flow = (port) =>
   directProc(source(port.bff.update.res), sink(port.state.update))
 
 export namespace ISpaClientLogicPort {
@@ -41,6 +40,6 @@ export namespace ISpaClientLogicPort {
     initDomKit,
     bffUpdateKit
   }
-  export const circuit = (port: ISpaClientLogicPort) =>
-    mergeParamsPrototypeKit(port, prototype)
+  export const flow = (port: ISpaClientLogicPort & typeof prototype) =>
+    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
 }

@@ -8,12 +8,12 @@ import {
 } from "@pkit/core";
 import {startStep, UpdateBatch} from '@pkit/state'
 import {SpaState} from "@pkit/spa";
-import {SpaServerApiPort} from "../";
+import {SpaServerBffPort} from "../";
 
-type ISpaServerApiLogicPort = IPort<SpaServerApiPort<SpaState>>
-type Kit = IFlow<ISpaServerApiLogicPort>;
+type ISpaServerBffLogicPort = IPort<SpaServerBffPort<SpaState>>
+type Kit = IFlow<ISpaServerBffLogicPort>;
 
-const initFlowRestPostKit: Kit = (port) =>
+const startBffFlow: Kit = (port) =>
   mergeMapProc(source(port.rest.request.body.json), sink(port.state.update),
     async (batch: UpdateBatch<SpaState>) => {
       if (!(Array.isArray(batch) && batch.every((patches) => Array.isArray(patches)))) {
@@ -23,10 +23,10 @@ const initFlowRestPostKit: Kit = (port) =>
     },
     sink(port.err));
 
-export namespace ISpaServerApiLogicPort {
+export namespace ISpaServerBffLogicPort {
   export const prototype = {
-    initFlowRestPostKit,
+    startBffFlow,
   };
-  export const flow = (port: ISpaServerApiLogicPort & typeof prototype) =>
+  export const flow = (port: ISpaServerBffLogicPort & typeof prototype) =>
     cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
 }

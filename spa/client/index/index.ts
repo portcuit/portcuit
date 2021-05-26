@@ -5,7 +5,7 @@ import {SnabbdomClientPort} from "@pkit/snabbdom/client";
 import {SpaCsr, SpaState} from "../../shared/";
 import {SpaClientDomPort} from "../dom/";
 import {SpaClientBffPort} from "../bff/";
-import {ISpaClientLogicPort} from "./mixin/logic";
+import {ISpaClientLogicPort} from "./mixins/logic";
 
 export abstract class SpaClientPort<T extends SpaState> extends LifecyclePort {
   init = new Socket<{
@@ -28,8 +28,7 @@ export abstract class SpaClientPort<T extends SpaState> extends LifecyclePort {
       port.vdom.circuit(),
       port.dom.circuit(),
       port.bff.circuit(),
-      ISpaClientLogicPort.circuit(port)
+      ISpaClientLogicPort.flow({...ISpaClientLogicPort.prototype, ...port})
     )
   }
 }
-Object.assign(SpaClientPort.prototype, ISpaClientLogicPort.prototype);

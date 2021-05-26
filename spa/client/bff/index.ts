@@ -1,15 +1,13 @@
 import {EndpointPort, LifecyclePort, Socket} from "@pkit/core";
 import {UpdateBatch} from '@pkit/state'
-import {ISpaClientBffLogicPort} from "./mixin/logic";
+import {ISpaClientBffLogicPort} from "./mixins/logic";
 
 export class SpaClientBffPort extends LifecyclePort {
   init = new Socket<{endpoint: string}>();
   update = new EndpointPort<UpdateBatch<any>, UpdateBatch<any>>();
 
   circuit () {
-    const port =  this;
-    return ISpaClientBffLogicPort.circuit(port);
+    return ISpaClientBffLogicPort.flow({...ISpaClientBffLogicPort.prototype, ...this});
   }
 }
-Object.assign(SpaClientBffPort.prototype, ISpaClientBffLogicPort.prototype);
 
