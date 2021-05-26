@@ -1,15 +1,13 @@
 import {merge} from "rxjs";
 import {PortParams, Socket} from "@pkit/core";
 import {SnabbdomServerPort} from "@pkit/snabbdom/server";
-import {SpaCsr, SpaState} from "../../shared/";
+import {SpaCsr, SpaState} from "@pkit/spa";
 import {ISpaServerVdomPort} from "../index/";
 import {SpaServerApiPort} from "../api/";
-import {ISpaServerSsrLogicPort} from "./mixin/logic";
+import {ISpaServerSsrLogicPort} from "./mixins/logic";
 
 export class SpaServerSsrPort<T extends SpaState> extends SpaServerApiPort<T> {
-  init = new Socket<{
-    csr: SpaCsr
-  } & PortParams<SpaServerApiPort<T>>>();
+  init = new Socket<{params: {csr: SpaCsr}} & PortParams<SpaServerApiPort<T>>>();
   vdom = new SnabbdomServerPort;
   html = new Socket<string>()
 
@@ -18,10 +16,8 @@ export class SpaServerSsrPort<T extends SpaState> extends SpaServerApiPort<T> {
     return merge(
       port.vdom.circuit(),
       super.circuit(),
-      ISpaServerVdomPort.circuit(port),
-      ISpaServerSsrLogicPort.circuit(port)
+      ISpaServerVdomPort.flow({...ISpaServerVdomPort.prototype, ...port}),
+      ISpaServerSsrLogicPort.circuit({...ISpaServerSsrLogicPort.prototype, ...port})
     )
   }
 }
-Object.assign(SpaServerSsrPort.prototype, ISpaServerVdomPort.prototype);
-Object.assign(SpaServerSsrPort.prototype, ISpaServerSsrLogicPort.prototype);

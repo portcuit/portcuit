@@ -1,8 +1,16 @@
-import {ForcePublicPort, IFlow, mapToProc, mergeParamsPrototypeKit, ofProc, sink, source} from "@pkit/core";
-import {SpaState} from "../../../shared/";
+import {
+  cycleFlow,
+  IFlow, IPort,
+  mapToProc,
+  ofProc,
+  replaceProperty,
+  sink,
+  source
+} from "@pkit/core";
+import {SpaState} from "@pkit/spa";
 import {SpaServerPort} from "../";
 
-type ISpaServerRestPort = ForcePublicPort<Omit<SpaServerPort<SpaState> ,'circuit'>>;
+type ISpaServerRestPort = IPort<SpaServerPort<SpaState>>
 type Kit = IFlow<ISpaServerRestPort>;
 
 const initRestKit: Kit = (port, {ctx}) =>
@@ -16,6 +24,6 @@ export namespace ISpaServerRestPort {
     initRestKit,
     terminateKit
   };
-  export const circuit = (port: ISpaServerRestPort) =>
-    mergeParamsPrototypeKit(port, prototype)
+  export const flow = (port: ISpaServerRestPort & typeof prototype) =>
+    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
 }
