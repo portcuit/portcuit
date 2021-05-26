@@ -1,5 +1,5 @@
 import {
-  cycleFlow,
+  cycleFlow, directProc,
   IFlow, IPort,
   mergeMapProc,
   replaceProperty,
@@ -11,9 +11,9 @@ import {SpaState} from "@pkit/spa";
 import {SpaServerBffPort} from "../";
 
 type ISpaServerBffLogicPort = IPort<SpaServerBffPort<SpaState>>
-type Kit = IFlow<ISpaServerBffLogicPort>;
+type Flow = IFlow<ISpaServerBffLogicPort>;
 
-const startBffFlow: Kit = (port) =>
+const startBffFlow: Flow = (port) =>
   mergeMapProc(source(port.rest.request.body.json), sink(port.state.update),
     async (batch: UpdateBatch<SpaState>) => {
       if (!(Array.isArray(batch) && batch.every((patches) => Array.isArray(patches)))) {
@@ -23,9 +23,13 @@ const startBffFlow: Kit = (port) =>
     },
     sink(port.err));
 
+const updateBatchFlow: Flow = (port) =>
+  directProc(source(port.bff.update), sink(port.rest.response.json))
+
 export namespace ISpaServerBffLogicPort {
   export const prototype = {
     startBffFlow,
+    updateBatchFlow
   };
   export const flow = (port: ISpaServerBffLogicPort & typeof prototype) =>
     cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))

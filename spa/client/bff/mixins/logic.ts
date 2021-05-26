@@ -13,7 +13,7 @@ type Flow = IFlow<ISpaClientBffLogicPort>
 
 // TODO: エラークラス作る
 const postFlow: Flow = (port, {endpoint}) =>
-  mergeMapProc(source(port.update.req), sink(port.update.res),
+  mergeMapProc(source(port.update), sink(port.batch),
     async (batch) => {
       const res = await fetch(endpoint, {
         method: 'POST',

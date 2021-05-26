@@ -29,7 +29,7 @@ const initDomKit: Flow = (port, {dom}) =>
   ofProc(sink(port.dom.init), dom);
 
 const bffUpdateKit: Flow = (port) =>
-  directProc(source(port.bff.update.res), sink(port.state.update))
+  directProc(source(port.bff.batch), sink(port.state.update))
 
 export namespace ISpaClientLogicPort {
   export const prototype = {

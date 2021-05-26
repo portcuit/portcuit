@@ -1,6 +1,6 @@
 import 'setimmediate'
 import {merge, Observable, of, Subject} from "rxjs";
-import {catchError, groupBy, tap} from "rxjs/operators";
+import {groupBy, tap} from "rxjs/operators";
 import {
   PortMessage,
   sink,
@@ -79,17 +79,7 @@ export abstract class LifecyclePort {
       tap(([type]) =>
         type === `${namespace}terminated` &&
         setImmediate(() =>
-          subject$.complete())),
-      catchError((err) => {
-        this.error(err);
-        return of(['##################', 'error'] as PortMessage<any>)
-      }),
-    );
-  }
-
-  error (err: Error) {
-    console.error('inner port error', err);
-    throw err;
+          subject$.complete())));
   }
 
   circuit (): Observable<PortMessage<any>> {
@@ -99,7 +89,7 @@ export abstract class LifecyclePort {
 
 export abstract class InjectedLifecyclePort extends LifecyclePort {}
 
-export const lifecycleKit = (port: LifecyclePort) =>
+const lifecycleKit = (port: LifecyclePort) =>
   merge(
     mapToProc(source(port.start), sink(port.starting), true),
     mapToProc(source(port.started), sink(port.starting), false),
@@ -112,4 +102,3 @@ export const lifecycleKit = (port: LifecyclePort) =>
     restartProc(source(port.restart), source(port.stopped), source(port.started),
       sink(port.stop), sink(port.restarting), sink(port.start), sink(port.restarted))
   )
-

@@ -4,7 +4,7 @@ import {
   PrivateSourceSocket,
   PrivateSinkSocket
 } from "@pkit/core";
-import {ISnabbdomServerPort} from "./logic/";
+import {ISnabbdomServerLogicPort} from "./mixins/logic";
 
 export class SnabbdomServerPort extends LifecyclePort {
   init = new PrivateSourceSocket<{
@@ -14,8 +14,6 @@ export class SnabbdomServerPort extends LifecyclePort {
   html = new PrivateSinkSocket<string>();
 
   circuit () {
-    return ISnabbdomServerPort.circuit(this)
+    return ISnabbdomServerLogicPort.flow({...ISnabbdomServerLogicPort.prototype, ...this})
   }
 }
-
-Object.assign(SnabbdomServerPort.prototype, ISnabbdomServerPort.prototype);

@@ -4,16 +4,6 @@ import {merge, of} from "rxjs";
 import {map, scan, switchMap} from "rxjs/operators";
 import {sink, Socket, source, directProc} from "@pkit/core";
 
-// export const applyJsonPatches = <T>(doc: PartialState<T>, patches: PartialState<T>[]): T =>
-//   patches.reduce((acc, curr) =>
-//     mergePatch.apply(acc, curr), json8.clone(doc)) as any
-
-export const singlePatch = <T>(patch: T) =>
-  [[patch]]
-
-export type UpdateBatch<T extends {}> = PartialState<T>[][]
-export type InferUpdateBatch<T> = T extends UpdateBatch<infer I> ? I : never
-
 export class StatePort<T extends {}> {
   init = new Socket<T>();
   update = new Socket<UpdateBatch<T>>();
@@ -48,6 +38,16 @@ export class StatePort<T extends {}> {
       sink(port.data))
   }
 }
+
+// export const applyJsonPatches = <T>(doc: PartialState<T>, patches: PartialState<T>[]): T =>
+//   patches.reduce((acc, curr) =>
+//     mergePatch.apply(acc, curr), json8.clone(doc)) as any
+
+export const singlePatch = <T>(patch: T) =>
+  [[patch]]
+
+export type UpdateBatch<T extends {}> = PartialState<T>[][]
+export type InferUpdateBatch<T> = T extends UpdateBatch<infer I> ? I : never
 
 declare const extra: unique symbol;
 
