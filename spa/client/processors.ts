@@ -24,7 +24,7 @@ export const updateBatchFromFlowEvent = (event: Event, dataString: string) => {
   ]
 }
 
-export const bindMapProc = <
+export const dataBindProc = <
   T extends {target: {dataset: {bind: string}}},
   U extends UpdateBatch<any>,
   V extends InferUpdateBatch<U>,

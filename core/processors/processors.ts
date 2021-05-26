@@ -123,8 +123,6 @@ export const createLatestMergeMapProc = <T, U, V extends readonly any[], W exten
   (source$: Observable<T>, sink: Sink<U>, latests$: MappedWrapObservable<V>, errSink?: Sink<Error>) =>
     latestMergeMapProc(source$, sink, latests$, fn, errSink);
 
-const _resultSelector = (...args: any[]) => args
-
 export const fromEventProc = <T, U extends T>(source$: Observable<FromEventTarget<U>>, terminated$: Observable<void>, sink: Sink<T>, eventName: string, resultSelector = (...args: any[]) => (args.length === 1 ? args[0] : args) as any) =>
   source$.pipe(
     switchMap((target) =>
@@ -141,7 +139,6 @@ export const onEventProc = <T>(source$: Observable<FromEventTarget<T>>, sink: Si
     map((data) =>
       sink(data)))
 
-
 export const preparePatchProc = <T, U, V extends (data: T) => U>(source$: Observable<T>, sink: Sink<[V, T]>, fn: V) =>
   source$.pipe(
     map((data) =>
@@ -152,3 +149,6 @@ export const conditionalProc = <T>(source$: Observable<T>, sinkA: Sink<T>, sinkB
   source$.pipe(
     map((data) =>
       condFn(data) ? sinkA(data) : sinkB(data)))
+
+
+

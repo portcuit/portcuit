@@ -58,6 +58,8 @@ export type ForcePublicPort<T> =
               ForcePublicPort<T[P]>
   }
 
+export type IPort<T> = ForcePublicPort<Omit<T, 'circuit'>>
+
 export const isSocket = (sock: unknown): sock is Socket<any> =>
   sock instanceof Socket
 
@@ -152,6 +154,21 @@ export const mergeParamsPrototypeKit = <T extends {init: Socket<any>, terminated
       merge(...(Object.keys(prototype).map((key) =>
             mergedPort[key](port, params)))).pipe(
         takeUntil(source(port.terminated)))))
+}
+
+export const replaceProperty = <T extends U, U extends {[key: string]: any}>(org: T, target: U) =>
+  Object.fromEntries((Object.keys(target)).map((key) => [key, org[key]]))
+
+export const cycleFlow = <
+  P extends {[A in T | U]: Socket<any>},
+  T extends string,
+  U extends string,
+  V extends {[label: string]: {(port: P, params: SocketData<P[T]>): Observable<PortMessage<any>>}}>(
+  port: P, start: T, stop: U, flows: V) => {
+  return source(port[start]).pipe(
+    switchMap((params) =>
+      merge(...Object.values(flows).map((flow) => flow(port, params)))
+        .pipe(takeUntil(source(port[stop])))))
 }
 
 export type IKit<T extends {init: Socket<any>}> = {
