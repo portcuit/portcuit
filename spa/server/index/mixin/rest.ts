@@ -1,9 +1,9 @@
-import {ForcePublicPort, IKit, mapToProc, mergeParamsPrototypeKit, ofProc, sink, source} from "@pkit/core";
+import {ForcePublicPort, IFlow, mapToProc, mergeParamsPrototypeKit, ofProc, sink, source} from "@pkit/core";
 import {SpaState} from "../../../shared/";
 import {SpaServerPort} from "../";
 
 type ISpaServerRestPort = ForcePublicPort<Omit<SpaServerPort<SpaState> ,'circuit'>>;
-type Kit = IKit<ISpaServerRestPort>;
+type Kit = IFlow<ISpaServerRestPort>;
 
 const initRestKit: Kit = (port, {ctx}) =>
   ofProc(sink(port.rest.init), ctx);

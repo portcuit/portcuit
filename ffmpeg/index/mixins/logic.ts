@@ -1,6 +1,6 @@
 import {
   ForcePublicPort,
-  IKit, latestMapProc,
+  IFlow, latestMapProc,
   latestMergeMapProc,
   LifecyclePort, mapProc, mapToProc, mergeMapProc,
   mergeParamsPrototypeKit,
@@ -12,7 +12,7 @@ import {createFFmpeg, FFmpeg} from "@ffmpeg/ffmpeg";
 import {merge, of} from "rxjs";
 
 type IFfmpegLogicPort = ForcePublicPort<FfmpegPort>
-type Flow = IKit<IFfmpegLogicPort>
+type Flow = IFlow<IFfmpegLogicPort>
 
 const initFlow: Flow = (port, params) =>
   mergeMapProc(of(params), sink(port.ffmpeg),

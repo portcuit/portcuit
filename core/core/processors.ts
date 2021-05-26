@@ -171,7 +171,7 @@ export const cycleFlow = <
         .pipe(takeUntil(source(port[stop])))))
 }
 
-export type IKit<T extends {init: Socket<any>}> = {
+export type IFlow<T extends {init: Socket<any>}> = {
   (port: T, params: PortParams<T>): Observable<PortMessage<any>>
 }
 

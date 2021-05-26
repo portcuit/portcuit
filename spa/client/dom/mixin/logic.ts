@@ -1,10 +1,10 @@
 import {fromEvent} from "rxjs";
 import {filter} from "rxjs/operators";
-import {directProc, ForcePublicPort, IKit, mergeParamsPrototypeKit, sink} from "@pkit/core";
+import {directProc, ForcePublicPort, IFlow, mergeParamsPrototypeKit, sink} from "@pkit/core";
 import {SpaClientDomPort} from "../";
 
 type ISpaClientDomLogicPort = ForcePublicPort<SpaClientDomPort>
-type Kit = IKit<ISpaClientDomLogicPort>
+type Kit = IFlow<ISpaClientDomLogicPort>
 
 const delegateEventClickKit: Kit = (port, {doc}) =>
   directProc(fromEvent<MouseEvent & {target: HTMLElement}>(doc, 'click').pipe(

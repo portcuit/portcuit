@@ -1,6 +1,6 @@
 import {
   ForcePublicPort,
-  IKit,
+  IFlow,
   mergeMapProc,
   mergeParamsPrototypeKit,
   sink,
@@ -9,7 +9,7 @@ import {
 import {SpaClientBffPort} from "../";
 
 type ISpaClientBffLogicPort = ForcePublicPort<SpaClientBffPort>
-type Kit = IKit<ISpaClientBffLogicPort>
+type Kit = IFlow<ISpaClientBffLogicPort>
 
 const postKit: Kit = (port, {endpoint}) =>
   mergeMapProc(source(port.update.req), sink(port.update.res),

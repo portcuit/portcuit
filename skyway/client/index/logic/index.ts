@@ -2,7 +2,7 @@ import Peer from "skyway-js";
 import {merge, of} from "rxjs";
 import {
   ForcePublicPort,
-  IKit,
+  IFlow,
   latestMergeMapProc, mapToProc,
   mergeMapProc,
   mergeParamsPrototypeKit,
@@ -14,25 +14,25 @@ import {SkywayClientPort} from "../";
 
 type ISkywayClientLogicPort = ForcePublicPort<SkywayClientPort>
 
-const peerKit: IKit<ISkywayClientLogicPort> = (port, params) =>
+const peerKit: IFlow<ISkywayClientLogicPort> = (port, params) =>
   mergeMapProc(of(params), sink(port.peer),
     ({peer: {id, options}}) =>
       Promise.resolve(new Peer(id, options)),
     sink(port.err));
 
-const peerEventKit: IKit<ISkywayClientLogicPort> = (port) =>
+const peerEventKit: IFlow<ISkywayClientLogicPort> = (port) =>
   merge(
     onEventProc(source(port.peer), sink(port.event.peer.open), 'open'),
     onEventProc(source(port.peer), sink(port.event.peer.close), 'close')
   )
 
-const roomKit: IKit<ISkywayClientLogicPort> = (port, {room: {roomName, roomOptions = {}}}) =>
+const roomKit: IFlow<ISkywayClientLogicPort> = (port, {room: {roomName, roomOptions = {}}}) =>
   latestMergeMapProc(source(port.start), sink(port.room),
     [source(port.peer)], ([,peer]) =>
       Promise.resolve(peer.joinRoom(roomName, roomOptions)),
     sink(port.err))
 
-const roomEventKit: IKit<ISkywayClientLogicPort> = (port) =>
+const roomEventKit: IFlow<ISkywayClientLogicPort> = (port) =>
   merge(
     onEventProc(source(port.room), sink(port.event.room.open), 'open'),
     onEventProc(source(port.room), sink(port.event.room.stream), 'stream'),
@@ -41,25 +41,25 @@ const roomEventKit: IKit<ISkywayClientLogicPort> = (port) =>
     onEventProc(source(port.room), sink(port.event.room.close), 'close'),
   )
 
-const roomCloseKit: IKit<ISkywayClientLogicPort> = (port) =>
+const roomCloseKit: IFlow<ISkywayClientLogicPort> = (port) =>
   latestMergeMapProc(source(port.terminate), sink(port.info),
     [source(port.room)], ([,room]) =>
       Promise.resolve({closeRoom: room.close()}),
     sink(port.err));
 
-const peerDestroyKit: IKit<ISkywayClientLogicPort> = (port) =>
+const peerDestroyKit: IFlow<ISkywayClientLogicPort> = (port) =>
   latestMergeMapProc(source(port.stopped), sink(port.info),
     [source(port.peer)], ([,peer]) =>
       Promise.resolve({closePeer: peer.destroy()}),
     sink(port.err))
 
-const sendKit: IKit<ISkywayClientLogicPort> = (port) =>
+const sendKit: IFlow<ISkywayClientLogicPort> = (port) =>
   latestMergeMapProc(source(port.send), sink(port.info),
     [source(port.room)], ([data,room]) =>
       Promise.resolve({sendRoom: room.send(data)}),
     sink(port.err))
 
-const lifecycleKit: IKit<ISkywayClientLogicPort> = (port) =>
+const lifecycleKit: IFlow<ISkywayClientLogicPort> = (port) =>
   merge(
     mapToProc(source(port.event.peer.open), sink(port.ready)),
     mapToProc(source(port.ready), sink(port.start)),

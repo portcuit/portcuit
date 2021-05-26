@@ -4,14 +4,14 @@ import {
   source,
   sink,
   directProc,
-  ForcePublicPort, IKit, mapProc, mergeParamsPrototypeKit
+  ForcePublicPort, IFlow, mapProc, mergeParamsPrototypeKit
 } from '@pkit/core'
 import {defaultModules} from '../modules/'
 import {SnabbdomClientPort} from "../";
 
 export type ISnabbdomClientPort = ForcePublicPort<SnabbdomClientPort>
 
-const patchKit: IKit<ISnabbdomClientPort> = (port, {container}) => {
+const patchKit: IFlow<ISnabbdomClientPort> = (port, {container}) => {
   const patch = init(defaultModules);
   return directProc(source(port.render).pipe(
     scan((acc, vnode) =>
@@ -19,7 +19,7 @@ const patchKit: IKit<ISnabbdomClientPort> = (port, {container}) => {
     sink(port.vnode));
 }
 
-const terminateKit: IKit<ISnabbdomClientPort> = (port: ISnabbdomClientPort, {container}) =>
+const terminateKit: IFlow<ISnabbdomClientPort> = (port: ISnabbdomClientPort, {container}) =>
   mapProc(source(port.terminate), sink(port.terminated),
     (vnode) => vnode!.elm!.parentNode!.replaceChild(container, vnode!.elm!));
 

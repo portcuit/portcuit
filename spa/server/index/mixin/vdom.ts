@@ -1,10 +1,10 @@
-import {directProc, IKit, LifecyclePort, mergeParamsPrototypeKit, ofProc, sink, Socket, source} from "@pkit/core";
+import {directProc, IFlow, LifecyclePort, mergeParamsPrototypeKit, ofProc, sink, Socket, source} from "@pkit/core";
 import {StatePort} from '@pkit/state'
 import {SnabbdomServerPort} from "@pkit/snabbdom/server";
 import {SpaState} from "../../../shared/";
 
 type ISpaVdomPort = Omit<{vdom: SnabbdomServerPort; html: Socket<string>; state: Omit<StatePort<SpaState>, 'circuit'>} & LifecyclePort, 'circuit'>
-type Kit = IKit<ISpaVdomPort>
+type Kit = IFlow<ISpaVdomPort>
 
 const initVdomKit: Kit = (port) =>
   ofProc(sink(port.vdom.init))

@@ -1,11 +1,11 @@
 import 'snabbdom-to-html'
 import init from 'snabbdom-to-html/init'
-import {ForcePublicPort, IKit, mapProc, mergeParamsPrototypeKit, ofProc, sink, source} from "@pkit/core";
+import {ForcePublicPort, IFlow, mapProc, mergeParamsPrototypeKit, ofProc, sink, source} from "@pkit/core";
 import {SnabbdomServerPort} from "../";
 import {jsxModule, classNamesModule} from '../modules/'
 
 export type ISnabbdomServerPort = ForcePublicPort<SnabbdomServerPort>;
-type Kit = IKit<ISnabbdomServerPort>
+type Kit = IFlow<ISnabbdomServerPort>
 
 const renderKit: Kit = (port, {fragment} = {fragment: true}) => {
   const toHTML = init([jsxModule, classNamesModule]);

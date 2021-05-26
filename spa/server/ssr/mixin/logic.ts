@@ -3,7 +3,7 @@ import {filter, take} from "rxjs/operators";
 import {
   directProc,
   ForcePublicPort,
-  IKit,
+  IFlow,
   mapToProc,
   mergeParamsPrototypeKit,
   sink,
@@ -26,7 +26,7 @@ type ISpaServerSsrLogicPort = ForcePublicPort<{
   vdom: SnabbdomServerPort;
   terminated: Socket<any>;
 }>
-type Kit = IKit<ISpaServerSsrLogicPort>
+type Kit = IFlow<ISpaServerSsrLogicPort>
 
 const initStateRestGetKit: Kit = (port, {state, ctx: [{method}]}) =>
   mapToProc(zip(of(method === 'GET').pipe(filter(Boolean)),

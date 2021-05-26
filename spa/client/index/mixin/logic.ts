@@ -1,7 +1,7 @@
 import {
   directProc,
   ForcePublicPort,
-  IKit, mapToProc,
+  IFlow, mapToProc,
   mergeParamsPrototypeKit,
   ofProc,
   sink,
@@ -12,7 +12,7 @@ import {SpaState} from "@pkit/spa";
 import {SpaClientPort} from "../";
 
 type ISpaClientLogicPort = ForcePublicPort<Omit<SpaClientPort<SpaState>, 'circuit'>>
-type Kit = IKit<ISpaClientLogicPort>
+type Kit = IFlow<ISpaClientLogicPort>
 
 const initVdomKit: Kit = (port, {vdom}) =>
   ofProc(sink(port.vdom.init), vdom)

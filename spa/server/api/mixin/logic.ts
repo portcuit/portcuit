@@ -2,7 +2,7 @@ import {filter} from "rxjs/operators";
 import {
   directProc,
   ForcePublicPort,
-  IKit,
+  IFlow,
   mergeMapProc,
   mergeParamsPrototypeKit,
   sink,
@@ -13,7 +13,7 @@ import {SpaState} from "@pkit/spa";
 import {SpaServerApiPort} from "../";
 
 type ISpaServerApiLogicPort = ForcePublicPort<Omit<SpaServerApiPort<SpaState>, 'circuit'>>
-type Kit = IKit<ISpaServerApiLogicPort>;
+type Kit = IFlow<ISpaServerApiLogicPort>;
 
 const initFlowRestPostKit: Kit = (port) =>
   mergeMapProc(source(port.rest.request.body.json), sink(port.state.update),
