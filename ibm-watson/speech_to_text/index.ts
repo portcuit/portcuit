@@ -4,7 +4,7 @@ import RecognizeStream from 'ibm-watson/lib/recognize-stream'
 import {IamAuthenticator} from 'ibm-watson/auth'
 import {cycleFlow, directProc, LifecyclePort, mapProc, sink, Socket, source} from "@pkit/core";
 import {fromEvent, merge, of} from "rxjs";
-import {switchMap} from "rxjs/operators";
+import {switchMap, take} from "rxjs/operators";
 
 export class IbmWatsonSpeechToTextPort extends LifecyclePort {
   init = new Socket<{
@@ -38,7 +38,7 @@ export class IbmWatsonSpeechToTextPort extends LifecyclePort {
             switchMap((recognizeStream) => merge(
               directProc(fromEvent(recognizeStream, 'data'), sink(port.speechRecognitionResults)),
               directProc(fromEvent(recognizeStream, 'error'), sink(port.err)),
-              directProc(fromEvent(recognizeStream, 'close'), sink(port.terminated))
+              directProc(fromEvent(recognizeStream, 'close').pipe(take(1)), sink(port.terminated))
             )))
     })
   }
