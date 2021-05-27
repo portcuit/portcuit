@@ -38,6 +38,8 @@ export class IbmWatsonSpeechToTextPort extends LifecyclePort {
             switchMap((recognizeStream) => merge(
               directProc(fromEvent(recognizeStream, 'data'), sink(port.speechRecognitionResults)),
               directProc(fromEvent(recognizeStream, 'error'), sink(port.err)),
+
+              // TODO: ここでエラーになる時ある  [ 1006, 'Socket Error: write EPIPE' ]
               directProc(fromEvent(recognizeStream, 'close').pipe(take(1)), sink(port.terminated))
             )))
     })
