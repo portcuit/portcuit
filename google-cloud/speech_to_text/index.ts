@@ -1,7 +1,8 @@
+import {takeUntil} from 'rxjs/operators'
 import type {LROperation} from 'google-gax'
 import {google} from "@google-cloud/speech/build/protos/protos";
 import {SpeechClient} from '@google-cloud/speech/build/src/v1p1beta1'
-import { cycleFlow, LifecyclePort, ofProc, sink, Socket, source } from "@pkit/core";
+import { cycleFlow, latestMergeMapProc, LifecyclePort, mergeMapProc, ofProc, sink, Socket, source } from "@pkit/core";
 
 
 export class GoogleCloudSpeechToTextPort extends LifecyclePort {
@@ -14,7 +15,24 @@ export class GoogleCloudSpeechToTextPort extends LifecyclePort {
   circuit () {
     return cycleFlow(this, 'init', 'terminated', {
       clientFlow: (port) =>
-        ofProc(sink(port.client), new SpeechClient)
+        ofProc(sink(port.client), new SpeechClient),
+
+      recognizeFlow: (port) =>
+        latestMergeMapProc(source(port.recognize), sink(port.operation),
+          [source(port.client)] as const, async ([request, client]) =>
+            (await client.longRunningRecognize(request))[0],
+          sink(port.err)),
+
+      checkRecognizeFlow: (port) =>
+        latestMergeMapProc(source(port.checkRecognize), sink(port.operation),
+          [source(port.client)], async ([name, client]) =>
+            await client.checkLongRunningRecognizeProgress(name),
+          sink(port.err)),
+
+      responseFlow: (port) =>
+        mergeMapProc(source(port.operation), sink(port.response), 
+          async (operation) =>
+            await operation.promise()).pipe(takeUntil(source(port.terminated))),
     })
   }
 }
