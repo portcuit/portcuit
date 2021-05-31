@@ -1,0 +1,10 @@
+{
+  "name": "@pkit/google-cloud",
+  "version": "0.0.1",
+  "main": "index.js",
+  "type": "module",
+  "peerDependencies": {
+    "@google-cloud/speech": "^4.2.0",
+    "@google-cloud/storage": "^5.8.0"
+  }
+}
