@@ -44,8 +44,6 @@ export const inject = <T extends PortObject>(port: T, group$: Observable<Grouped
         if (sock['sink'] === undefined) {
           Object.assign(sock, {sink});
         }
-
-        // Object.assign(sock, {source$, sink});
       } else if (typeof sock !== 'function') {
         port[key] = walk(sock, ns.concat(key));
       }
