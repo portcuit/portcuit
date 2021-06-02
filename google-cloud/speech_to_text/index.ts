@@ -6,6 +6,8 @@ import {SpeechClient} from '@google-cloud/speech/build/src/v1p1beta1'
 import { cycleFlow, latestMergeMapProc, LifecyclePort, mapToProc, mergeMapProc, ofProc, sink, Socket, source } from "@pkit/core";
 
 export class GoogleCloudSpeechToTextPort extends LifecyclePort {
+  init = new Socket<google.cloud.speech.v1p1beta1.ILongRunningRecognizeRequest>();
+
   client = new Socket<SpeechClient>();
   recognize = new Socket<google.cloud.speech.v1p1beta1.ILongRunningRecognizeRequest>();
   checkRecognize = new Socket<string>();

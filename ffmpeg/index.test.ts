@@ -17,4 +17,11 @@ const test = async () => {
 
 }
 
-await test()
+// const test = async () => {
+//   const ffmpeg = createFFmpeg({log: true})
+//   await ffmpeg.load();
+
+//   ffmpeg.run('-i', 'https://nhks-vh.akamaihd.net/i/gogaku-stream/mp4/21-er-4235-138.mp4/master.m3u8', '-c', 'copy', '003.mp4')
+// }
+
+// await test()

@@ -1,4 +1,4 @@
-import {EndpointPort, LifecyclePort, Socket} from "@pkit/core";
+import {DeepPartialPort, EndpointPort, LifecyclePort, Socket} from "@pkit/core";
 import {FFmpeg} from "@ffmpeg/ffmpeg";
 import {merge} from "rxjs";
 import {IFfmpegLogicPort} from "./mixins/logic";
@@ -13,6 +13,10 @@ export class FfmpegPort extends LifecyclePort {
   }>()
   ffmpeg = new Socket<FFmpeg>();
   output = new Socket<Uint8Array>();
+
+  constructor (port: DeepPartialPort<FfmpegPort>={}) {
+    super(port)
+  }
 
   circuit() {
     const port = this;
