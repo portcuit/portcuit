@@ -1,4 +1,4 @@
-import { Readable, Stream } from "stream";
+import { Stream } from "stream";
 import {race, fromEvent, throwError} from 'rxjs'
 import {switchMap, map} from 'rxjs/operators'
 import { Bucket } from "@google-cloud/storage";
@@ -25,17 +25,11 @@ export class GoogleCloudStoragePort extends LifecyclePort {
         latestMergeMapProc(source(port.upload), sink(port.event.upload),
         [source(port.bucket)], ([{path, stream}, bucket]) => {
           const dst = bucket.file(`${path}`).createWriteStream();
-
           stream.pipe(dst)
-
-          // TODO: dataを適切に分割しないとアップロード制限に引っかかる可能性がある
-          // Readable.from([data]).pipe(dst)
-
           return race(
             fromEvent(dst, 'error').pipe(switchMap((err) => throwError(err))),
             fromEvent(dst, 'finish').pipe(map(() => 
-              `gs://${bucket.name}/${path}`))
-          )
+              `gs://${bucket.name}/${path}`)))
         }, sink(port.err)),
 
       terminateFlow: (port) =>
