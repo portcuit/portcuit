@@ -10,11 +10,10 @@ export class SpaServerBffPort<T extends SpaState> extends SpaServerPort<T> {
     update: new Socket<UpdateBatch<T>>()
   }
 
-  circuit() {
-    const port = this;
+  flow() {
     return merge(
-      super.circuit(),
-      ISpaServerBffLogicPort.flow({...ISpaServerBffLogicPort.prototype, ...port})
+      super.flow(),
+      ISpaServerBffLogicPort.flow(this)
     );
   }
 }

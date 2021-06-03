@@ -13,7 +13,7 @@ export class SnabbdomServerPort extends Port {
   render = new PrivateSourceSocket<VNode>();
   html = new PrivateSinkSocket<string>();
 
-  circuit () {
-    return ISnabbdomServerLogicPort.flow({...ISnabbdomServerLogicPort.prototype, ...this})
+  flow () {
+    return ISnabbdomServerLogicPort.flow(this)
   }
 }

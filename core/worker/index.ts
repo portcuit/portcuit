@@ -24,9 +24,9 @@ export class WorkerPort extends Port {
   worker = new Socket<Worker | NodeWorker>();
   postMessage = new Socket<any>();
 
-  circuit() {
+  flow() {
     return merge(
-      super.circuit(),
+      super.flow(),
       circuit(this)
     )
   }

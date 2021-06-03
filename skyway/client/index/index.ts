@@ -34,7 +34,7 @@ export class SkywayClientPort extends Port {
     }
   }
 
-  circuit() {
+  flow() {
     return ISkywayClientLogicPort.circuit(this);
   }
 }

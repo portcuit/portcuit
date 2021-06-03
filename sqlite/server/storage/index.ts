@@ -25,7 +25,7 @@ export class SqliteServerStoragePort extends SqliteStoragePort {
         await writeFile(sqlite, buffer))
   }
 
-  circuit() {
+  flow() {
     return merge(
       mapToProc(source(this.init), sink(this.ready)),
       this.loadKit(this),

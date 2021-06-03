@@ -16,7 +16,7 @@ export class HttpClientRemotePort<T> extends Port {
     error = new Socket<MessageEvent>();
   }
 
-  circuit() {
+  flow() {
     return httpClientRemoteKit<T>(this)
   }
 

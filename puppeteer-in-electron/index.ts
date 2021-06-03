@@ -66,10 +66,10 @@ export const effectKit = (port: IPiePort) =>
   )
 
 export namespace IPiePort {
-  export const circuit = (port: IPiePort) =>
+  export const flow = (port: IPiePort) =>
     merge(
-      port.electron.circuit(),
-      port.puppeteer.circuit(),
+      port.electron.flow(),
+      port.puppeteer.flow(),
       pureKit(port),
       effectKit(port)
     );

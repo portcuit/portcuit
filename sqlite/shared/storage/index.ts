@@ -9,7 +9,7 @@ export abstract class SqliteStoragePort extends Port {
   abstract loadKit (port: Pick<this, 'load' | 'init'>): Observable<PortMessage<Uint8Array>>;
   abstract saveKit (port: Pick<this, 'save' | 'init'>): Observable<PortMessage<void>>;
 
-  circuit() {
+  flow() {
     return merge(
       mapToProc(source(this.init), sink(this.ready)),
       this.loadKit(this),

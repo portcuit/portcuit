@@ -2,7 +2,7 @@ import {
   cycleFlow,
   directProc,
   IFlow, IPort, mapToProc,
-  ofProc, replaceProperty,
+  ofProc,
   sink,
   source,
 } from "@pkit/core";
@@ -40,6 +40,6 @@ export namespace ISpaClientLogicPort {
     initDomKit,
     bffUpdateKit
   }
-  export const flow = (port: ISpaClientLogicPort & typeof prototype) =>
-    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
+  export const flow = (port: ISpaClientLogicPort) =>
+    cycleFlow(port, 'init', 'terminated', prototype)
 }

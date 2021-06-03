@@ -12,10 +12,10 @@ class FfmpegTestPort extends Port {
   init = new Socket<number>();
   ffmpeg = new FfmpegPort;
 
-  circuit() {
+  flow() {
     const port = this;
     return merge(
-      port.ffmpeg.circuit(),
+      port.ffmpeg.flow(),
 
       source(port.init).pipe(
         switchMap((lessonId, _, name=`${lessonId.toString().padStart(3, '0')}`, input=`${name}.mp4`, output=`${name}.flac`) => merge(

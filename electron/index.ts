@@ -27,7 +27,7 @@ export class ElectronPort extends Port {
   shell = new ElectronShellPort;
   tray = new ElectronTrayPort;
 
-  circuit() {
+  flow() {
     return electronKit(this);
   }
 }

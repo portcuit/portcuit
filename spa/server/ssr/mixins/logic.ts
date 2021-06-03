@@ -4,7 +4,6 @@ import {
   directProc,
   IFlow, IPort,
   mapToProc,
-  replaceProperty,
   sink,
   source
 } from "@pkit/core";
@@ -30,6 +29,6 @@ export namespace ISpaServerSsrLogicPort {
     startRenderFlow,
     respondHtmlFlow
   };
-  export const circuit = (port: ISpaServerSsrLogicPort & typeof prototype) =>
-    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
+  export const flow = (port: ISpaServerSsrLogicPort) =>
+    cycleFlow(port, 'init', 'terminated', prototype)
 }

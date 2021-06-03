@@ -4,10 +4,10 @@ import {PortMessage, sink, source, tuple, mapToProc} from "@pkit/core";
 import {delay, filter, toArray} from "rxjs/operators";
 
 class PuppeteerTestPort extends PuppeteerPort {
-  circuit() {
+  flow() {
     const port = this;
     return merge(
-      super.circuit(),
+      super.flow(),
       mapToProc(source(port.ready), sink(port.start)),
       mapToProc(source(port.running).pipe(
         filter((running) =>

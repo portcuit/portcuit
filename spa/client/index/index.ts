@@ -21,14 +21,13 @@ export abstract class SpaClientPort<T extends SpaState> extends Port {
   dom = new SpaClientDomPort();
   bff = new SpaClientBffPort();
 
-  circuit() {
-    const port = this;
+  flow() {
     return merge(
-      port.state.circuit(),
-      port.vdom.circuit(),
-      port.dom.circuit(),
-      port.bff.circuit(),
-      ISpaClientLogicPort.flow({...ISpaClientLogicPort.prototype, ...port})
+      this.state.flow(),
+      this.vdom.flow(),
+      this.dom.flow(),
+      this.bff.flow(),
+      ISpaClientLogicPort.flow(this)
     )
   }
 }

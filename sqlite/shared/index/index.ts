@@ -67,11 +67,11 @@ export class SqlitePort extends Port {
     this.storage = port.storage;
   }
 
-  circuit() {
+  flow() {
     const port = this;
 
     return merge(
-      port.storage.circuit(),
+      port.storage.flow(),
 
       mapProc(source(port.init), sink(port.storage.init),
         ({sqlite}) => ({sqlite})),
@@ -111,7 +111,7 @@ class SqliteAgentPort extends ISqliteAgentPort {
     return '/sqlite/agent/'
   }
 
-  circuit() {
+  flow() {
     const port = this;
     return merge(
       source(port.init).pipe(
@@ -146,7 +146,7 @@ export class SqliteClientPort extends Port {
     return '/sqlite/client/'
   }
 
-  circuit() {
+  flow() {
     return merge(
       source(this.init).pipe(
         switchMap((params) =>

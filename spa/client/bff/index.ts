@@ -7,8 +7,7 @@ export class SpaClientBffPort extends Port {
   update = new Socket<UpdateBatch<any>>();
   batch = new Socket<UpdateBatch<any>>()
 
-  circuit () {
-    return ISpaClientBffLogicPort.flow({...ISpaClientBffLogicPort.prototype, ...this});
+  flow () {
+    return ISpaClientBffLogicPort.flow(this)
   }
 }
-

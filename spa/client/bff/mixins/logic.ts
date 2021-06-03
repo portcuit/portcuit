@@ -30,6 +30,6 @@ export namespace ISpaClientBffLogicPort {
   export const prototype = {
     postFlow
   };
-  export const flow = (port: ISpaClientBffLogicPort & typeof prototype) =>
-    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
+  export const flow = (port: ISpaClientBffLogicPort) =>
+    cycleFlow(port, 'init', 'terminated', prototype)
 }

@@ -25,7 +25,7 @@ export namespace ISpaServerVdomPort {
     initVdomFlow,
     vdomHtmlFlow
   };
-  export const flow = (port: ISpaServerVdomPort & typeof prototype) =>
-    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
+  export const flow = (port: ISpaServerVdomPort) =>
+    cycleFlow(port, 'init', 'terminated', prototype)
 }
 

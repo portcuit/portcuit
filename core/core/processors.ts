@@ -58,7 +58,7 @@ export type ForcePublicPort<T> =
               ForcePublicPort<T[P]>
   }
 
-export type IPort<T> = ForcePublicPort<Omit<T, 'circuit'>>
+export type IPort<T> = ForcePublicPort<Omit<T, 'flow'>>
 
 export const isSocket = (sock: unknown): sock is Socket<any> =>
   sock instanceof Socket

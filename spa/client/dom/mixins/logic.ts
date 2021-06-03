@@ -29,6 +29,6 @@ export namespace ISpaClientDomLogicPort {
     startClickDomEventFlow,
     startChangeDomEventFlow
   }
-  export const flow = (port: ISpaClientDomLogicPort & typeof prototype) =>
-    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
+  export const flow = (port: ISpaClientDomLogicPort) =>
+    cycleFlow(port, 'init', 'terminated', prototype)
 }

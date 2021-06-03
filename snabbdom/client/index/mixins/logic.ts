@@ -4,7 +4,7 @@ import {
   source,
   sink,
   directProc,
-  IFlow, IPort, cycleFlow, replaceProperty, latestMapProc
+  IFlow, IPort, cycleFlow, latestMapProc
 } from '@pkit/core'
 import {defaultModules} from '../modules/'
 import {SnabbdomClientPort} from "../";
@@ -31,6 +31,6 @@ export namespace ISnabbdomClientLogicPort {
     patchFlow,
     terminateFlow
   };
-  export const circuit = (port: ISnabbdomClientLogicPort & typeof prototype) =>
-    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
+  export const flow = (port: ISnabbdomClientLogicPort) =>
+    cycleFlow(port, 'init', 'terminated', prototype)
 }

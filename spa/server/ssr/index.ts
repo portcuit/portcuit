@@ -11,13 +11,12 @@ export class SpaServerSsrPort<T extends SpaState> extends SpaServerBffPort<T> {
   vdom = new SnabbdomServerPort;
   html = new Socket<string>()
 
-  circuit() {
-    const port = this;
+  flow() {
     return merge(
-      port.vdom.circuit(),
-      super.circuit(),
-      ISpaServerVdomPort.flow({...ISpaServerVdomPort.prototype, ...port}),
-      ISpaServerSsrLogicPort.circuit({...ISpaServerSsrLogicPort.prototype, ...port})
+      super.flow(),
+      this.vdom.flow(),
+      ISpaServerVdomPort.flow(this),
+      ISpaServerSsrLogicPort.flow(this)
     )
   }
 }

@@ -7,10 +7,10 @@ import {Port, sink, source, PortMessage, mapToProc, Socket} from "@pkit/core";
 export class LifecycleTestPort extends Port {
   init = new Socket<void>();
 
-  circuit() {
+  flow() {
     const port = this;
     return merge(
-      super.circuit(),
+      super.flow(),
 
       mapToProc(source(port.init), sink(port.ready)),
       mapToProc(source(port.start).pipe(delay(100)), sink(port.started)),

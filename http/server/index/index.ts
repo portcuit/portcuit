@@ -20,9 +20,9 @@ export class HttpServerPort extends Port {
     super(port);
   }
 
-  circuit () {
+  flow () {
     return merge(
-      super.circuit(),
+      super.flow(),
       IHttpServerPort.circuit(this)
     )
   }

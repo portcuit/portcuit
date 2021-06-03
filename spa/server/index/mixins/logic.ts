@@ -19,6 +19,6 @@ export namespace ISpaServerLogicPort {
   export const prototype = {
     initStateKit
   }
-  export const flow = (port: ISpaServerLogicPort & typeof prototype) =>
-    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
+  export const flow = (port: ISpaServerLogicPort) =>
+    cycleFlow(port, 'init', 'terminated', prototype)
 }

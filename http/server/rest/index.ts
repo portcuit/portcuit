@@ -23,7 +23,7 @@ export class HttpServerRestPort extends Port {
     close = new Socket<{writeHead: ServerResponse, end: void}>();
   }
 
-  circuit () { return circuit(this); }
+  flow () { return circuit(this); }
 }
 
 export class HttpServerRestResponse {

@@ -2,14 +2,14 @@ import json8 from 'json8'
 import mergePatch from 'json8-merge-patch'
 import {merge, of} from "rxjs";
 import {map, scan, switchMap} from "rxjs/operators";
-import {sink, Socket, source, directProc} from "@pkit/core";
+import {sink, Socket, source, directProc, Port} from "@pkit/core";
 
-export class StatePort<T extends {}> {
+export class StatePort<T extends {}> extends Port {
   init = new Socket<T>();
   update = new Socket<UpdateBatch<T>>();
   data = new Socket<[T, T]>();
 
-  circuit () {
+  flow () {
     const port = this;
     return directProc(source(port.init).pipe(
       switchMap((initial) =>

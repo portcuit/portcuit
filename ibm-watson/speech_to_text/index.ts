@@ -17,7 +17,7 @@ export class IbmWatsonSpeechToTextPort extends Port {
   recognizeStream = new Socket<RecognizeStream>();
   speechRecognitionResults = new Socket<SpeechRecognitionResults>();
 
-  circuit() {
+  flow() {
     return cycleFlow(this, 'init', 'terminated', {
       speechToTextFlow: (port, params) =>
         mapProc(of(params), sink(port.speechToText),

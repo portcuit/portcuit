@@ -16,7 +16,7 @@ export class GoogleCloudStoragePort extends Port {
     upload: new Socket<string>()
   }
 
-  circuit() {
+  flow() {
     return cycleFlow(this, 'init', 'terminated', {
       bucketFlow: (port, {bucket}) =>
         ofProc(sink(port.bucket), (new Storage).bucket(bucket)),

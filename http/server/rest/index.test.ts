@@ -10,10 +10,10 @@ class HttpServerRestTestPort extends HttpServerRestPort {
     return '/server/rest/'
   }
 
-  circuit() {
+  flow() {
     const port = this;
     return merge(
-      super.circuit(),
+      super.flow(),
 
       mapProc(source(port.request.body.raw), sink(port.response.json), () =>
         ({response: 'ok'}))
@@ -26,10 +26,10 @@ class HttpServerTestPort extends HttpServerPort {
     return '/server/'
   }
 
-  circuit() {
+  flow() {
     const port = this;
     return merge(
-      super.circuit(),
+      super.flow(),
 
       mapToProc(source(port.ready), sink(port.start)),
 

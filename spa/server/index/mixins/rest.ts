@@ -3,7 +3,6 @@ import {
   IFlow, IPort,
   mapToProc,
   ofProc,
-  replaceProperty,
   sink,
   source
 } from "@pkit/core";
@@ -24,6 +23,6 @@ export namespace ISpaServerRestPort {
     initRestKit,
     terminateKit
   };
-  export const flow = (port: ISpaServerRestPort & typeof prototype) =>
-    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
+  export const flow = (port: ISpaServerRestPort) =>
+    cycleFlow(port, 'init', 'terminated', prototype)
 }

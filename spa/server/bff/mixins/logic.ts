@@ -2,7 +2,6 @@ import {
   cycleFlow, directProc,
   IFlow, IPort,
   mergeMapProc,
-  replaceProperty,
   sink,
   source
 } from "@pkit/core";
@@ -31,6 +30,6 @@ export namespace ISpaServerBffLogicPort {
     startBffFlow,
     updateBatchFlow
   };
-  export const flow = (port: ISpaServerBffLogicPort & typeof prototype) =>
-    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
+  export const flow = (port: ISpaServerBffLogicPort) =>
+    cycleFlow(port, 'init', 'terminated', prototype)
 }

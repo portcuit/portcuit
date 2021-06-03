@@ -15,13 +15,13 @@ export abstract class SpaServerPort<T extends SpaState> extends Port {
   state = new StatePort<T>();
   rest = new HttpServerRestPort;
 
-  circuit() {
+  flow() {
     const port = this;
     return merge(
-      port.state.circuit(),
-      port.rest.circuit(),
-      ISpaServerLogicPort.flow({...ISpaServerLogicPort.prototype, ...port}),
-      ISpaServerRestPort.flow({...ISpaServerRestPort.prototype, ...port})
+      port.state.flow(),
+      port.rest.flow(),
+      ISpaServerLogicPort.flow(this),
+      ISpaServerRestPort.flow(this)
     );
   }
 }

@@ -37,15 +37,15 @@ export class HttpServerRemotePort<T extends PortObject> extends Port {
     //   )
   }
 
-  circuit () {
+  flow () {
     return circuit<T>(this);
   }
 }
 
 const circuit = <T>(port: HttpServerRemotePort<T>) =>
   merge(
-    port.sse.circuit(),
-    port.rest.circuit(),
+    port.sse.flow(),
+    port.rest.flow(),
 
     mapToProc(race(source(port.rest.terminated),
       source(port.sse.terminated)),

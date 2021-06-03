@@ -1,20 +1,15 @@
 import type {VNode} from 'snabbdom'
-import {
-  Socket,
-  Port,
-  PrivateSocket,
-  PrivateSourceSocket,
-  PrivateSinkSocket
-} from '@pkit/core'
+import {Socket, Port} from '@pkit/core'
 import {ISnabbdomClientLogicPort} from "./mixins/logic";
 
 export class SnabbdomClientPort extends Port {
-  init = new PrivateSourceSocket<{
+  init = new Socket<{
     container: Element;
   }>();
   render = new Socket<VNode>();
-  vnode = new PrivateSocket<VNode>();
-  circuit() {
-    return ISnabbdomClientLogicPort.circuit({...ISnabbdomClientLogicPort.prototype, ...this});
+  vnode = new Socket<VNode>();
+
+  flow() {
+    return ISnabbdomClientLogicPort.flow(this)
   }
 }

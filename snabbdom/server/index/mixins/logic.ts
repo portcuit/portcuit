@@ -29,6 +29,6 @@ export namespace ISnabbdomServerLogicPort {
     renderFlow,
     readyFlow
   }
-  export const flow = (port: ISnabbdomServerLogicPort & typeof prototype) =>
-    cycleFlow(port, 'init', 'terminated', replaceProperty(port, prototype))
+  export const flow = (port: ISnabbdomServerLogicPort) =>
+    cycleFlow(port, 'init', 'terminated', prototype)
 }

@@ -11,10 +11,10 @@ class HttpServerTestPort extends HttpServerPort {
     scenario: 'A' | 'B' | 'C'
   } & PortParams<HttpServerPort>>();
 
-  circuit() {
+  flow() {
     const port = this;
     return merge(
-      super.circuit(),
+      super.flow(),
       mapToProc(source(port.ready), sink(port.start)),
       scenarioKit(port)
     )

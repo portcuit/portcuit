@@ -5,13 +5,12 @@ export class SpaClientDomPort extends Port {
   init = new Socket<{
     doc: Document
   }>();
-
   event = {
     click: new Socket<Omit<MouseEvent, 'target'> & {target: HTMLElement & {dataset: {bind: string}}}>(),
     change: new Socket<Omit<Event, 'target'> & {target: HTMLElement & {dataset: {bind: string}, value: string, checked: boolean}}>()
   }
 
-  circuit() {
-    return ISpaClientDomLogicPort.flow({...ISpaClientDomLogicPort.prototype, ...this})
+  flow() {
+    return ISpaClientDomLogicPort.flow(this)
   }
 }

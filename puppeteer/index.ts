@@ -23,12 +23,12 @@ export class PuppeteerPort extends Port {
   browser = new PuppeteerBrowserPort;
   page = new PuppeteerPagePort;
 
-  circuit () {
+  flow () {
     const port = this;
     return merge(
-      super.circuit(),
-      port.browser.circuit(),
-      port.page.circuit(),
+      super.flow(),
+      port.browser.flow(),
+      port.page.flow(),
       puppeteerKit(port)
     )
   }
@@ -69,9 +69,9 @@ export class PuppeteerBrowserPort extends Port {
     disconnected = new Socket<void>();
   }
 
-  circuit () {
+  flow () {
     return merge(
-      super.circuit(),
+      super.flow(),
       puppeteerBrowserKit(this)
     )
   }
@@ -114,9 +114,9 @@ export class PuppeteerPagePort extends Port {
     dialog = new Socket<Dialog>();
   }
 
-  circuit () {
+  flow () {
     return merge(
-      super.circuit(),
+      super.flow(),
       puppeteerPageKit(this)
     )
   }

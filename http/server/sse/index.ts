@@ -14,7 +14,7 @@ export class HttpServerSsePort extends Port {
     close = new Socket<void>();
   };
 
-  circuit () { return circuit(this); }
+  flow () { return circuit(this); }
 }
 
 const circuit = (port: HttpServerSsePort) =>

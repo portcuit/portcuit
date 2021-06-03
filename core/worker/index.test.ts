@@ -9,10 +9,10 @@ import {WorkerPort} from "./index";
 class WorkerTestPort extends WorkerPort {
   init = new Socket<{run: boolean} & PortParams<WorkerPort>>()
 
-  circuit() {
+  flow() {
     const port = this;
     return merge(
-      super.circuit(),
+      super.flow(),
       source(port.init).pipe(
         switchMap(({run}) =>
           run ?

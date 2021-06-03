@@ -11,7 +11,7 @@ export class GoogleCloudSpeechToTextPort extends Port {
   operation = new Socket<LROperation<google.cloud.speech.v1p1beta1.ILongRunningRecognizeResponse, google.cloud.speech.v1p1beta1.ILongRunningRecognizeMetadata>>();
   response = new Socket<[google.cloud.speech.v1p1beta1.ILongRunningRecognizeResponse, google.cloud.speech.v1p1beta1.ILongRunningRecognizeMetadata, google.longrunning.Operation]>();
 
-  circuit () {
+  flow () {
     return cycleFlow(this, 'init', 'terminated', {
       clientFlow: (port) =>
         ofProc(sink(port.client), new SpeechClient),

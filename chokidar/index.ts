@@ -28,7 +28,7 @@ export class ChokidarPort extends Port {
     raw = new Socket<[eventName: string, path: string, details: any]>();
   }
 
-  circuit () {
+  flow () {
     return chokidarKit(this);
   }
 }

@@ -30,9 +30,9 @@ const initialState = (): StateTestState =>
 class StateTestPort extends Port {
   state = new StatePort<StateTestState>()
 
-  circuit() {
+  flow() {
     return merge(
-      this.state.circuit(),
+      this.state.flow(),
 
       cycleFlow(this, 'init', 'terminated', {
         initStateFlow: (port) =>

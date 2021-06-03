@@ -4,10 +4,10 @@ import {filter, startWith, toArray} from "rxjs/operators";
 import {sink, source, tuple, latestMapProc, mapToProc} from "@pkit/core";
 
 class ElectronTestPort extends ElectronPort {
-  circuit() {
+  flow() {
     const port = this;
     return merge(
-      super.circuit(),
+      super.flow(),
       mapToProc(source(port.ready), sink(port.start)),
       mapToProc(source(port.running).pipe(
         filter((running) =>

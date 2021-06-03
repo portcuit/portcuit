@@ -69,7 +69,7 @@ export abstract class Port {
     this.injectedHook(true)
 
     return merge(
-      this.circuit(),
+      this.flow(),
       of([`${namespace}init`, params] as PortMessage<any>).pipe(
         tap(() => {
           this.initHook(true);
@@ -85,7 +85,7 @@ export abstract class Port {
           subject$.complete())));
   }
 
-  circuit() {
+  flow() {
     return cycleFlow(this, 'init', 'terminated', {
       restartFlow: (port) =>
         merge(
