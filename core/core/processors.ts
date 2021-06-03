@@ -163,13 +163,13 @@ export const cycleFlow = <
   P extends {[A in T | U]: Socket<any>},
   T extends string,
   U extends string,
-  V extends {[label: string]: {(port: P, params: SocketData<P[T]>): Observable<PortMessage<any>>}}>(
-  port: P, start: T, stop: U, flows: V) => {
-  return source(port[start]).pipe(
-    switchMap((params) =>
-      merge(...Object.values(flows).map((flow) => flow(port, params)))
-        .pipe(takeUntil(source(port[stop])))))
-}
+  V extends {[label: string]: {(port: P, params: SocketData<P[T]>): Observable<PortMessage<any>>}}>
+  (port: P, start: T, stop: U, flows: V, override = true, target: V = port as any) =>
+  source(port[start]).pipe(
+    switchMap((params) => merge(
+      ...Object.entries(flows).map(([name, fn]) =>
+        (override && target[name] ? target[name] : fn)(port, params))
+    ).pipe(takeUntil(source(port[stop])))))
 
 export type IFlow<T extends {init: Socket<any>}> = {
   (port: T, params: PortParams<T>): Observable<PortMessage<any>>
