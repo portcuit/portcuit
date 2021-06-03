@@ -4,7 +4,7 @@ import {merge} from "rxjs";
 import {switchMap, take, toArray} from "rxjs/operators";
 import {source, sink, mapToProc, Socket, PortParams} from "@pkit/core";
 import {HttpServerPort} from "./";
-import {findLogsStopped, findLogsTerminate} from "@pkit/core/lifecycle/index.test";
+import {findLogsStopped, findLogsTerminate} from "@pkit/core/port/index.test";
 
 class HttpServerTestPort extends HttpServerPort {
   init = new Socket<{

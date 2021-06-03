@@ -1,7 +1,7 @@
 import type {Worker as NodeWorker} from 'worker_threads'
 import {merge, of, timer} from 'rxjs'
 import {map, mergeMap, startWith, switchMap, withLatestFrom} from 'rxjs/operators'
-import {Port} from '../lifecycle/index.js'
+import {Port} from '../port/index.js'
 import {
   source,
   sink,
