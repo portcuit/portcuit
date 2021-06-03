@@ -1,5 +1,5 @@
 import {readFile, writeFile} from 'fs/promises'
-import {latestMergeMapProc, LifecyclePort, mapToProc, mergeMapProc, sink, Socket, source} from "@pkit/core";
+import {latestMergeMapProc, Port, mapToProc, mergeMapProc, sink, Socket, source} from "@pkit/core";
 import {FfmpegPort} from "./index";
 import {merge, of} from "rxjs";
 import {config} from 'dotenv'
@@ -8,7 +8,7 @@ import {switchMap, takeUntil} from "rxjs/operators";
 config()
 
 
-class FfmpegTestPort extends LifecyclePort {
+class FfmpegTestPort extends Port {
   init = new Socket<number>();
   ffmpeg = new FfmpegPort;
 

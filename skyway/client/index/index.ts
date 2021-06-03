@@ -1,8 +1,8 @@
 import Peer, {PeerConstructorOption, SfuRoom, MeshRoom, RoomStream, RoomData} from "skyway-js";
-import {LifecyclePort, Socket} from "@pkit/core";
+import {Port, Socket} from "@pkit/core";
 import {ISkywayClientLogicPort} from "./logic/";
 
-export class SkywayClientPort extends LifecyclePort {
+export class SkywayClientPort extends Port {
   init = new Socket<{
     peer: {
       id: string;

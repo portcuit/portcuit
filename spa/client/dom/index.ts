@@ -1,7 +1,7 @@
-import {LifecyclePort, Socket} from "@pkit/core";
+import {Port, Socket} from "@pkit/core";
 import {ISpaClientDomLogicPort} from "./mixins/logic";
 
-export class SpaClientDomPort extends LifecyclePort {
+export class SpaClientDomPort extends Port {
   init = new Socket<{
     doc: Document
   }>();

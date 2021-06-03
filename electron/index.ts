@@ -2,7 +2,7 @@ import {app, shell, BrowserWindow, BrowserWindowConstructorOptions, Tray, Menu} 
 import {fromEvent, merge, of} from "rxjs";
 import {delay, filter, map, mergeMap, tap} from "rxjs/operators";
 import {
-  LifecyclePort,
+  Port,
   EndpointPort,
   sink,
   Socket,
@@ -18,7 +18,7 @@ import {
   PortParams
 } from '@pkit/core'
 
-export class ElectronPort extends LifecyclePort {
+export class ElectronPort extends Port {
   init = new Socket<{
     app: PortParams<ElectronAppPort>
   } & PortParams<ElectronBrowserWindowPort>>();
@@ -55,7 +55,7 @@ export const electronKit = (port: ElectronPort) =>
     mapToProc(source(port.app.event.quit), sink(port.terminated)),
   )
 
-export class ElectronContextMenuPort extends LifecyclePort {
+export class ElectronContextMenuPort extends Port {
   init = new Socket<Parameters<typeof Menu.buildFromTemplate>[number]>();
   contextMenu = new Socket<Menu>();
 }
@@ -68,7 +68,7 @@ export const electronContextMenuKit = (port: ElectronContextMenuPort) =>
 
 type TrayEvent = [Event & {sender: Tray}, {x: number; y: number; width: number; height: number}]
 
-export class ElectronTrayPort extends LifecyclePort {
+export class ElectronTrayPort extends Port {
   init = new Socket<ConstructorParameters<typeof Tray>>();
   tray = new Socket<Tray>();
   event = new class {
@@ -87,7 +87,7 @@ const electronTrayKit = (port: ElectronTrayPort) =>
     fromEventProc(source<any>(port.tray), source(port.terminated), sink(port.event.rightClick), 'right-click')
   )
 
-export class ElectronShellPort extends LifecyclePort {
+export class ElectronShellPort extends Port {
   init = new Socket<void>();
   openExternal = new EndpointPort<Parameters<typeof shell.openExternal>, void>()
 }
@@ -99,7 +99,7 @@ export const electronShellKit = (port: ElectronShellPort) =>
         await shell.openExternal(...args))
   )
 
-export class ElectronAppPort extends LifecyclePort {
+export class ElectronAppPort extends Port {
   init = new Socket<{
     preventQuitWindowAllClosed?: boolean;
   }>();
@@ -154,7 +154,7 @@ export const electronAppKit = (port: ElectronAppPort) =>
   )
 
 
-export class ElectronBrowserWindowPort extends LifecyclePort {
+export class ElectronBrowserWindowPort extends Port {
   init = new Socket<{
     create: BrowserWindowConstructorOptions,
     loadURL?: Parameters<typeof BrowserWindow.prototype.loadURL>

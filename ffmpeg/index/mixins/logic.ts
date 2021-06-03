@@ -2,7 +2,7 @@ import {
   ForcePublicPort,
   IFlow, latestMapProc,
   latestMergeMapProc,
-  LifecyclePort, mapProc, mapToProc, mergeMapProc,
+  Port, mapProc, mapToProc, mergeMapProc,
   mergeParamsPrototypeKit,
   sink, Socket,
   source

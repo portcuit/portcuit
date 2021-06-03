@@ -1,12 +1,12 @@
 import http from 'http';
 import {merge} from 'rxjs'
-import {Socket, LifecyclePort, DeepPartialPort, PrivateSocket, PrivateSinkSocket} from '@pkit/core'
+import {Socket, Port, DeepPartialPort, PrivateSocket, PrivateSinkSocket} from '@pkit/core'
 import {HttpServerContext} from './processors'
 import {IHttpServerPort} from "./logic/";
 
 export * from './processors'
 
-export class HttpServerPort extends LifecyclePort {
+export class HttpServerPort extends Port {
   init = new Socket<{
     server?: http.ServerOptions;
     listen?: [port?: number, host?: string]

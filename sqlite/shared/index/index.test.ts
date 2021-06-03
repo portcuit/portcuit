@@ -1,7 +1,7 @@
 import {SqlitePort} from "./index";
 import {
   latestMapProc,
-  LifecyclePort, mapProc,
+  Port, mapProc,
   mapToProc,
   PortParams,
   sink,

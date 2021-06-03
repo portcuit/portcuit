@@ -1,7 +1,7 @@
 import test from 'ava'
 import {merge} from "rxjs";
 import {filter, toArray} from "rxjs/operators";
-import {sink, source, LifecyclePort, mapToProc, ofProc, cycleFlow} from "@pkit/core";
+import {sink, source, Port, mapToProc, ofProc, cycleFlow} from "@pkit/core";
 import {StatePort, singlePatch} from '../index/'
 import {StepState, finishStep, isFinishStep} from "./state";
 
@@ -27,7 +27,7 @@ const initialState = (): StateTestState =>
     }
   });
 
-class StateTestPort extends LifecyclePort {
+class StateTestPort extends Port {
   state = new StatePort<StateTestState>()
 
   circuit() {

@@ -2,7 +2,7 @@ import {promisify} from "util";
 import {merge, race} from "rxjs";
 import {filter, map, switchMap, takeUntil} from "rxjs/operators";
 import {
-  LifecyclePort,
+  Port,
   PortMessage, PortObject,
   PortSourceOrSink,
   sink,
@@ -16,7 +16,7 @@ import {HttpServerContext} from "../";
 import {HttpServerRestPort} from "../rest/";
 import {HttpServerSsePort} from "../sse/";
 
-export class HttpServerRemotePort<T extends PortObject> extends LifecyclePort {
+export class HttpServerRemotePort<T extends PortObject> extends Port {
   init = new Socket<PortParams<HttpServerSsePort>>();
   sse = new HttpServerSsePort;
   rest = new HttpServerRestPort;

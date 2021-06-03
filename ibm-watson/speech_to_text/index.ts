@@ -2,11 +2,11 @@ import SpeechToTextV1, {RecognizeWebSocketParams} from 'ibm-watson/speech-to-tex
 import {SpeechRecognitionResults} from "ibm-watson/speech-to-text/v1-generated";
 import RecognizeStream from 'ibm-watson/lib/recognize-stream'
 import {IamAuthenticator} from 'ibm-watson/auth'
-import {cycleFlow, directProc, LifecyclePort, mapProc, sink, Socket, source} from "@pkit/core";
+import {cycleFlow, directProc, Port, mapProc, sink, Socket, source} from "@pkit/core";
 import {fromEvent, merge, of} from "rxjs";
 import {switchMap, take} from "rxjs/operators";
 
-export class IbmWatsonSpeechToTextPort extends LifecyclePort {
+export class IbmWatsonSpeechToTextPort extends Port {
   init = new Socket<{
     apikey: string,
     serviceUrl: string,

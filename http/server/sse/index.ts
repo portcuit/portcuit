@@ -1,9 +1,9 @@
 import {promisify} from "util";
 import {fromEvent, merge} from "rxjs";
-import {LifecyclePort, sink, Socket, source, latestMergeMapProc, mapToProc, directProc, mergeMapProc} from "@pkit/core";
+import {Port, sink, Socket, source, latestMergeMapProc, mapToProc, directProc, mergeMapProc} from "@pkit/core";
 import {HttpServerContext} from "../";
 
-export class HttpServerSsePort extends LifecyclePort {
+export class HttpServerSsePort extends Port {
   init = new Socket<{
     ctx: HttpServerContext;
     retry?: number;

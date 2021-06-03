@@ -2,9 +2,9 @@ import { Stream } from "stream";
 import {race, fromEvent, throwError} from 'rxjs'
 import {switchMap, map} from 'rxjs/operators'
 import { Bucket } from "@google-cloud/storage";
-import { cycleFlow, latestMergeMapProc, LifecyclePort, mapToProc, ofProc, sink, Socket, source } from "@pkit/core";
+import { cycleFlow, latestMergeMapProc, Port, mapToProc, ofProc, sink, Socket, source } from "@pkit/core";
 
-export class GoogleCloudStoragePort extends LifecyclePort {
+export class GoogleCloudStoragePort extends Port {
   init = new Socket<{
     bucket: string;
   }>();

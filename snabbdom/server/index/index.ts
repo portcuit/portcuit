@@ -1,12 +1,12 @@
 import {VNode} from "snabbdom";
 import {
-  LifecyclePort,
+  Port,
   PrivateSourceSocket,
   PrivateSinkSocket
 } from "@pkit/core";
 import {ISnabbdomServerLogicPort} from "./mixins/logic";
 
-export class SnabbdomServerPort extends LifecyclePort {
+export class SnabbdomServerPort extends Port {
   init = new PrivateSourceSocket<{
     fragment: boolean
   }>();

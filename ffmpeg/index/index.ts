@@ -1,9 +1,9 @@
-import {DeepPartialPort, EndpointPort, LifecyclePort, Socket} from "@pkit/core";
+import {DeepPartialPort, EndpointPort, Port, Socket} from "@pkit/core";
 import {FFmpeg} from "@ffmpeg/ffmpeg";
 import {merge} from "rxjs";
 import {IFfmpegLogicPort} from "./mixins/logic";
 
-export class FfmpegPort extends LifecyclePort {
+export class FfmpegPort extends Port {
   init = new Socket<{
     data: Buffer;
     input: string;

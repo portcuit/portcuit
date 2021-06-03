@@ -1,5 +1,5 @@
 import 'setimmediate'
-import {merge, Observable, of, Subject} from "rxjs";
+import {merge, of, Subject} from "rxjs";
 import {groupBy, tap} from "rxjs/operators";
 import {
   PortMessage,
@@ -14,7 +14,7 @@ import {
 import {mapToProc} from '../processors/'
 import {restartProc, inject} from "./processors";
 
-export abstract class LifecyclePort {
+export abstract class Port {
   init = new Socket<any>();
   ready = new Socket<any>();
   info = new Socket<any>();
@@ -35,9 +35,10 @@ export abstract class LifecyclePort {
   terminating = new PrivateSinkSocket<boolean>();
   terminated = new Socket<any>();
 
-  constructor(port: DeepPartialPort<LifecyclePort> = {}) {
+  constructor(port: DeepPartialPort<Port> = {}) {
     setImmediate(() => 
       Object.assign(this, port))
+    Object.assign(this, port)
   }
 
   next (type: string, data: any): void {}

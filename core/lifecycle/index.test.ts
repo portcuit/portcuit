@@ -2,9 +2,9 @@ import test from 'ava'
 import assert from 'assert'
 import {merge} from "rxjs";
 import {delay, filter, map, startWith, take, switchMap, toArray} from "rxjs/operators";
-import {LifecyclePort, sink, source, PortMessage, mapToProc, Socket} from "@pkit/core";
+import {Port, sink, source, PortMessage, mapToProc, Socket} from "@pkit/core";
 
-export class LifecycleTestPort extends LifecyclePort {
+export class LifecycleTestPort extends Port {
   init = new Socket<void>();
 
   circuit() {

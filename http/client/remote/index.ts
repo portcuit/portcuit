@@ -1,9 +1,9 @@
 import {merge, Observable} from "rxjs";
 import {switchMap} from "rxjs/operators";
-import {LifecyclePort, Socket, PortMessage, sink, source, PortSourceOrSink, sourceSinkMap, mapProc, fromEventProc, latestMapProc} from "@pkit/core";
+import {Port, Socket, PortMessage, sink, source, PortSourceOrSink, sourceSinkMap, mapProc, fromEventProc, latestMapProc} from "@pkit/core";
 import {receiveProc, sendProc} from './processors'
 
-export class HttpClientRemotePort<T> extends LifecyclePort {
+export class HttpClientRemotePort<T> extends Port {
   init = new Socket<{
     endpoint: string;
     mapping: PortSourceOrSink<T>

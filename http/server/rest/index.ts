@@ -3,10 +3,10 @@ import {OutgoingHttpHeaders, ServerResponse} from "http";
 import {mergeDeepLeft} from 'ramda'
 import {fromEvent, merge, race} from "rxjs";
 import {reduce, takeUntil, map, mergeMap, take, filter} from "rxjs/operators";
-import {LifecyclePort, sink, Socket, source, latestMergeMapProc, mapProc, mapToProc, mergeMapProc} from "@pkit/core";
+import {Port, sink, Socket, source, latestMergeMapProc, mapProc, mapToProc, mergeMapProc} from "@pkit/core";
 import {HttpServerContext} from "@pkit/http/server";
 
-export class HttpServerRestPort extends LifecyclePort {
+export class HttpServerRestPort extends Port {
   init = new Socket<HttpServerContext>();
   request = new class {
     body = new class {

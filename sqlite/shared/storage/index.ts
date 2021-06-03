@@ -1,7 +1,7 @@
 import {merge, Observable} from "rxjs";
-import {EndpointPort, LifecyclePort, mapToProc, PortMessage, sink, Socket, source} from "@pkit/core";
+import {EndpointPort, Port, mapToProc, PortMessage, sink, Socket, source} from "@pkit/core";
 
-export abstract class SqliteStoragePort extends LifecyclePort {
+export abstract class SqliteStoragePort extends Port {
   init = new Socket<{sqlite: string, saveOnCommand?: boolean}>();
   load = new EndpointPort<void, Uint8Array>();
   save = new EndpointPort<Uint8Array, void>();

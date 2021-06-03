@@ -4,7 +4,7 @@ import {
   directProc,
   fromEventProc,
   latestMergeMapProc,
-  LifecyclePort,
+  Port,
   mapProc,
   mergeMapProc,
   sink,
@@ -13,7 +13,7 @@ import {
 } from "@pkit/core";
 import {merge} from "rxjs";
 
-export class ChokidarPort extends LifecyclePort {
+export class ChokidarPort extends Port {
   init = new Socket<Parameters<typeof watch>>();
   watcher = new Socket<FSWatcher>();
   event = new class {

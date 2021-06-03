@@ -6,7 +6,7 @@ import {
   sink,
   source,
   Socket,
-  LifecyclePort,
+  Port,
   latestMapProc,
   latestMergeMapProc,
   mapToProc, PortParams,
@@ -16,7 +16,7 @@ import {ElectronPort} from "@pkit/electron";
 
 export * from './processors'
 
-export interface IPiePort extends Omit<LifecyclePort, 'circuit'> {
+export interface IPiePort extends Omit<Port, 'circuit'> {
   init: Socket<{
     piePort: {
       port: number;

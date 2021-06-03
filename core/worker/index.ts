@@ -1,7 +1,7 @@
 import type {Worker as NodeWorker} from 'worker_threads'
 import {merge, of, timer} from 'rxjs'
 import {map, mergeMap, startWith, switchMap, withLatestFrom} from 'rxjs/operators'
-import {LifecyclePort} from '../lifecycle/index.js'
+import {Port} from '../lifecycle/index.js'
 import {
   source,
   sink,
@@ -16,7 +16,7 @@ import {
 
 export * from './remote/'
 
-export class WorkerPort extends LifecyclePort {
+export class WorkerPort extends Port {
   init = new Socket<{
     ctor: typeof Worker;
     args: ConstructorParameters<typeof Worker>

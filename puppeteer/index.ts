@@ -3,7 +3,7 @@ import {identity} from 'ramda';
 import {concat, merge, of} from "rxjs";
 import {filter, switchMap, takeUntil, toArray} from "rxjs/operators";
 import {
-  LifecyclePort,
+  Port,
   sink,
   Socket,
   source,
@@ -18,7 +18,7 @@ import {
 
 export * from './processors'
 
-export class PuppeteerPort extends LifecyclePort {
+export class PuppeteerPort extends Port {
   init = new Socket<Omit< PortParams<PuppeteerBrowserPort> & PortParams<PuppeteerPagePort>, 'browser'>>();
   browser = new PuppeteerBrowserPort;
   page = new PuppeteerPagePort;
@@ -59,7 +59,7 @@ const puppeteerKit = (port: PuppeteerPort) =>
   )
 
 
-export class PuppeteerBrowserPort extends LifecyclePort {
+export class PuppeteerBrowserPort extends Port {
   init = new Socket<{
     launch?: Readonly<Parameters<typeof puppeteer.launch>>
   }>();
@@ -97,7 +97,7 @@ const puppeteerBrowserKit = (port: PuppeteerBrowserPort) =>
     ).pipe(takeUntil(source(port.terminated))))
   )
 
-export class PuppeteerPagePort extends LifecyclePort {
+export class PuppeteerPagePort extends Port {
   init = new Socket<{
     browser: Browser;
     userAgent?: string;

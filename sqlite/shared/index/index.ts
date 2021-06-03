@@ -5,7 +5,7 @@ import {
   DeepPartialPort,
   EndpointPort,
   latestMapProc, latestMergeMapProc,
-  LifecyclePort, mapProc,
+  Port, mapProc,
   mapToProc, ofProc, PortMessage, PortParams,
   sink,
   Socket,
@@ -15,7 +15,7 @@ import {SqliteStoragePort} from "../storage/";
 
 type Database = SqlJsDatabase<typeof initSqlJs>
 
-export class SqlitePort extends LifecyclePort {
+export class SqlitePort extends Port {
   init = new Socket<{
     config?: { locateFile (file: string): string };
   } & PortParams<SqliteStoragePort>>();
@@ -93,7 +93,7 @@ export class SqlitePort extends LifecyclePort {
   }
 }
 
-export abstract class ISqliteAgentPort extends LifecyclePort {
+export abstract class ISqliteAgentPort extends Port {
   query = new EndpointPort<Prepare, any>();
   command = new EndpointPort<Prepare, void>();
 }
@@ -138,7 +138,7 @@ class SqliteAgentPort extends ISqliteAgentPort {
   }
 }
 
-export class SqliteClientPort extends LifecyclePort {
+export class SqliteClientPort extends Port {
   init = new Socket<Prepare>()
   agent!: ISqliteAgentPort;
 
