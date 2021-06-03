@@ -1,7 +1,7 @@
 import type {LROperation} from 'google-gax'
 import {google} from "@google-cloud/speech/build/protos/protos";
 import {SpeechClient} from '@google-cloud/speech/build/src/v1p1beta1'
-import { cycleFlow, latestMergeMapProc, LifecyclePort, mapToProc, mergeMapProc, ofProc, replaceProperty, sink, Socket, source } from "@pkit/core";
+import { cycleFlow, latestMergeMapProc, LifecyclePort, mapToProc, mergeMapProc, ofProc, PrivateSocket, replaceProperty, sink, Socket, source } from "@pkit/core";
 
 export class GoogleCloudSpeechToTextPort extends LifecyclePort {
   init = new Socket<google.cloud.speech.v1p1beta1.ILongRunningRecognizeRequest>();
