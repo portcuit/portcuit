@@ -1,6 +1,7 @@
+import test from 'ava'
 import {merge} from "rxjs";
-import {sink, source, LifecyclePort, mapToProc, ofProc} from "@pkit/core";
-import {filter, switchMap, take, takeUntil, tap, toArray} from "rxjs/operators";
+import {filter, toArray} from "rxjs/operators";
+import {sink, source, LifecyclePort, mapToProc, ofProc, cycleFlow} from "@pkit/core";
 import {StatePort, singlePatch} from '../index/'
 import {StepState, finishStep, isFinishStep} from "./state";
 
@@ -30,19 +31,29 @@ class StateTestPort extends LifecyclePort {
   state = new StatePort<StateTestState>()
 
   circuit() {
-    const port = this;
     return merge(
-      port.state.circuit(),
-      source(port.init).pipe(
-        switchMap(() => merge(
-          ofProc(sink(port.state.init), initialState()),
+      this.state.circuit(),
 
-          mapToProc(source(port.state.data), sink(port.state.update),
-            singlePatch({talkId: '5'})),
+      cycleFlow(this, 'init', 'terminated', {
+        initStateFlow: (port) =>
+          merge(
+            ofProc(sink(port.state.init), initialState()),
+            mapToProc(source(port.state.init), sink(port.state.update),
+              [finishStep('init')])
+          ),
 
+        singlePatchFlow: (port) =>
           mapToProc(source(port.state.data).pipe(
             filter(isFinishStep('init'))),
-            sink(port.state.update), [
+            sink(port.state.update),
+            singlePatch({talkId: '5'})),
+
+        findTalkFlow: (port) =>
+          mapToProc(source(port.state.data).pipe(
+            filter(([{talkId}]) =>
+              talkId === '5')),
+            sink(port.state.update),
+            [
               [{
                 talkId: '3',
                 talk: {talentId: 3}
@@ -50,15 +61,17 @@ class StateTestPort extends LifecyclePort {
               finishStep('findTalk')
             ]),
 
+        terminateFlow: (port) =>
           mapToProc(source(port.state.data).pipe(
             filter(isFinishStep('findTalk'))),
             sink(port.terminated))
-        ).pipe(takeUntil(source(port.terminated)))))
+      })
     )
   }
 }
 
-test('test', async () => {
-  const logs = await new StateTestPort().run(null).pipe(toArray()).toPromise();
+test('test', async (t) => {
+  const logs = await new StateTestPort({log () {}}).run(null).pipe(toArray()).toPromise();
   console.log(JSON.stringify(logs, undefined, 2));
+  t.pass();
 })

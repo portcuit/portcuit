@@ -1,3 +1,4 @@
+import test from 'ava'
 import assert from 'assert'
 import {merge} from "rxjs";
 import {delay, filter, map, startWith, take, switchMap, toArray} from "rxjs/operators";
@@ -72,5 +73,3 @@ test('it should restart', async () => {
   let res = await new LifecycleTestPort().run().pipe(toArray()).toPromise();
   restartAssert(res);
 })
-
-

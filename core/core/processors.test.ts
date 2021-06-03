@@ -1,3 +1,4 @@
+import test from 'ava'
 import assert from 'assert'
 import {PrivateSocket, isSocket, Socket} from "@pkit/core";
 

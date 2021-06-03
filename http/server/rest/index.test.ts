@@ -1,3 +1,4 @@
+import test from 'ava'
 import fetch from 'node-fetch';
 import {merge} from "rxjs";
 import {filter, toArray} from "rxjs/operators";
@@ -51,13 +52,11 @@ class HttpServerTestPort extends HttpServerPort {
 }
 
 const basicTest = (res: PortMessage<any>[]) => {
-
   console.log('ok');
 }
 
 
 test('test', async () => {
   let res = await new HttpServerTestPort().run({listen: [18080]}).pipe(toArray()).toPromise()
-
   basicTest(res);
 });

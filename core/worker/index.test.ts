@@ -1,3 +1,4 @@
+import test from 'ava'
 import assert from 'assert'
 import {Worker, isMainThread} from 'worker_threads'
 import {merge} from "rxjs";

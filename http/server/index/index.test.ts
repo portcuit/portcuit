@@ -1,3 +1,4 @@
+import test from 'ava'
 import assert from 'assert'
 import {merge} from "rxjs";
 import {switchMap, take, toArray} from "rxjs/operators";

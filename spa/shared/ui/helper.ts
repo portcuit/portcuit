@@ -5,6 +5,7 @@ class NotObjectError extends PkitError {}
 class NotFondError extends PkitError {}
 const isObject = (doc: any) =>
   !Array.isArray(doc) && typeof doc === 'object'
+
 export const xjsonSearch = (doc: any, target: string, path: Array<string | number> = []) => {
   if (!isObject(doc)) { throw new NotObjectError(JSON.stringify(doc))}
   let key, val;

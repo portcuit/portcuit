@@ -9,6 +9,7 @@ import {
   source,
   SocketData,
   DeepPartialPort,
+  cycleFlow,
 } from "../core/";
 import {mapToProc} from '../processors/'
 import {restartProc, inject} from "./processors";
@@ -35,7 +36,8 @@ export abstract class LifecyclePort {
   terminated = new Socket<any>();
 
   constructor(port: DeepPartialPort<LifecyclePort> = {}) {
-    Object.assign(this, port);
+    setImmediate(() => 
+      Object.assign(this, port))
   }
 
   next (type: string, data: any): void {}
@@ -61,7 +63,7 @@ export abstract class LifecyclePort {
       groupBy(([type]) => type));
 
     const namespace = this.namespace();
-    inject(this, group$, subject$, namespace, InjectedLifecyclePort);
+    inject(this, group$, subject$, namespace);
 
     this.injectedHook(true)
 
@@ -82,23 +84,21 @@ export abstract class LifecyclePort {
           subject$.complete())));
   }
 
-  circuit (): Observable<PortMessage<any>> {
-    return lifecycleKit(this)
+  circuit() {
+    return cycleFlow(this, 'init', 'terminated', {
+      restartFlow: (port) =>
+        merge(
+          mapToProc(source(port.start), sink(port.starting), true),
+          mapToProc(source(port.started), sink(port.starting), false),
+          mapToProc(source(port.started), sink(port.running), true),
+          mapToProc(source(port.stop), sink(port.stopping), true),
+          mapToProc(source(port.stop), sink(port.running), false),
+          mapToProc(source(port.stopped), sink(port.stopping), false),
+          mapToProc(source(port.terminate), sink(port.terminating), true),
+          mapToProc(source(port.terminated), sink(port.terminating), false),
+          restartProc(source(port.restart), source(port.stopped), source(port.started),
+            sink(port.stop), sink(port.restarting), sink(port.start), sink(port.restarted))
+        )
+    })
   }
 }
-
-export abstract class InjectedLifecyclePort extends LifecyclePort {}
-
-const lifecycleKit = (port: LifecyclePort) =>
-  merge(
-    mapToProc(source(port.start), sink(port.starting), true),
-    mapToProc(source(port.started), sink(port.starting), false),
-    mapToProc(source(port.started), sink(port.running), true),
-    mapToProc(source(port.stop), sink(port.stopping), true),
-    mapToProc(source(port.stop), sink(port.running), false),
-    mapToProc(source(port.stopped), sink(port.stopping), false),
-    mapToProc(source(port.terminate), sink(port.terminating), true),
-    mapToProc(source(port.terminated), sink(port.terminating), false),
-    restartProc(source(port.restart), source(port.stopped), source(port.started),
-      sink(port.stop), sink(port.restarting), sink(port.start), sink(port.restarted))
-  )

@@ -17,12 +17,10 @@ export const restartProc = (restart$: Observable<void>, stopped$: Observable<voi
             startWith(startSink(), restartingSink(false)))),
         startWith(stopSink(), restartingSink(true)))));
 
-export const inject = <T extends PortObject>(port: T, group$: Observable<GroupedObservable<string, any>>, subject$: Subject<PortMessage<any>>, namespace: string, except: any) => {
+export const inject = <T extends PortObject>(port: T, group$: Observable<GroupedObservable<string, any>>, subject$: Subject<PortMessage<any>>, namespace: string) => {
   const walk = (port: PortObject, ns: string[]=[]) => {
     for (const [key, sock] of Object.entries(port) ) {
-      if (sock instanceof except) {
-
-      } else if (isSocket(sock)) {
+      if (isSocket(sock)) {
         const portPath = ns.concat(key);
         const portType = portPath.join('.');
         const source$ = group$.pipe(
