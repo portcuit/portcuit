@@ -23,7 +23,7 @@ export class HttpServerPort extends Port {
   flow () {
     return merge(
       super.flow(),
-      IHttpServerPort.circuit(this)
+      IHttpServerPort.flow(this)
     )
   }
 }

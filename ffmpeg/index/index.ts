@@ -21,7 +21,7 @@ export class FfmpegPort extends Port {
   flow() {
     const port = this;
     return merge(
-      IFfmpegLogicPort.circuit(port)
+      IFfmpegLogicPort.flow(port)
     )
   }
 }

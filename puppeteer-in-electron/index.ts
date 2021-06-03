@@ -10,13 +10,14 @@ import {
   latestMapProc,
   latestMergeMapProc,
   mapToProc, PortParams,
+  IPort
 } from "@pkit/core";
 import {PuppeteerPort} from "@pkit/puppeteer";
 import {ElectronPort} from "@pkit/electron";
 
 export * from './processors'
 
-export interface IPiePort extends Omit<Port, 'circuit'> {
+export interface IPiePort extends IPort<Port> {
   init: Socket<{
     piePort: {
       port: number;

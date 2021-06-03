@@ -11,9 +11,9 @@ class PieTestPort extends Port implements IPiePort {
   kick = new Socket<{headless: boolean}>();
   b = new Socket<string>();
 
-  // flow () {
-  //   return merge(
-  //     IPiePort.circuit(this)
-  //   )
-  // }
+  flow () {
+    return merge(
+      IPiePort.flow(this)
+    )
+  }
 }

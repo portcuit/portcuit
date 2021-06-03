@@ -53,6 +53,6 @@ export namespace IHttpServerPort {
     httpServerEffectKit,
     httpServerTerminateKit
   };
-  export const circuit = (port: IHttpServerPort) =>
+  export const flow = (port: IHttpServerPort) =>
     mergeParamsPrototypeKit(port, prototype)
 }

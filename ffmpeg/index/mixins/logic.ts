@@ -48,7 +48,6 @@ export namespace IFfmpegLogicPort {
     runFlow,
     exitFlow
   }
-  export const circuit = (port: IFfmpegLogicPort) =>
+  export const flow = (port: IFfmpegLogicPort) =>
     mergeParamsPrototypeKit(port, prototype)
 }
-
