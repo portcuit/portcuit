@@ -117,16 +117,7 @@ export const createLatestMergeMapProc = <T, U, V extends readonly any[], W exten
   (source$: Observable<T>, sink: Sink<U>, latests$: MappedWrapObservable<V>, errSink?: Sink<Error>) =>
     latestMergeMapProc(source$, sink, latests$, fn, errSink);
 
-export const fromEventProc = <T, U extends T>(source$: Observable<FromEventTarget<U>>, terminated$: Observable<void>, sink: Sink<T>, eventName: string, resultSelector = (...args: any[]) => (args.length === 1 ? args[0] : args) as any) =>
-  source$.pipe(
-    switchMap((target) =>
-      fromEvent(target, eventName, resultSelector)),
-    map((data) =>
-      sink(data)),
-    takeUntil(terminated$)
-  )
-
-export const onEventProc = <T>(source$: Observable<FromEventTarget<T>>, sink: Sink<T>, eventName: string, resultSelector = (...args: any[]) => (args.length === 1 ? args[0] : args) as any) =>
+export const fromEventProc = <T>(source$: Observable<FromEventTarget<T>>, sink: Sink<T>, eventName: string, resultSelector = (...args: any[]) => (args.length === 1 ? args[0] : args) as any) =>
   source$.pipe(
     switchMap((target) =>
       fromEvent(target, eventName, resultSelector)),

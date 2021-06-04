@@ -6,7 +6,7 @@ import {
   mergeMapProc,
   sink,
   source,
-  onEventProc,
+  fromEventProc,
   cycleFlow,
   IPort,
 } from "@pkit/core";
@@ -23,8 +23,8 @@ const peerInstanceFlow: Flow = (port, params) =>
 
 const peerEventFlow: Flow = (port) =>
   merge(
-    onEventProc(source(port.peer), sink(port.event.peer.open), 'open'),
-    onEventProc(source(port.peer), sink(port.event.peer.close), 'close')
+    fromEventProc(source(port.peer), sink(port.event.peer.open), 'open'),
+    fromEventProc(source(port.peer), sink(port.event.peer.close), 'close')
   )
 
 const roomFlow: Flow = (port, {room: {roomName, roomOptions = {}}}) =>
@@ -35,11 +35,11 @@ const roomFlow: Flow = (port, {room: {roomName, roomOptions = {}}}) =>
 
 const roomEventFlow: Flow = (port) =>
   merge(
-    onEventProc(source(port.room), sink(port.event.room.open), 'open'),
-    onEventProc(source(port.room), sink(port.event.room.stream), 'stream'),
-    onEventProc(source(port.room), sink(port.event.room.data), 'data'),
-    onEventProc(source(port.room), sink(port.event.room.peerLeave), 'peerLeave'),
-    onEventProc(source(port.room), sink(port.event.room.close), 'close'),
+    fromEventProc(source(port.room), sink(port.event.room.open), 'open'),
+    fromEventProc(source(port.room), sink(port.event.room.stream), 'stream'),
+    fromEventProc(source(port.room), sink(port.event.room.data), 'data'),
+    fromEventProc(source(port.room), sink(port.event.room.peerLeave), 'peerLeave'),
+    fromEventProc(source(port.room), sink(port.event.room.close), 'close'),
   )
 
 const roomCloseFlow: Flow = (port) =>

@@ -1,7 +1,7 @@
 import puppeteer, {Browser, Page, HTTPRequest, HTTPResponse, Target, Viewport, Dialog} from "puppeteer-core"
 import {identity} from 'ramda';
 import {concat, merge, of} from "rxjs";
-import {filter, switchMap, takeUntil, toArray} from "rxjs/operators";
+import {filter, toArray} from "rxjs/operators";
 import {
   Port,
   sink,
@@ -12,7 +12,7 @@ import {
   latestMergeMapProc,
   mapToProc,
   mergeMapProc,
-  PortParams, ofProc, cycleFlow, onEventProc
+  PortParams, ofProc, cycleFlow, fromEventProc
 } from "@pkit/core";
 
 export * from './processors'
@@ -38,14 +38,17 @@ export class PuppeteerPort extends Port {
               [source(port.browser.browser)], ([, browser]) =>
               ({browser, ...params, createNewPage: false})),
             directProc(source(port.page.ready), sink(port.started)),
+
             directProc(source(port.stop), sink(port.page.terminate)),
             directProc(source(port.page.terminated), sink(port.stopped)),
 
-            source(port.terminate).pipe(
-              switchMap(() => merge(
-                ofProc(sink(port.page.terminate)),
-                mapToProc(source(port.stopped), sink(port.browser.terminate))
-              ))),
+            mapToProc(source(port.terminate), sink(port.browser.terminate)),
+
+            // source(port.terminate).pipe(
+            //   switchMap(() => merge(
+            //     ofProc(sink(port.page.terminate)),
+            //     mapToProc(source(port.stopped), sink(port.browser.terminate))
+            //   ))),
 
             directProc(source(port.browser.terminated), sink(port.terminated)),
           )
@@ -85,7 +88,7 @@ export class PuppeteerBrowserPort extends Port {
 
         eventFlow: (port) =>
           merge(...Object.entries(port.event).map(([name, sock]) => 
-            onEventProc(source(port.browser), sink(sock), name))),
+            fromEventProc(source(port.browser), sink(sock), name))),
 
         disconnectedFlow: (port) =>
           mapToProc(source(port.event.disconnected), sink(port.terminated))
@@ -135,7 +138,7 @@ export class PuppeteerPagePort extends Port {
 
         eventFlow: (port) =>
           merge(...Object.entries(port.event).map(([name, sock]) => 
-            onEventProc(source(port.page), sink(sock), name))),
+            fromEventProc(source(port.page), sink(sock), name))),
 
         // TODO: puppeteer-in-electron 使用時にヘッドありで開いた場合に page.close() で閉じずに実行結果が帰ってこない
         terminateFlow: (port) =>

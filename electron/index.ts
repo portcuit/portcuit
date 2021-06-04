@@ -17,7 +17,7 @@ import {
   PortParams,
   cycleFlow,
   ofProc,
-  onEventProc
+  fromEventProc
 } from '@pkit/core'
 
 export class ElectronPort extends Port {
@@ -89,7 +89,7 @@ export class ElectronTrayPort extends Port {
 
         eventFlow: (port) =>
           merge(...Object.entries(port.event).map(([name, sock]) => 
-            onEventProc(source<any>(port.tray), sink(sock), name)))
+            fromEventProc(source<any>(port.tray), sink(sock), name)))
       })
     )
   }
@@ -194,7 +194,7 @@ export class ElectronBrowserWindowPort extends Port {
 
       eventFlow: (port) =>
         merge(...Object.entries(port.event).map(([name, sock]) =>
-          onEventProc(source<any>(port.win), sink(sock), name)))
+          fromEventProc(source<any>(port.win), sink(sock), name)))
     })
   }
 }

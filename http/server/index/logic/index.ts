@@ -7,7 +7,7 @@ import {
   sink,
   latestMergeMapProc,
   mapToProc,
-  onEventProc, ofProc, IFlow, IPort, cycleFlow
+  fromEventProc, ofProc, IFlow, IPort, cycleFlow
 } from '@pkit/core'
 import {HttpServerPort} from "../";
 
@@ -21,7 +21,7 @@ const httpReadyFlow: Flow = (port) =>
   mapToProc(source(port.server), sink(port.ready))
 
 const httpEventFlow: Flow = (port) =>
-  onEventProc(source(port.server), sink(port.event.request), 'request')
+  fromEventProc(source(port.server), sink(port.event.request), 'request')
 
 const httpStartFlow: Flow = (port, {http: {listen = []}}) =>
   latestMergeMapProc(source(port.start), sink(port.started),

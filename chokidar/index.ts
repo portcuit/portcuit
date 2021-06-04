@@ -10,7 +10,7 @@ import {
   source,
   cycleFlow,
   ofProc,
-  onEventProc
+  fromEventProc
 } from "@pkit/core";
 
 
@@ -41,7 +41,7 @@ export class ChokidarPort extends Port {
 
       eventFlow: (port) => 
         merge(...Object.entries(port.event).map(([name, sock]) => 
-            onEventProc(source(port.watcher), sink(sock), name, (...args) => args))),
+            fromEventProc(source(port.watcher), sink(sock), name, (...args) => args))),
 
       terminateFlow: (port) =>
         latestMergeMapProc(source(port.terminate), sink(port.terminated),

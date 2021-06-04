@@ -1,5 +1,5 @@
 import {merge} from "rxjs";
-import {Port, Socket, PortMessage, sink, source, PortSourceOrSink, sourceSinkMap, mapProc, latestMapProc, cycleFlow, ofProc, onEventProc} from "@pkit/core";
+import {Port, Socket, PortMessage, sink, source, PortSourceOrSink, sourceSinkMap, mapProc, latestMapProc, cycleFlow, ofProc, fromEventProc} from "@pkit/core";
 import {receiveProc, sendProc} from './processors'
 
 export class HttpClientRemotePort<T> extends Port {
@@ -22,7 +22,7 @@ export class HttpClientRemotePort<T> extends Port {
 
       eventFlow: (port) =>
         merge(...Object.entries(port.event).map(([name, sock]) => 
-          onEventProc(source(port.es), sink(sock), name))),
+          fromEventProc(source(port.es), sink(sock), name))),
 
       msgFlow: (port) =>
         mapProc(source(port.event.message), sink(port.msg), ({data}) =>
