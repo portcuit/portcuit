@@ -1,6 +1,5 @@
 import {Dialog} from "puppeteer-core/lib/cjs/puppeteer/common/Dialog";
 
-
 export const getChromeExecutablePath = () => {
   switch (process.platform) {
     case "win32":
