@@ -2,60 +2,56 @@ import test from 'ava'
 import fetch from 'node-fetch';
 import {merge} from "rxjs";
 import {filter, toArray} from "rxjs/operators";
-import {PortMessage, sink, source, mapProc, mapToProc, mergeMapProc} from "@pkit/core";
+import {PortMessage, sink, source, mapProc, mapToProc, mergeMapProc, cycleFlow, Socket} from "@pkit/core";
 import {HttpServerPort, HttpServerRestPort} from "@pkit/http/server";
 
 class HttpServerRestTestPort extends HttpServerRestPort {
-  namespace () {
-    return '/server/rest/'
-  }
+  namespace () {return '/server/rest/'}
 
-  flow() {
-    const port = this;
+  flow () {
     return merge(
       super.flow(),
-
-      mapProc(source(port.request.body.raw), sink(port.response.json), () =>
-        ({response: 'ok'}))
+      cycleFlow(this, 'init', 'terminated', {
+        testFlow: (port) =>
+          mapProc(source(port.request.body.raw), sink(port.response.json), () =>
+            ({response: 'ok'}))
+      })
     )
   }
 }
 
 class HttpServerTestPort extends HttpServerPort {
-  namespace () {
-    return '/server/'
-  }
+  response = new Socket<any>();
+  namespace () {return '/server/'}
 
-  flow() {
-    const port = this;
+  flow () {
     return merge(
       super.flow(),
+      cycleFlow(this, 'init', 'terminated', {
+        testFlow: (port) => merge(
+          mapToProc(source(port.ready), sink(port.start)),
 
-      mapToProc(source(port.ready), sink(port.start)),
+          mergeMapProc(source(port.started), sink(port.response), async () =>
+            await (await fetch('http://localhost:18080')).json()),
 
-      mergeMapProc(source(port.started), sink(port.info), async () => {
-        const res = await fetch('http://localhost:18080');
-        const body = await res.json();
-        return ({fetched: true, body});
-      }),
+          mergeMapProc(source(port.event.request), sink(port.debug), (ctx) =>
+            new HttpServerRestTestPort({log: port.log}).run(ctx)),
 
-      mergeMapProc(source(port.event.request), sink(port.debug), (ctx) =>
-        new HttpServerRestTestPort().run(ctx)),
+          mapToProc(source(port.response).pipe(
+            filter((data) =>
+              data?.response === 'ok')),
+            sink(port.stop)),
 
-      mapToProc(source(port.info).pipe(
-        filter((data) =>
-          !!data.fetched)), sink(port.stop)),
-
-      mapToProc(source(port.stopped), sink(port.terminate))
+          mapToProc(source(port.stopped), sink(port.terminate))
+        )
+      })
     )
   }
 }
 
-const basicTest = (res: PortMessage<any>[]) => {
-  console.log('ok');
-}
-
-test('test', async () => {
-  let res = await new HttpServerTestPort().run({http: {listen: [18080]}}).pipe(toArray()).toPromise()
-  basicTest(res);
+test('test', async (t) => {
+  const logs = await new HttpServerTestPort({
+    log: (msg: PortMessage<any>) => console.debug(...msg)
+  }).run({http: {listen: [18080]}}).pipe(toArray()).toPromise()
+  t.pass()
 });

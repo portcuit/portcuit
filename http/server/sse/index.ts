@@ -1,6 +1,6 @@
 import {promisify} from "util";
-import {fromEvent, merge} from "rxjs";
-import {Port, sink, Socket, source, latestMergeMapProc, mapToProc, directProc, mergeMapProc} from "@pkit/core";
+import {fromEvent, of, race} from "rxjs";
+import {Port, sink, Socket, source, directProc, mergeMapProc, cycleFlow} from "@pkit/core";
 import {HttpServerContext} from "../";
 
 export class HttpServerSsePort extends Port {
@@ -8,47 +8,42 @@ export class HttpServerSsePort extends Port {
     ctx: HttpServerContext;
     retry?: number;
   }>();
-  ctx = new Socket<HttpServerContext>();
-  event = new class {
-    connect = new Socket<void>();
-    close = new Socket<void>();
-  };
+  event = {
+    data: new Socket<void>(),
+    end: new Socket<void>()
+  }
+  data = new Socket<string>()
 
-  flow () { return circuit(this); }
+  flow () {
+    return cycleFlow(this, 'init', 'terminated', {
+      connectFlow: (port, params) =>
+        mergeMapProc(of(params), sink(port.ready),
+          async ({ctx: [, res], retry = 3000}) => {
+            res.writeHead(200, {
+              'Content-Type': 'text/event-stream; charset=utf-8',
+              'Cache-Control': 'no-cache, no-transform no-store',
+              'X-Accel-Buffering': 'no',
+              'Connection': 'keep-alive',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Headers': '*',
+              'Access-Control-Allow-Methods': '*'
+            })
+            return await promisify<string, void>(res.write).call(res, `retry: ${retry}\n\n`)
+          }),
+
+      pushFlow: (port, {ctx: [, res]}) =>
+        mergeMapProc(source(port.data), sink(port.event.data),
+          async (data) =>
+            await promisify<string, void>(res.write).call(res, `data: ${data}\n\n`)),
+
+      terminateFlow: (port, {ctx: [, res]}) =>
+        mergeMapProc(source(port.terminate), sink(port.event.end),
+          async () =>
+            await promisify<void>(res.end).call(res)),
+
+      terminatedFlow: (port, {ctx: [req]}) =>
+        directProc(race(fromEvent(req, 'close'), source(port.event.end)),
+          sink(port.terminated))
+    })
+  }
 }
-
-const circuit = (port: HttpServerSsePort) =>
-  merge(
-    mapToProc(source(port.event.connect), sink(port.ready)),
-
-    connectKit(port),
-
-    mergeMapProc(source(port.init), sink(port.event.close),
-      ({ctx: [req]}) =>
-        fromEvent<void>(req, 'close')),
-
-    latestMergeMapProc(source(port.terminate), sink(port.info),
-      [source(port.init)], async ([,{ctx: [,res]}]) =>
-        ({
-          end: await promisify(res.end).call(res)
-        })),
-
-    directProc(source(port.event.close), sink(port.terminated))
-  )
-
-const connectKit = (port: HttpServerSsePort) =>
-  mergeMapProc(source(port.init), sink(port.event.connect),
-    async ({ctx: [, res], retry=3000}) => {
-      res.writeHead(200, {
-        'Content-Type': 'text/event-stream; charset=utf-8',
-        'Cache-Control': 'no-cache, no-transform no-store',
-        'X-Accel-Buffering': 'no',
-        'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': '*',
-        'Access-Control-Allow-Methods': '*'
-      });
-
-      return await promisify<any, void>(res.write).call(res, `retry: ${retry}\n\n`);
-    }
-  )

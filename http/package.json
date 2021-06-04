@@ -10,6 +10,8 @@
     "node-fetch": "^2.6.1",
     "@types/node-fetch": "^2.5.10",
     "minimatch": "^3.0.4",
+    "eventsource": "^1.1.0",
+    "@types/eventsource": "^1.1.5",
     "@types/minimatch": "^3.0.4"
   },
   "publishConfig": {
