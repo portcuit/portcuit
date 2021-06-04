@@ -28,34 +28,31 @@ export class PuppeteerPort extends Port {
       super.flow(),
       port.browser.flow(),
       port.page.flow(),
-      puppeteerKit(port)
+
+      cycleFlow(this, 'init', 'terminated', {
+        puppeteerFlow: (port, params) =>
+          merge(
+            ofProc(sink(port.browser.init), params),
+            directProc(source(port.browser.ready), sink(port.ready)),
+            latestMapProc(source(port.start), sink(port.page.init),
+              [source(port.browser.browser)], ([, browser]) =>
+              ({browser, ...params, createNewPage: false})),
+            directProc(source(port.page.ready), sink(port.started)),
+            directProc(source(port.stop), sink(port.page.terminate)),
+            directProc(source(port.page.terminated), sink(port.stopped)),
+
+            source(port.terminate).pipe(
+              switchMap(() => merge(
+                ofProc(sink(port.page.terminate)),
+                mapToProc(source(port.stopped), sink(port.browser.terminate))
+              ))),
+
+            directProc(source(port.browser.terminated), sink(port.terminated)),
+          )
+      })
     )
   }
 }
-
-const puppeteerKit = (port: PuppeteerPort) =>
-  source(port.init).pipe(
-    switchMap((params) =>
-      merge(
-        ofProc(sink(port.browser.init), params),
-        directProc(source(port.browser.ready), sink(port.ready)),
-        latestMapProc(source(port.start), sink(port.page.init),
-          [source(port.browser.browser)], ([,browser]) =>
-            ({browser, ...params, createNewPage: false})),
-        directProc(source(port.page.ready), sink(port.started)),
-        directProc(source(port.stop), sink(port.page.terminate)),
-        directProc(source(port.page.terminated), sink(port.stopped)),
-
-        source(port.terminate).pipe(
-          switchMap(() => merge(
-            ofProc(sink(port.page.terminate)),
-            mapToProc(source(port.stopped), sink(port.browser.terminate))
-          ))),
-
-        directProc(source(port.browser.terminated), sink(port.terminated)),
-      ).pipe(takeUntil(source(port.terminated)))
-    )
-  )
 
 
 export class PuppeteerBrowserPort extends Port {
