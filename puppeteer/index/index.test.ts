@@ -1,14 +1,14 @@
 import test from 'ava'
 import {PuppeteerPort} from "./index";
 import {merge} from "rxjs";
+import {filter, toArray} from "rxjs/operators";
 import {PortMessage, sink, source, tuple, mapToProc, cycleFlow} from "@pkit/core";
-import {delay, filter, toArray} from "rxjs/operators";
 
 class PuppeteerTestPort extends PuppeteerPort {
-  flow() {
+  flow () {
     return merge(
       super.flow(),
-      
+
       cycleFlow(this, 'init', 'terminate', {
         testFlow: (port) => merge(
           mapToProc(source(port.ready), sink(port.start)),
@@ -21,7 +21,7 @@ class PuppeteerTestPort extends PuppeteerPort {
     )
   }
 
-  includes() { return []; }
+  log () { }
 }
 
 const testAssert = (res: PortMessage<any>[]) => {

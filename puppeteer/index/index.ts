@@ -9,22 +9,21 @@ import {
   mapToProc,
   PortParams, ofProc, cycleFlow
 } from "@pkit/core";
-import {PuppeteerBrowserPort} from "../browser/index";
-import {PuppeteerPagePort} from "../page/index";
+import {PuppeteerBrowserPort} from "../browser/";
+import {PuppeteerPagePort} from "../page/";
 
 export * from "./processors"
 
 export class PuppeteerPort extends Port {
-  init = new Socket<Omit< PortParams<PuppeteerBrowserPort> & PortParams<PuppeteerPagePort>, 'browser'>>();
+  init = new Socket<Omit<PortParams<PuppeteerBrowserPort> & PortParams<PuppeteerPagePort>, 'browser'>>();
   browser = new PuppeteerBrowserPort;
   page = new PuppeteerPagePort;
 
   flow () {
-    const port = this;
     return merge(
       super.flow(),
-      port.browser.flow(),
-      port.page.flow(),
+      this.browser.flow(),
+      this.page.flow(),
 
       cycleFlow(this, 'init', 'terminated', {
         puppeteerFlow: (port, params) =>
@@ -53,5 +52,3 @@ export class PuppeteerPort extends Port {
     )
   }
 }
-
-
