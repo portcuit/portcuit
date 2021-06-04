@@ -6,10 +6,12 @@ import {IHttpServerPort} from "./logic/";
 
 export * from './processors'
 
-export class HttpServerPort extends Port {
+export abstract class HttpServerPort extends Port {
   init = new Socket<{
-    server?: http.ServerOptions;
-    listen?: [port?: number, host?: string]
+    http: {
+      server?: http.ServerOptions;
+      listen?: [port?: number, host?: string]
+    }
   }>();
   server = new PrivateSocket<http.Server>();
   event = new class {

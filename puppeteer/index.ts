@@ -8,12 +8,11 @@ import {
   Socket,
   source,
   directProc,
-  fromEventProc,
   latestMapProc,
   latestMergeMapProc,
   mapToProc,
   mergeMapProc,
-  PortParams, ofProc
+  PortParams, ofProc, cycleFlow, onEventProc
 } from "@pkit/core";
 
 export * from './processors'
@@ -72,30 +71,31 @@ export class PuppeteerBrowserPort extends Port {
   flow () {
     return merge(
       super.flow(),
-      puppeteerBrowserKit(this)
+
+      cycleFlow(this, 'init', 'terminated', {
+        launchFlow: (port, params) =>
+          mergeMapProc(of(params).pipe(
+            filter(({launch}) => !!launch)),
+            sink(port.browser), ({launch}) => puppeteer.launch(...launch!)),
+
+        readyFlow: (port) =>
+          mapToProc(source(port.browser), sink(port.ready)),
+
+        terminateFlow: (port) =>
+          latestMergeMapProc(source(port.terminate), sink(port.info),
+            [source(port.browser)], async ([, browser]) =>
+            ({close: await browser.close()})),
+
+        eventFlow: (port) =>
+          merge(...Object.entries(port.event).map(([name, sock]) => 
+            onEventProc(source(port.browser), sink(sock), name))),
+
+        disconnectedFlow: (port) =>
+          mapToProc(source(port.event.disconnected), sink(port.terminated))
+      })
     )
   }
 }
-
-const puppeteerBrowserKit = (port: PuppeteerBrowserPort) =>
-  source(port.init).pipe(
-    switchMap((params) => merge(
-      mergeMapProc(of(params).pipe(
-        filter(({launch}) => !!launch)),
-        sink(port.browser), ({launch}) => puppeteer.launch(...launch!)),
-
-      mapToProc(source(port.browser), sink(port.ready)),
-      latestMergeMapProc(source(port.terminate), sink(port.info),
-        [source(port.browser)], async ([,browser]) =>
-          ({close: await browser.close()})),
-
-      fromEventProc(source(port.browser), source(port.terminated), sink(port.event.targetcreated), 'targetcreated'),
-      fromEventProc(source(port.browser), source(port.terminated), sink(port.event.disconnected), 'disconnected'),
-
-      mapToProc(source(port.event.disconnected), sink(port.terminated)),
-
-    ).pipe(takeUntil(source(port.terminated))))
-  )
 
 export class PuppeteerPagePort extends Port {
   init = new Socket<{
@@ -117,40 +117,37 @@ export class PuppeteerPagePort extends Port {
   flow () {
     return merge(
       super.flow(),
-      puppeteerPageKit(this)
-    )
-  }
-}
 
-const puppeteerPageKit = (port: PuppeteerPagePort) =>
-  source(port.init).pipe(
-    switchMap(({browser, createNewPage=true, userAgent, viewport, goto}) => merge(
-      mergeMapProc(of(true), sink(port.page),
-        async () =>
-          createNewPage ?
+      cycleFlow(this, 'init', 'terminated', {
+        pageInstanceFlow: (port, {createNewPage=true, browser}) =>
+          mergeMapProc(of(createNewPage), sink(port.page), async (flag) => 
+            flag ? 
             (await browser.newPage()) :
             (await browser.pages())[0]),
 
-      mergeMapProc(source(port.page), sink(port.ready),
-        (page) =>
-          concat(...[
-            Promise.resolve('ready'),
-            userAgent && page.setUserAgent(userAgent),
-            viewport && page.setViewport(viewport),
-            goto && page.goto(...goto),
-          ].filter(identity) as Promise<any>[]).pipe(
-            toArray())),
+        readyFlow: (port, {userAgent, viewport, goto}) =>
+          mergeMapProc(source(port.page), sink(port.ready),
+            (page) =>
+              concat(...[
+                Promise.resolve('ready'),
+                userAgent && page.setUserAgent(userAgent),
+                viewport && page.setViewport(viewport),
+                goto && page.goto(...goto),
+              ].filter(identity) as Promise<any>[]).pipe(
+                toArray())),
 
-      fromEventProc(source(port.page), source(port.terminated), sink(port.event.load), 'load'),
-      fromEventProc(source(port.page), source(port.terminated), sink(port.event.close), 'close'),
-      fromEventProc(source(port.page), source(port.terminated), sink(port.event.response), 'response'),
-      fromEventProc(source(port.page), source(port.terminated), sink(port.event.request), 'request'),
-      fromEventProc(source(port.page), source(port.terminated), sink(port.event.dialog), 'dialog'),
+        eventFlow: (port) =>
+          merge(...Object.entries(port.event).map(([name, sock]) => 
+            onEventProc(source(port.page), sink(sock), name))),
 
-      // TODO: puppeteer-in-electron 使用時にヘッドありで開いた場合に page.close() で閉じずに実行結果が帰ってこない
-      latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.page)],
-        async([,page]) => ({close: await page.close()})),
+        // TODO: puppeteer-in-electron 使用時にヘッドありで開いた場合に page.close() で閉じずに実行結果が帰ってこない
+        terminateFlow: (port) =>
+          latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.page)],
+            async ([, page]) => ({close: await page.close()})),
 
-      mapToProc(source(port.event.close), sink(port.terminated))
-    ).pipe(takeUntil(source(port.terminated))))
-  )
+        terminatedFlow: (port) =>
+          mapToProc(source(port.event.close), sink(port.terminated))
+      })
+    )
+  }
+}

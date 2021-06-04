@@ -1,20 +1,23 @@
 import type {Stats} from 'fs'
 import {watch, FSWatcher} from 'chokidar'
+import {merge} from "rxjs";
 import {
   directProc,
-  fromEventProc,
   latestMergeMapProc,
   Port,
-  mapProc,
-  mergeMapProc,
   sink,
   Socket,
-  source
+  source,
+  cycleFlow,
+  ofProc,
+  onEventProc
 } from "@pkit/core";
-import {merge} from "rxjs";
+
 
 export class ChokidarPort extends Port {
-  init = new Socket<Parameters<typeof watch>>();
+  init = new Socket<{
+    watch: Parameters<typeof watch>
+  }>();
   watcher = new Socket<FSWatcher>();
   event = new class {
     all = new Socket<[eventName: 'add'|'addDir'|'change'|'unlink'|'unlinkDir', path: string, stats?: Stats]>();
@@ -29,19 +32,21 @@ export class ChokidarPort extends Port {
   }
 
   flow () {
-    return chokidarKit(this);
+    return cycleFlow(this, 'init', 'terminated', {
+      startWatchFlow: (port, {watch: chokidar}) =>
+        ofProc(sink(port.watcher), watch(...chokidar)),
+
+      readyFlow: (port) =>
+        directProc(source(port.event.ready), sink(port.ready)),
+
+      eventFlow: (port) => 
+        merge(...Object.entries(port.event).map(([name, sock]) => 
+            onEventProc(source(port.watcher), sink(sock), name, (...args) => args))),
+
+      terminateFlow: (port) =>
+        latestMergeMapProc(source(port.terminate), sink(port.terminated),
+          [source(port.watcher)], ([, watcher]) =>
+          watcher.close())
+    })
   }
 }
-
-const chokidarKit = (port: ChokidarPort) =>
-  merge(
-    mapProc(source(port.init), sink(port.watcher), (args) =>
-      watch(...args)),
-    merge(...Object.entries(port.event).map(([key, value]) =>
-      fromEventProc(source(port.watcher), source(port.terminated), sink(value), key, (...args) => args)
-    )),
-    directProc(source(port.event.ready), sink(port.ready)),
-    latestMergeMapProc(source(port.terminate), sink(port.terminated),
-      [source(port.watcher)],([,watcher]) =>
-        watcher.close())
-  )

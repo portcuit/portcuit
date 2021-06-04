@@ -45,7 +45,7 @@ const scenarioKit = (port: HttpServerTestPort) =>
 export const exec = (params: Pick<PortParams<HttpServerTestPort>, 'scenario'>) =>
   new HttpServerTestPort().run({
     ...params,
-    listen: [18080]
+    http: {listen: [18080]}
   }).pipe(toArray()).toPromise();
 
 test('terminate while running', async () => {

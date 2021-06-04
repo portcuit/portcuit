@@ -7,52 +7,52 @@ import {
   sink,
   latestMergeMapProc,
   mapToProc,
-  fromEventProc, ofProc, ForcePublicPort, mergeParamsPrototypeKit, IFlow
+  onEventProc, ofProc, IFlow, IPort, cycleFlow
 } from '@pkit/core'
 import {HttpServerPort} from "../";
 
-export type IHttpServerPort = ForcePublicPort<HttpServerPort>
+export type IHttpServerPort = IPort<HttpServerPort>
+type Flow = IFlow<IHttpServerPort>
 
-const httpServerReadyKit: IFlow<IHttpServerPort> = (port) =>
+const httpServerInstanceFlow: Flow = (port, {http: {server = {}}}) =>
+  ofProc(sink(port.server), http.createServer(server))
+
+const httpReadyFlow: Flow = (port) =>
   mapToProc(source(port.server), sink(port.ready))
 
-const httpServerEventKit: IFlow<IHttpServerPort> = (port) =>
-  fromEventProc(source(port.server), source(port.terminated), sink(port.event.request), 'request')
+const httpEventFlow: Flow = (port) =>
+  onEventProc(source(port.server), sink(port.event.request), 'request')
 
-const httpServerEffectKit: IFlow<IHttpServerPort> = (port, {server={}, listen=[]}) =>
-  merge(
-    ofProc(sink(port.server), http.createServer(server)),
+const httpStartFlow: Flow = (port, {http: {listen = []}}) =>
+  latestMergeMapProc(source(port.start), sink(port.started),
+    [source(port.server)], async ([, server]) => ({
+      'server.listen': await promisify(server.listen).apply(server, listen as any),
+      listen
+    }))
 
-    latestMergeMapProc(source(port.start), sink(port.started), [source(port.server)] as const,
-      async ([,server]) =>
-        ({
-          'server.listen': await promisify(server.listen).apply(server, listen as any),
-          listen
-        })),
+const httpStopFlow: Flow = (port) =>
+  latestMergeMapProc(source(port.stop), sink(port.stopped),
+    [source(port.server)], ([, server]) =>
+    promisify(server.close).call(server))
 
-    latestMergeMapProc(source(port.stop), sink(port.stopped), [source(port.server)],
-      ([,server]) =>
-        promisify(server.close).call(server)),
-  )
-
-const httpServerTerminateKit: IFlow<IHttpServerPort> = (port) =>
+const httpTerminateFlow: Flow = (port) =>
   source(port.terminate).pipe(
     withLatestFrom(source(port.running).pipe(startWith(false))),
     switchMap(([,running]) =>
       running ? merge(
         ofProc(sink(port.stop)),
         mapToProc(source(port.stopped), sink(port.terminated))
-      ) : ofProc(sink(port.terminated))
-    )
-  )
+      ) : ofProc(sink(port.terminated))))
 
 export namespace IHttpServerPort {
   export const prototype = {
-    httpServerReadyKit,
-    httpServerEventKit,
-    httpServerEffectKit,
-    httpServerTerminateKit
+    httpServerInstanceFlow,
+    httpReadyFlow,
+    httpEventFlow,
+    httpStartFlow,
+    httpStopFlow,
+    httpTerminateFlow
   };
   export const flow = (port: IHttpServerPort) =>
-    mergeParamsPrototypeKit(port, prototype)
+    cycleFlow(port, 'init', 'terminated', prototype)
 }

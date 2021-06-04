@@ -55,8 +55,7 @@ const basicTest = (res: PortMessage<any>[]) => {
   console.log('ok');
 }
 
-
 test('test', async () => {
-  let res = await new HttpServerTestPort().run({listen: [18080]}).pipe(toArray()).toPromise()
+  let res = await new HttpServerTestPort().run({http: {listen: [18080]}}).pipe(toArray()).toPromise()
   basicTest(res);
 });

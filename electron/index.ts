@@ -1,6 +1,6 @@
 import {app, shell, BrowserWindow, BrowserWindowConstructorOptions, Tray, Menu} from 'electron'
 import {fromEvent, merge, of} from "rxjs";
-import {delay, filter, map, mergeMap, tap} from "rxjs/operators";
+import {delay, filter, map, mergeMap, tap, switchMap} from "rxjs/operators";
 import {
   Port,
   EndpointPort,
@@ -9,13 +9,15 @@ import {
   source,
   tuple,
   directProc,
-  fromEventProc,
   latestMapProc,
   latestMergeMapProc,
   mapProc,
   mapToProc,
   mergeMapProc,
-  PortParams
+  PortParams,
+  cycleFlow,
+  ofProc,
+  onEventProc
 } from '@pkit/core'
 
 export class ElectronPort extends Port {
@@ -35,9 +37,9 @@ export class ElectronPort extends Port {
 export const electronKit = (port: ElectronPort) =>
   merge(
     electronAppKit(port.app),
-    electronBrowserWindowKit(port.browser),
+    port.browser.flow(),
     electronShellKit(port.shell),
-    electronTrayKit(port.tray),
+    port.tray.flow(),
     latestMapProc(source(port.init).pipe(
       mergeMap(() =>
         app.whenReady())), sink(port.browser.init),
@@ -69,23 +71,29 @@ export const electronContextMenuKit = (port: ElectronContextMenuPort) =>
 type TrayEvent = [Event & {sender: Tray}, {x: number; y: number; width: number; height: number}]
 
 export class ElectronTrayPort extends Port {
-  init = new Socket<ConstructorParameters<typeof Tray>>();
+  init = new Socket<{tray: ConstructorParameters<typeof Tray>}>();
   tray = new Socket<Tray>();
   event = new class {
     click = new Socket<TrayEvent>();
     rightClick = new Socket<TrayEvent>();
   };
   contextMenu = new ElectronContextMenuPort;
-}
 
-const electronTrayKit = (port: ElectronTrayPort) =>
-  merge(
-    electronContextMenuKit(port.contextMenu),
-    mapProc(source(port.init), sink(port.tray), (args) =>
-      new Tray(...args)),
-    fromEventProc(source<any>(port.tray), source(port.terminated), sink(port.event.click), 'click'),
-    fromEventProc(source<any>(port.tray), source(port.terminated), sink(port.event.rightClick), 'right-click')
-  )
+  flow () {
+    return merge(
+      electronContextMenuKit(this.contextMenu),
+
+      cycleFlow(this, 'init', 'terminated', {
+        trayInstanceFlow: (port, {tray}) =>
+          ofProc(sink(port.tray), new Tray(...tray)),
+
+        eventFlow: (port) =>
+          merge(...Object.entries(port.event).map(([name, sock]) => 
+            onEventProc(source<any>(port.tray), sink(sock), name)))
+      })
+    )
+  }
+}
 
 export class ElectronShellPort extends Port {
   init = new Socket<void>();
@@ -165,19 +173,28 @@ export class ElectronBrowserWindowPort extends Port {
     close = new Socket<Event>();
     closed = new Socket<void>();
   }
-}
 
-export const electronBrowserWindowKit = (port: ElectronBrowserWindowPort) =>
-  merge(
-    latestMergeMapProc(source(port.start), sink(port.started),
-      [source(port.win), source(port.init)] as const, async ([,win, {loadURL: args = tuple('about:blank')}]) =>
-        await win.loadURL(...args)),
-    mapProc(source(port.init), sink(port.win), ({create}) =>
-      new BrowserWindow(create)),
-    mapToProc(source(port.win), sink(port.ready)),
-    latestMapProc(source(port.close), sink(port.info),
-      [source(port.win)], ([,win]) =>
-        ({close: win.close()})),
-    fromEventProc(source<any>(port.win), source(port.terminated), sink(port.event.close), 'close'),
-    fromEventProc(source<any>(port.win), source(port.terminated), sink(port.event.closed), 'closed')
-  )
+  flow () {
+    return cycleFlow(this, 'init', 'terminated', {
+      browserWindowInstanceFlow: (port, {create}) =>
+        ofProc(sink(port.win), new BrowserWindow(create)),
+
+      readyFlow: (port) =>
+        mapToProc(source(port.win), sink(port.ready)),
+
+      startFlow: (port) =>
+        latestMergeMapProc(source(port.start), sink(port.started),
+          [source(port.win), source(port.init)] as const, async ([, win, {loadURL: args = tuple('about:blank')}]) =>
+          await win.loadURL(...args)),
+
+      closeFlow: (port) =>
+        latestMapProc(source(port.close), sink(port.info),
+          [source(port.win)], ([, win]) =>
+          ({close: win.close()})),
+
+      eventFlow: (port) =>
+        merge(...Object.entries(port.event).map(([name, sock]) =>
+          onEventProc(source<any>(port.win), sink(sock), name)))
+    })
+  }
+}

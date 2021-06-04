@@ -2,9 +2,6 @@ import type {FromEventTarget} from 'rxjs/internal/observable/fromEvent'
 import {
   of,
   Observable,
-  timer,
-  GroupedObservable,
-  zip,
   throwError,
   fromEvent,
 } from 'rxjs'
@@ -12,13 +9,10 @@ import {
   map,
   withLatestFrom,
   mergeMap,
-  scan,
   switchMap,
-  groupBy,
   filter,
   catchError,
   takeUntil,
-  share
 } from 'rxjs/operators'
 import type {Sink, MappedWrapObservable, PortMessage} from '@pkit/core'
 
@@ -132,10 +126,10 @@ export const fromEventProc = <T, U extends T>(source$: Observable<FromEventTarge
     takeUntil(terminated$)
   )
 
-export const onEventProc = <T>(source$: Observable<FromEventTarget<T>>, sink: Sink<T>, eventName: string) =>
+export const onEventProc = <T>(source$: Observable<FromEventTarget<T>>, sink: Sink<T>, eventName: string, resultSelector = (...args: any[]) => (args.length === 1 ? args[0] : args) as any) =>
   source$.pipe(
     switchMap((target) =>
-      fromEvent(target, eventName)),
+      fromEvent(target, eventName, resultSelector)),
     map((data) =>
       sink(data)))
 
@@ -149,6 +143,3 @@ export const conditionalProc = <T>(source$: Observable<T>, sinkA: Sink<T>, sinkB
   source$.pipe(
     map((data) =>
       condFn(data) ? sinkA(data) : sinkB(data)))
-
-
-
