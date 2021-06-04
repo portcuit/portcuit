@@ -2,7 +2,7 @@ import http from 'http';
 import {merge} from 'rxjs'
 import {Socket, Port, DeepPartialPort, PrivateSocket, PrivateSinkSocket} from '@pkit/core'
 import {HttpServerContext} from './processors'
-import {IHttpServerPort} from "./logic/";
+import {IHttpServerLogicPort} from "./mixins/logic";
 
 export * from './processors'
 
@@ -18,17 +18,15 @@ export abstract class HttpServerPort extends Port {
     request = new PrivateSinkSocket<HttpServerContext>();
   }
 
-  constructor(port: DeepPartialPort<HttpServerPort> & Partial<typeof IHttpServerPort.prototype> = {}) {
+  constructor(port: DeepPartialPort<HttpServerPort> & Partial<typeof IHttpServerLogicPort.prototype> = {}) {
     super(port);
   }
 
   flow () {
     return merge(
       super.flow(),
-      IHttpServerPort.flow(this)
+      IHttpServerLogicPort.flow(this)
     )
   }
 }
 
-
-Object.assign(HttpServerPort.prototype, IHttpServerPort.prototype);

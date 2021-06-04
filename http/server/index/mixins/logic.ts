@@ -9,10 +9,10 @@ import {
   mapToProc,
   fromEventProc, ofProc, IFlow, IPort, cycleFlow
 } from '@pkit/core'
-import {HttpServerPort} from "../";
+import {HttpServerPort} from "../..";
 
-export type IHttpServerPort = IPort<HttpServerPort>
-type Flow = IFlow<IHttpServerPort>
+export type IHttpServerLogicPort = IPort<HttpServerPort>
+type Flow = IFlow<IHttpServerLogicPort>
 
 const httpServerInstanceFlow: Flow = (port, {http: {server = {}}}) =>
   ofProc(sink(port.server), http.createServer(server))
@@ -44,7 +44,7 @@ const httpTerminateFlow: Flow = (port) =>
         mapToProc(source(port.stopped), sink(port.terminated))
       ) : ofProc(sink(port.terminated))))
 
-export namespace IHttpServerPort {
+export namespace IHttpServerLogicPort {
   export const prototype = {
     httpServerInstanceFlow,
     httpReadyFlow,
@@ -53,6 +53,6 @@ export namespace IHttpServerPort {
     httpStopFlow,
     httpTerminateFlow
   };
-  export const flow = (port: IHttpServerPort) =>
+  export const flow = (port: IHttpServerLogicPort) =>
     cycleFlow(port, 'init', 'terminated', prototype)
 }

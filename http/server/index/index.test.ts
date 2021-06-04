@@ -2,16 +2,15 @@ import test from 'ava'
 import assert from 'assert'
 import {merge} from "rxjs";
 import {switchMap, take, toArray} from "rxjs/operators";
-import {source, sink, mapToProc, Socket, PortParams} from "@pkit/core";
+import {source, sink, mapToProc, Socket, PortParams, PortMessage} from "@pkit/core";
 import {HttpServerPort} from "./";
-import {findLogsStopped, findLogsTerminate} from "@pkit/core/port/index.test";
 
 class HttpServerTestPort extends HttpServerPort {
   init = new Socket<{
     scenario: 'A' | 'B' | 'C'
   } & PortParams<HttpServerPort>>();
 
-  flow() {
+  flow () {
     const port = this;
     return merge(
       super.flow(),
@@ -20,7 +19,7 @@ class HttpServerTestPort extends HttpServerPort {
     )
   }
 
-  log() {}
+  log () { }
 }
 
 const scenarioKit = (port: HttpServerTestPort) =>
@@ -48,21 +47,32 @@ export const exec = (params: Pick<PortParams<HttpServerTestPort>, 'scenario'>) =
     http: {listen: [18080]}
   }).pipe(toArray()).toPromise();
 
-test('terminate while running', async () => {
+type FindLogs = (log: PortMessage<any>) => boolean
+export const findLogsTerminate: FindLogs = ([type]) =>
+  type === 'terminate'
+export const findLogsTerminated: FindLogs = ([type]) =>
+  type === 'terminated'
+export const findLogsStopped: FindLogs = ([type]) =>
+  type === 'stopped'
+
+test.serial('terminate while running', async (t) => {
   let logs = await exec({scenario: 'A'})
   assert(logs.filter(findLogsStopped).length === 1);
   assert(logs.filter(findLogsTerminate).length === 1);
   assert(logs.findIndex(findLogsStopped) > logs.findIndex(findLogsTerminate));
+  t.pass()
 });
 
-test('terminate after stopped', async () => {
+test.serial('terminate after stopped', async (t) => {
   let logs = await exec({scenario: 'B'});
   assert(logs.filter(findLogsStopped).length === 1);
   assert(logs.filter(findLogsTerminate).length === 1);
   assert(logs.findIndex(findLogsStopped) < logs.findIndex(findLogsTerminate));
+  t.pass()
 });
 
-test('it should restart', async () => {
+test.serial('it should restart', async (t) => {
   let logs = await exec({scenario: 'C'});
   assert(logs.filter(findLogsStopped).length === 2);
+  t.pass()
 });
