@@ -1,21 +1,7 @@
 import {Observable, GroupedObservable, Subject} from "rxjs";
-import {map, mergeMap, startWith, take, switchMap, filter, share} from "rxjs/operators";
+import {map, mergeMap, startWith, take, switchMap, filter} from "rxjs/operators";
 import {Sink, PortMessage, PortObject, isSocket} from "../core/";
 
-// It needs to have being started for restarting.
-export const restartProc = (restart$: Observable<void>, stopped$: Observable<void>, started$: Observable<void>,
-                            stopSink: Sink<void>, restartingSink: Sink<boolean>, startSink: Sink<void>, restartedSink: Sink<void>) =>
-  restart$.pipe(
-    mergeMap(() =>
-      stopped$.pipe(
-        take(1),
-        mergeMap(() =>
-          started$.pipe(
-            take(1),
-            map(() =>
-              restartedSink()),
-            startWith(startSink(), restartingSink(false)))),
-        startWith(stopSink(), restartingSink(true)))));
 
 export const inject = <T extends PortObject>(port: T, group$: Observable<GroupedObservable<string, any>>, subject$: Subject<PortMessage<any>>, namespace: string) => {
   const walk = (port: PortObject, ns: string[]=[]) => {

@@ -12,7 +12,7 @@ import {
   cycleFlow,
 } from "../core/";
 import {mapToProc} from '../processors/'
-import {restartProc, inject} from "./processors";
+import {inject} from "./processors";
 
 export abstract class Port {
   init = new Socket<any>();
@@ -35,13 +35,13 @@ export abstract class Port {
   terminating = new PrivateSinkSocket<boolean>();
   terminated = new Socket<any>();
 
-  constructor(port: DeepPartialPort<Port> = {}) {
-    setImmediate(() => 
+  constructor (port: DeepPartialPort<Port> = {}) {
+    setImmediate(() =>
       Object.assign(this, port))
     Object.assign(this, port)
   }
 
-  next (type: string, data: any): void {}
+  next (type: string, data: any): void { }
 
   namespace () {
     return ''
@@ -51,8 +51,8 @@ export abstract class Port {
     console.log(...msg);
   }
 
-  injectedHook (data: boolean) {}
-  initHook (data: boolean) {}
+  injectedHook (data: boolean) { }
+  initHook (data: boolean) { }
 
   run (params: SocketData<this['init']>) {
     const subject$ = new Subject<PortMessage<any>>();
@@ -85,21 +85,7 @@ export abstract class Port {
           subject$.complete())));
   }
 
-  flow() {
-    return cycleFlow(this, 'init', 'terminated', {
-      restartFlow: (port) =>
-        merge(
-          mapToProc(source(port.start), sink(port.starting), true),
-          mapToProc(source(port.started), sink(port.starting), false),
-          mapToProc(source(port.started), sink(port.running), true),
-          mapToProc(source(port.stop), sink(port.stopping), true),
-          mapToProc(source(port.stop), sink(port.running), false),
-          mapToProc(source(port.stopped), sink(port.stopping), false),
-          mapToProc(source(port.terminate), sink(port.terminating), true),
-          mapToProc(source(port.terminated), sink(port.terminating), false),
-          restartProc(source(port.restart), source(port.stopped), source(port.started),
-            sink(port.stop), sink(port.restarting), sink(port.start), sink(port.restarted))
-        )
-    })
+  flow () {
+    return mapToProc(of(true), sink(this.debug))
   }
 }

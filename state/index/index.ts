@@ -1,7 +1,6 @@
 import json8 from 'json8'
 import mergePatch from 'json8-merge-patch'
-import {merge, of} from "rxjs";
-import {map, scan, switchMap, startWith} from "rxjs/operators";
+import {map, scan, startWith} from "rxjs/operators";
 import {sink, Socket, source, directProc, Port, cycleFlow} from "@pkit/core";
 
 export class StatePort<T extends {}> extends Port {
@@ -37,10 +36,6 @@ export class StatePort<T extends {}> extends Port {
   }
 }
 
-// export const applyJsonPatches = <T>(doc: PartialState<T>, patches: PartialState<T>[]): T =>
-//   patches.reduce((acc, curr) =>
-//     mergePatch.apply(acc, curr), json8.clone(doc)) as any
-
 export const singlePatch = <T> (patch: T) =>
   [[patch]]
 
@@ -51,8 +46,8 @@ declare const extra: unique symbol;
 
 export type PartialState<T> =
   T extends object ?
-  {[P in keyof T]?: PartialState<T[P]> | null;} & {[extra]?: Error}
-  : T | null;
+  {[P in keyof T]?: PartialState<T[P]> | null;} & {[extra]?: Error} :
+  T | null;
 
 type Primitive<T> =
   T extends Boolean ? T :

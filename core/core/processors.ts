@@ -188,4 +188,8 @@ export class PkitError extends Error {
   }
 }
 
-
+class Container {
+  constructor (port = {}) {
+    Object.assign(this, port)
+  }
+}
