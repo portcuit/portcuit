@@ -24,7 +24,7 @@ export const ofProc = <T, U extends T>(sink: Sink<T>, value: U = undefined as an
     map((data) =>
       sink(data)));
 
-export const directProc = <T>(source$: Observable<T>, sink: Sink<T>) =>
+export const directProc = <T extends U, U>(source$: Observable<T>, sink: Sink<U>) =>
   source$.pipe(
     map((data) =>
       sink(data)));
