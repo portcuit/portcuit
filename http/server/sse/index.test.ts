@@ -27,7 +27,7 @@ class SseTestHttpServerPort extends HttpServerPort {
   receiveEsMessageEventFlow: Flow = (port) =>
     fromEventProc(source(port.es.es), sink(port.es.event.data), 'message')
 
-  initSseFlow: Flow = (port) =>
+  initSsePortFlow: Flow = (port) =>
     mapProc(source(port.event.request), sink(port.sse.init), (ctx) =>
       ({ctx}))
 
