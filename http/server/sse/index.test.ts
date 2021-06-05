@@ -2,9 +2,11 @@ import test from 'ava'
 import EventSource from 'eventsource'
 import {merge} from 'rxjs'
 import {filter} from 'rxjs/operators'
-import {cycleFlow, fromEventProc, latestMapProc, mapProc, mapToProc, sink, Socket, source} from "@pkit/core";
+import {fromEventProc, IFlow, latestMapProc, mapProc, mapToProc, sink, Socket, source} from "@pkit/core";
 import {HttpServerPort} from "../index/";
 import {HttpServerSsePort} from "./";
+
+type Flow = IFlow<SseTestHttpServerPort>
 
 class SseTestHttpServerPort extends HttpServerPort {
   sse = new HttpServerSsePort
@@ -15,38 +17,37 @@ class SseTestHttpServerPort extends HttpServerPort {
     }
   }
 
+  startServerFlow: Flow = (port) =>
+    mapToProc(source(port.ready), sink(port.start))
+
+  createEsInstanceFlow: Flow = (port, {http: {listen}}, servicePort = listen![0]) =>
+    mapProc(source(port.started), sink(port.es.es), () =>
+      new EventSource(`http://127.0.0.1:${servicePort}`))
+
+  receiveEsMessageEventFlow: Flow = (port) =>
+    fromEventProc(source(port.es.es), sink(port.es.event.data), 'message')
+
+  initSseFlow: Flow = (port) =>
+    mapProc(source(port.event.request), sink(port.sse.init), (ctx) =>
+      ({ctx}))
+
+  sendDataToEsFromSseFlow: Flow = (port) =>
+    mapToProc(source(port.sse.ready), sink(port.sse.data), 'hello world')
+
+  receiveMessageFromSseAndCloseEsFlow: Flow = (port) =>
+    latestMapProc(source(port.es.event.data).pipe(
+      filter(({data}) =>
+        data === 'hello world')),
+      sink(port.info),
+      [source(port.es.es)], ([, es]) => es.close())
+
+  terminatedFlow: Flow = (port) =>
+    mapToProc(source(port.sse.terminated), sink(port.terminate))
+
   flow () {
     return merge(
       super.flow(),
       this.sse.flow(),
-      cycleFlow(this, 'init', 'terminated', {
-        startServerFlow: (port) =>
-          mapToProc(source(port.ready), sink(port.start)),
-
-        createEsInstanceFlow: (port, {http: {listen}}, servicePort = listen![0]) =>
-          mapProc(source(port.started), sink(port.es.es), () =>
-            new EventSource(`http://127.0.0.1:${servicePort}`)),
-
-        receiveEsMessageEventFlow: (port) =>
-          fromEventProc(source(port.es.es), sink(port.es.event.data), 'message'),
-
-        initSseFlow: (port) =>
-          mapProc(source(port.event.request), sink(port.sse.init), (ctx) =>
-            ({ctx})),
-
-        sendDataToEsFromSseFlow: (port) =>
-          mapToProc(source(port.sse.ready), sink(port.sse.data), 'hello world'),
-
-        receiveMessageFromSseAndCloseEsFlow: (port) =>
-          latestMapProc(source(port.es.event.data).pipe(
-            filter(({data}) =>
-              data === 'hello world')),
-            sink(port.info),
-            [source(port.es.es)], ([, es]) => es.close()),
-
-        terminatedFlow: (port) =>
-          mapToProc(source(port.sse.terminated), sink(port.terminate))
-      })
     )
   }
 

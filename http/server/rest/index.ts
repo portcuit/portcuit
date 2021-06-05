@@ -1,7 +1,7 @@
 import {ServerResponse} from "http";
 import {Port, Socket} from "@pkit/core";
 import {HttpServerContext} from "@pkit/http/server";
-import {IHttpServerRestLogicPort} from "./mixins/logic";
+import * as logic from "./mixins/logic";
 import {HttpServerRestResponse} from './mixins/lib';
 
 export class HttpServerRestPort extends Port {
@@ -20,9 +20,6 @@ export class HttpServerRestPort extends Port {
   event = new class {
     close = new Socket<{writeHead: ServerResponse, end: void}>();
   }
-
-  flow () {
-    return IHttpServerRestLogicPort.flow(this)
-  }
 }
 
+Object.assign(HttpServerRestPort.prototype, logic)

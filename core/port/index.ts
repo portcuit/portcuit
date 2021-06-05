@@ -3,15 +3,12 @@ import {merge, of, Subject} from "rxjs";
 import {groupBy, tap} from "rxjs/operators";
 import {
   PortMessage,
-  sink,
   Socket,
   PrivateSinkSocket,
-  source,
   SocketData,
   DeepPartialPort,
   cycleFlow,
 } from "../core/";
-import {mapToProc} from '../processors/'
 import {inject} from "./lib";
 
 export abstract class Port {
@@ -35,7 +32,7 @@ export abstract class Port {
   terminating = new PrivateSinkSocket<boolean>();
   terminated = new Socket<any>();
 
-  constructor (port: DeepPartialPort<Port> = {}) {
+  constructor (port: DeepPartialPort<Port> & {[key: string]: any} = {}) {
     setImmediate(() =>
       Object.assign(this, port))
     Object.assign(this, port)
@@ -86,9 +83,13 @@ export abstract class Port {
   }
 
   flow () {
-    return cycleFlow(this, 'init', 'terminated',
-      Object.fromEntries(Object.entries(this)
-        .filter(([key, val]) =>
-          key.endsWith('Flow') && typeof val === 'function')))
+    const flows = {}
+    for (const name in this) {
+      if (name.endsWith('Flow')) {
+        Object.assign(flows, {[name]: this[name]})
+      }
+    }
+
+    return cycleFlow(this, 'init', 'terminated', flows)
   }
 }

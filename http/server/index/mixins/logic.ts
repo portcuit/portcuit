@@ -7,12 +7,11 @@ import {
   sink,
   latestMergeMapProc,
   mapToProc,
-  fromEventProc, ofProc, IFlow, IPort, cycleFlow
+  fromEventProc, ofProc, IFlow, IPort
 } from '@pkit/core'
 import {HttpServerPort} from "../../";
 
-type IHttpServerLogicPort = IPort<HttpServerPort>
-type Flow = IFlow<IHttpServerLogicPort>
+type Flow = IFlow<HttpServerPort>
 
 export const httpServerInstanceFlow: Flow = (port, {http: {server = {}}}) =>
   ofProc(sink(port.server), http.createServer(server))
