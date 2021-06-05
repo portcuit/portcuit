@@ -2,7 +2,7 @@ import test from 'ava'
 import EventSource from 'eventsource'
 import {merge} from 'rxjs'
 import {filter} from 'rxjs/operators'
-import {fromEventProc, IFlow, latestMapProc, mapProc, mapToProc, sink, Socket, source} from "@pkit/core";
+import {fromEventProc, IFlow, latestMapProc, mapProc, mapToProc, PortMessage, sink, Socket, source} from "@pkit/core";
 import {HttpServerPort} from "../index/";
 import {HttpServerSsePort} from "./";
 
@@ -41,7 +41,7 @@ class SseTestHttpServerPort extends HttpServerPort {
       sink(port.info),
       [source(port.es.es)], ([, es]) => es.close())
 
-  terminatedFlow: Flow = (port) =>
+  terminateFlow: Flow = (port) =>
     mapToProc(source(port.sse.terminated), sink(port.terminate))
 
   flow () {
@@ -50,11 +50,11 @@ class SseTestHttpServerPort extends HttpServerPort {
       this.sse.flow(),
     )
   }
-
-  log () { }
 }
 
 test('ping-pong', async (t) => {
-  const logs = await new SseTestHttpServerPort().run({http: {listen: [3999]}}).toPromise();
+  const logs = await new SseTestHttpServerPort({
+    log: (msg: PortMessage<any>) => t.log(...msg)
+  }).run({http: {listen: [3999]}}).toPromise();
   t.pass()
 })
