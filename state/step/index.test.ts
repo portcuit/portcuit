@@ -17,20 +17,20 @@ type StateTestState = {
 }
 
 const initialState = (): StateTestState =>
-  ({
-    talk: {
-      talentId: 1
-    },
-    step: {
-      init: StepState.initialState(),
-      findTalk: StepState.initialState()
-    }
-  });
+({
+  talk: {
+    talentId: 1
+  },
+  step: {
+    init: StepState.initialState(),
+    findTalk: StepState.initialState()
+  }
+});
 
 class StateTestPort extends Port {
   state = new StatePort<StateTestState>()
 
-  flow() {
+  flow () {
     return merge(
       this.state.flow(),
 
@@ -70,8 +70,8 @@ class StateTestPort extends Port {
   }
 }
 
-test('test', async (t) => {
-  const logs = await new StateTestPort({log () {}}).run(null).pipe(toArray()).toPromise();
-  console.log(JSON.stringify(logs, undefined, 2));
+test('basic step', async (t) => {
+  const logs = await new StateTestPort({log () { } }).run(null).pipe(toArray()).toPromise();
+  t.log(JSON.stringify(logs, undefined, 2));
   t.pass();
 })

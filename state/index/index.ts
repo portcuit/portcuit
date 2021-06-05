@@ -1,39 +1,38 @@
 import json8 from 'json8'
 import mergePatch from 'json8-merge-patch'
 import {merge, of} from "rxjs";
-import {map, scan, switchMap} from "rxjs/operators";
+import {map, scan, switchMap, startWith} from "rxjs/operators";
 import {sink, Socket, source, directProc, Port, cycleFlow} from "@pkit/core";
 
 export class StatePort<T extends {}> extends Port {
   init = new Socket<T>();
   update = new Socket<UpdateBatch<T>>();
-  data = new Socket<[T, T]>();
+  data = new Socket<[T, T, T]>();
 
   flow () {
     return cycleFlow(this, 'init', 'terminated', {
-      initFlow: (port, initial) =>
-        directProc(merge(
-          source(port.update).pipe(
-            map((batch) => {
-              const pres = [];
-              const posts = [];
-              for (const patches of batch) {
-                pres.push(patches[0]);
-                if (patches[1]) {posts.push(patches[1]);}
-              }
-              return [pres, posts] as const;
-            }),
-            scan(([, fromData], [pres, posts]) => {
-              const data = pres.reduce((acc, patch) =>
-                mergePatch.apply(acc, patch), json8.clone(fromData));
+      initFlow: (port, initial: T) =>
+        directProc(source(port.update).pipe(
+          map((batch) => {
+            const patches = [];
+            const postPathces = [];
+            for (const pair of batch) {
+              patches.push(pair[0]);
+              if (pair[1]) {postPathces.push(pair[1]);}
+            }
+            return [patches, postPathces] as const;
+          }),
+          scan(([, prevData], [patches, postPatches]) => {
+            const data = patches.reduce((acc, patch) =>
+              mergePatch.apply(acc, patch), json8.clone(prevData));
 
-              const postData = posts.reduce((acc, patch) =>
-                mergePatch.apply(acc, patch), json8.clone(data));
+            const postData = postPatches.reduce((acc, patch) =>
+              mergePatch.apply(acc, patch), json8.clone(data));
 
-              return [data, postData] as [T, T]
-            }, [{} as T, initial as T])),
-          of([initial, initial] as const)),
-          sink(port.data as any))
+            return [data, postData, prevData] as [T, T, T]
+          }, [{}, initial, initial] as [T, T, T]),
+          startWith([initial, initial, initial] as [T, T, T])),
+          sink(port.data))
     })
   }
 }
