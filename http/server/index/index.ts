@@ -1,10 +1,9 @@
 import http from 'http';
-import {merge} from 'rxjs'
-import {Socket, Port, DeepPartialPort, PrivateSocket, PrivateSinkSocket, LifecyclePort} from '@pkit/core'
-import {HttpServerContext} from './processors'
-import {IHttpServerLogicPort} from "./mixins/logic";
+import {Socket, DeepPartialPort, PrivateSocket, PrivateSinkSocket, LifecyclePort} from '@pkit/core'
+import * as logic from "./mixins/logic";
+import {HttpServerContext} from './lib'
 
-export * from './processors'
+export * from './lib'
 
 export abstract class HttpServerPort extends LifecyclePort {
   init = new Socket<{
@@ -18,15 +17,10 @@ export abstract class HttpServerPort extends LifecyclePort {
     request = new PrivateSinkSocket<HttpServerContext>();
   }
 
-  constructor(port: DeepPartialPort<HttpServerPort> & Partial<typeof IHttpServerLogicPort.prototype> = {}) {
+  constructor(port: DeepPartialPort<HttpServerPort> & Partial<typeof logic> = {}) {
     super(port);
   }
-
-  flow () {
-    return merge(
-      super.flow(),
-      IHttpServerLogicPort.flow(this)
-    )
-  }
 }
+
+Object.assign(HttpServerPort.prototype, logic)
 

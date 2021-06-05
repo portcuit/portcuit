@@ -12,7 +12,7 @@ import {
   cycleFlow,
 } from "../core/";
 import {mapToProc} from '../processors/'
-import {inject} from "./processors";
+import {inject} from "./lib";
 
 export abstract class Port {
   init = new Socket<any>();
@@ -86,6 +86,9 @@ export abstract class Port {
   }
 
   flow () {
-    return mapToProc(of(true), sink(this.debug))
+    return cycleFlow(this, 'init', 'terminated',
+      Object.fromEntries(Object.entries(this)
+        .filter(([key, val]) =>
+          key.endsWith('Flow') && typeof val === 'function')))
   }
 }

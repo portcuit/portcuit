@@ -1,11 +1,10 @@
 import {Observable, GroupedObservable, Subject} from "rxjs";
-import {map, mergeMap, startWith, take, switchMap, filter} from "rxjs/operators";
-import {Sink, PortMessage, PortObject, isSocket} from "../core/";
+import {map, switchMap, filter} from "rxjs/operators";
+import {PortMessage, PortObject, isSocket} from "../core/";
 
-
-export const inject = <T extends PortObject>(port: T, group$: Observable<GroupedObservable<string, any>>, subject$: Subject<PortMessage<any>>, namespace: string) => {
-  const walk = (port: PortObject, ns: string[]=[]) => {
-    for (const [key, sock] of Object.entries(port) ) {
+export const inject = <T extends PortObject> (port: T, group$: Observable<GroupedObservable<string, any>>, subject$: Subject<PortMessage<any>>, namespace: string) => {
+  const walk = (port: PortObject, ns: string[] = []) => {
+    for (const [key, sock] of Object.entries(port)) {
       if (isSocket(sock)) {
         const portPath = ns.concat(key);
         const portType = portPath.join('.');
@@ -14,9 +13,9 @@ export const inject = <T extends PortObject>(port: T, group$: Observable<Grouped
             key === portType),
           switchMap((stream$) =>
             stream$),
-          map(([,portValue]) =>
+          map(([, portValue]) =>
             portValue));
-        const sink = <T>(value?: T) => {
+        const sink = <T> (value?: T) => {
           setImmediate(() =>
             subject$.next([portType, value]));
           return [`${namespace}${portType}`, value];
