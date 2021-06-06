@@ -44,8 +44,8 @@ export abstract class Port {
     return ''
   }
 
-  log (msg: PortMessage<any>) {
-    console.log(...msg);
+  log (...args: PortMessage<any>) {
+    console.log(...args);
   }
 
   injectedHook (data: boolean) { }
@@ -75,7 +75,7 @@ export abstract class Port {
         }))
     ).pipe(
       tap((msg) =>
-        this.log(msg)),
+        this.log(...msg)),
       tap(([type]) =>
         type === `${namespace}terminated` &&
         setImmediate(() =>
