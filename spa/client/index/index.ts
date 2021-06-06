@@ -1,11 +1,10 @@
 import {merge} from "rxjs";
-import {Port, PortParams, Socket} from "@pkit/core";
-import {StatePort} from '@pkit/state'
+import {directProc, mapToProc, ofProc, Port, PortParams, sink, Socket, source} from "@pkit/core";
+import {finishStep, StatePort, UpdateBatch} from '@pkit/state'
 import {SnabbdomClientPort} from "@pkit/snabbdom/client";
 import {SpaCsr, SpaState} from "../../shared/";
 import {SpaClientDomPort} from "../dom/";
 import {SpaClientBffPort} from "../bff/";
-import {ISpaClientLogicPort} from "./mixins/logic";
 
 export abstract class SpaClientPort<T extends SpaState> extends Port {
   init = new Socket<{
@@ -16,18 +15,34 @@ export abstract class SpaClientPort<T extends SpaState> extends Port {
       csr: SpaCsr
     }
   }>();
-  state: Omit<StatePort<T>, 'patchFlow'> = new StatePort<T>();
+  state = new StatePort<T>();
   vdom = new SnabbdomClientPort();
   dom = new SpaClientDomPort();
   bff = new SpaClientBffPort();
 
-  flow() {
+  initChildPortFlow = (port: this, {vdom, state, params: {csr}, dom}: PortParams<this>) =>
+    merge(
+      ofProc(sink(port.vdom.init), vdom),
+      ofProc(sink(port.state.init), state),
+      ofProc(sink(port.bff.init), csr),
+      ofProc(sink(port.dom.init), dom)
+    )
+
+  startStateFlow = (port: this) =>
+    mapToProc(source(port.state.init),
+      sink<UpdateBatch<SpaState>>(port.state.update),
+      [finishStep('init')])
+
+  bffUpdateFlow = (port: this) =>
+    directProc(source(port.bff.batch), sink(port.state.update))
+
+  flow () {
     return merge(
+      super.flow(),
       this.state.flow(),
       this.vdom.flow(),
       this.dom.flow(),
       this.bff.flow(),
-      ISpaClientLogicPort.flow(this)
     )
   }
 }

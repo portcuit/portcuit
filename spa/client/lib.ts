@@ -3,7 +3,7 @@ import {Observable} from "rxjs";
 import {filter, map} from "rxjs/operators";
 import {Sink} from "@pkit/core";
 import {PartialState, UpdateBatch, InferUpdateBatch} from "@pkit/state";
-import {FlowEvent} from "../shared/";
+import {FlowEvent} from "@pkit/spa";
 
 const objFromTextContent = (doc: Document, selector: string) =>
   JSON.parse(doc.querySelector(selector)!.textContent!)

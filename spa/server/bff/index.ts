@@ -1,11 +1,11 @@
-import {directProc, mergeMapProc, sink, Socket, source} from "@pkit/core";
+import {directProc, mergeMapProc, sink, Socket, source, Container} from "@pkit/core";
 import {SpaState} from '@pkit/spa'
 import {UpdateBatch, startStep} from "@pkit/state";
 import {SpaServerPort} from "../index/";
 
 export class SpaServerBffPort<T extends SpaState> extends SpaServerPort<T> {
-  bff = {
-    update: new Socket<UpdateBatch<T>>()
+  bff = new class extends Container {
+    update = new Socket<UpdateBatch<T>>()
   }
 
   startBffFlow = (port: this) =>
