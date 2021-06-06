@@ -16,7 +16,7 @@ export abstract class SpaClientPort<T extends SpaState> extends Port {
       csr: SpaCsr
     }
   }>();
-  state = new StatePort<T>();
+  state: Omit<StatePort<T>, 'patchFlow'> = new StatePort<T>();
   vdom = new SnabbdomClientPort();
   dom = new SpaClientDomPort();
   bff = new SpaClientBffPort();

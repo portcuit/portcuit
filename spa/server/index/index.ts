@@ -12,7 +12,7 @@ export abstract class SpaServerPort<T extends SpaState> extends Port {
     ctx: HttpServerContext;
     state: T;
   }>();
-  state = new StatePort<T>();
+  state: Omit<StatePort<T>, 'patchFlow'> = new StatePort<T>();
   rest = new HttpServerRestPort;
 
   flow() {

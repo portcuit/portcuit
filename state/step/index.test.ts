@@ -30,48 +30,47 @@ const initialState = (): StateTestState =>
 class StateTestPort extends Port {
   state = new StatePort<StateTestState>()
 
+  initStateFlow = (port: this) =>
+    merge(
+      ofProc(sink(port.state.init), initialState()),
+      mapToProc(source(port.state.init), sink(port.state.update),
+        [finishStep('init')])
+    )
+
+  singlePatchFlow = (port: this) =>
+    mapToProc(source(port.state.data).pipe(
+      filter(isFinishStep('init'))),
+      sink(port.state.update),
+      singlePatch({talkId: '5'}))
+
+  findTalkFlow = (port: this) =>
+    mapToProc(source(port.state.data).pipe(
+      filter(([{talkId}]) =>
+        talkId === '5')),
+      sink(port.state.update),
+      [
+        [{
+          talkId: '3',
+          talk: {talentId: 3}
+        }],
+        finishStep('findTalk')
+      ])
+
+  terminateFlow = (port: this) =>
+    mapToProc(source(port.state.data).pipe(
+      filter(isFinishStep('findTalk'))),
+      sink(port.terminated))
+
   flow () {
     return merge(
+      super.flow(),
       this.state.flow(),
-
-      cycleFlow(this, 'init', 'terminated', {
-        initStateFlow: (port) =>
-          merge(
-            ofProc(sink(port.state.init), initialState()),
-            mapToProc(source(port.state.init), sink(port.state.update),
-              [finishStep('init')])
-          ),
-
-        singlePatchFlow: (port) =>
-          mapToProc(source(port.state.data).pipe(
-            filter(isFinishStep('init'))),
-            sink(port.state.update),
-            singlePatch({talkId: '5'})),
-
-        findTalkFlow: (port) =>
-          mapToProc(source(port.state.data).pipe(
-            filter(([{talkId}]) =>
-              talkId === '5')),
-            sink(port.state.update),
-            [
-              [{
-                talkId: '3',
-                talk: {talentId: 3}
-              }],
-              finishStep('findTalk')
-            ]),
-
-        terminateFlow: (port) =>
-          mapToProc(source(port.state.data).pipe(
-            filter(isFinishStep('findTalk'))),
-            sink(port.terminated))
-      })
     )
   }
 }
 
 test('basic step', async (t) => {
-  const logs = await new StateTestPort({log () { } }).run(null).pipe(toArray()).toPromise();
+  const logs = await new StateTestPort({log: t.log}).run(null).pipe(toArray()).toPromise();
   t.log(JSON.stringify(logs, undefined, 2));
   t.pass();
 })
