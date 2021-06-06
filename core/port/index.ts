@@ -64,7 +64,7 @@ export abstract class Port {
       tap((msg) =>
         this.log(...msg)),
       tap(([type]) =>
-        type === `${namespace}terminated` &&
+        type === `${namespace}complete` &&
         setImmediate(() =>
           subject$.complete())));
   }

@@ -1,27 +1,41 @@
+import test from 'ava'
 import {readFile, writeFile} from 'fs/promises'
-import {createFFmpeg, fetchFile} from '@ffmpeg/ffmpeg'
 import {config} from 'dotenv'
+import {merge, of, from} from "rxjs";
+import {Port, mergeMapProc, sink, Socket, source, PortParams, mapProc} from "@pkit/core";
+import {FfmpegPort} from "./";
 
 config()
 
-const test = async () => {
-  const ffmpeg = createFFmpeg({log: true});
-  await ffmpeg.load();
+class FfmpegTestPort extends Port {
+  init = new Socket<number>();
+  ffmpeg = new FfmpegPort;
 
-  // ffmpeg.FS('writeFile', '171.mp4', await fetchFile(`${process.env.AUDIO_DIR}/171.mp4`))
-  ffmpeg.FS('writeFile', '171.mp4', await readFile(`${process.env.AUDIO_DIR}/171.mp4`))
+  testFlow = (port: this, lessonId: PortParams<this>, name = `${lessonId.toString().padStart(3, '0')}`, input = `${name}.mp4`, output = `${name}.flac`) => {
+    const data = readFile(`${process.env.AUDIO_DIR}/${name}.mp4`)
+    return merge(
+      mapProc(from(data), sink(port.ffmpeg.init), (data) => ({
+        input, output, data,
+        run: ['-ss', 226, '-i', input, '-t', 27.5, output]
+        // run: ['-i', input, output]
+      })),
 
-  const res = await ffmpeg.run('-i', '171.mp4', '171.flac');
-  console.log({res});
-  await writeFile(`/tmp/171.flac`, ffmpeg.FS('readFile', '171.flac'))
+      mergeMapProc(source(port.ffmpeg.output), sink(port.complete),
+        async (data) =>
+          writeFile(`/tmp/${output}`, data)),
+    )
+  }
 
+  flow () {
+    return merge(
+      super.flow(),
+      this.ffmpeg.flow()
+    )
+  }
 }
 
-// const test = async () => {
-//   const ffmpeg = createFFmpeg({log: true})
-//   await ffmpeg.load();
+test('simple convert', async (t) => {
+  await new FfmpegTestPort().run(171).toPromise();
+  t.pass()
+})
 
-//   ffmpeg.run('-i', 'https://nhks-vh.akamaihd.net/i/gogaku-stream/mp4/21-er-4235-138.mp4/master.m3u8', '-c', 'copy', '003.mp4')
-// }
-
-// await test()
