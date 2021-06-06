@@ -1,6 +1,6 @@
 import {createFFmpeg, FFmpeg} from "@ffmpeg/ffmpeg";
 import {merge} from "rxjs";
-import {Container, DeepPartialPort, latestMapProc, latestMergeMapProc, mapProc, mapToProc, mergeMapProc, ofProc, Port, PortParams, sink, Socket, source} from "@pkit/core";
+import {Container, DeepPartialPort, latestMapProc, latestMergeMapProc, mapToProc, mergeMapProc, ofProc, Port, PortParams, sink, Socket, source} from "@pkit/core";
 
 export class FfmpegPort extends Port {
   init = new Socket<{
@@ -41,7 +41,8 @@ export class FfmpegPort extends Port {
       latestMapProc(source(port.terminate), sink(port.complete),
         [source(port.ffmpeg)],
         ([, ffmpeg]) =>
-          null,
+          null
+        // it need to free memory but exit
         // ffmpeg.exit(),
       )
     )
