@@ -2,7 +2,7 @@ import Peer, {PeerConstructorOption, SfuRoom, MeshRoom, RoomStream, RoomData} fr
 import {Container, LifecyclePort, Socket} from "@pkit/core";
 import * as logic from "./logic/";
 
-export class SkywayClientPort extends LifecyclePort {
+export class SkywayPort extends LifecyclePort {
   init = new Socket<{
     peer: {
       id: string;
@@ -35,4 +35,4 @@ export class SkywayClientPort extends LifecyclePort {
   }
 }
 
-Object.assign(SkywayClientPort.prototype, logic);
+Object.assign(SkywayPort.prototype, logic);

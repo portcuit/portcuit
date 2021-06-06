@@ -8,9 +8,9 @@ import {
   source,
   fromEventProc,
 } from "@pkit/core";
-import {SkywayClientPort} from "../";
+import {SkywayPort} from "../";
 
-type Flow = IFlow<SkywayClientPort>
+type Flow = IFlow<SkywayPort>
 
 export const peerInstanceFlow: Flow = (port, params) =>
   mergeMapProc(of(params), sink(port.peer),

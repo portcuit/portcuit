@@ -1,4 +1,4 @@
-import {cycleFlow, fromEventProc, latestMergeMapProc, mapToProc, mergeMapProc, Port, sink, Socket, source} from "@pkit/core";
+import {Container, fromEventProc, latestMergeMapProc, mapToProc, mergeMapProc, Port, PortParams, sink, Socket, source} from "@pkit/core";
 import {Browser, Dialog, HTTPRequest, HTTPResponse, Page, Viewport} from "puppeteer-core";
 import {identity} from 'ramda'
 import {merge, of, concat} from 'rxjs'
@@ -13,7 +13,7 @@ export class PuppeteerPagePort extends Port {
     createNewPage?: boolean
   }>();
   page = new Socket<Page>();
-  event = new class {
+  event = new class extends Container {
     load = new Socket<void>();
     close = new Socket<void>();
     response = new Socket<HTTPResponse>();
@@ -21,40 +21,32 @@ export class PuppeteerPagePort extends Port {
     dialog = new Socket<Dialog>();
   }
 
-  flow () {
-    return merge(
-      super.flow(),
+  pageInstanceFlow = (port: this, {createNewPage = true, browser}: PortParams<this>) =>
+    mergeMapProc(of(createNewPage), sink(port.page), async (flag) =>
+      flag ?
+        (await browser.newPage()) :
+        (await browser.pages())[0])
 
-      cycleFlow(this, 'init', 'terminated', {
-        pageInstanceFlow: (port, {createNewPage=true, browser}) =>
-          mergeMapProc(of(createNewPage), sink(port.page), async (flag) => 
-            flag ? 
-            (await browser.newPage()) :
-            (await browser.pages())[0]),
+  readyFlow = (port: this, {userAgent, viewport, goto}: PortParams<this>) =>
+    mergeMapProc(source(port.page), sink(port.ready),
+      (page) =>
+        concat(...[
+          Promise.resolve('ready'),
+          userAgent && page.setUserAgent(userAgent),
+          viewport && page.setViewport(viewport),
+          goto && page.goto(...goto),
+        ].filter(identity) as Promise<any>[]).pipe(
+          toArray()))
 
-        readyFlow: (port, {userAgent, viewport, goto}) =>
-          mergeMapProc(source(port.page), sink(port.ready),
-            (page) =>
-              concat(...[
-                Promise.resolve('ready'),
-                userAgent && page.setUserAgent(userAgent),
-                viewport && page.setViewport(viewport),
-                goto && page.goto(...goto),
-              ].filter(identity) as Promise<any>[]).pipe(
-                toArray())),
+  eventFlow = (port: this) =>
+    merge(...Object.entries(port.event).map(([name, sock]) =>
+      fromEventProc(source(port.page), sink(sock), name)))
 
-        eventFlow: (port) =>
-          merge(...Object.entries(port.event).map(([name, sock]) => 
-            fromEventProc(source(port.page), sink(sock), name))),
+  // TODO: puppeteer-in-electron 使用時にヘッドありで開いた場合に page.close() で閉じずに実行結果が帰ってこない
+  terminateFlow = (port: this) =>
+    latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.page)],
+      async ([, page]) => ({close: await page.close()}))
 
-        // TODO: puppeteer-in-electron 使用時にヘッドありで開いた場合に page.close() で閉じずに実行結果が帰ってこない
-        terminateFlow: (port) =>
-          latestMergeMapProc(source(port.terminate), sink(port.info), [source(port.page)],
-            async ([, page]) => ({close: await page.close()})),
-
-        terminatedFlow: (port) =>
-          mapToProc(source(port.event.close), sink(port.terminated))
-      })
-    )
-  }
+  completeFlow = (port: this) =>
+    mapToProc(source(port.event.close), sink(port.terminated))
 }
