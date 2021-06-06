@@ -8,6 +8,18 @@ type ILifecyclePort = IPort<LifecyclePort>
 type Flow = IFlow<ILifecyclePort>
 
 export class LifecyclePort extends Port {
+  start = new Socket<any>();
+  starting = new Socket<boolean>();
+  started = new Socket<any>();
+  stop = new Socket<any>();
+  stopping = new Socket<boolean>();
+  stopped = new Socket<any>();
+  restart = new Socket<any>();
+  restarting = new Socket<boolean>();
+  restarted = new Socket<any>();
+  running = new Socket<boolean>();
+  terminating = new Socket<boolean>();
+
   restartFlow: Flow = (port) =>
     merge(
       mapToProc(source(port.start), sink(port.starting), true),

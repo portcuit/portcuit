@@ -4,7 +4,6 @@ import {groupBy, tap} from "rxjs/operators";
 import {
   PortMessage,
   Socket,
-  PrivateSinkSocket,
   SocketData,
   DeepPartialPort,
   cycleFlow,
@@ -17,19 +16,7 @@ export abstract class Port {
   info = new Socket<any>();
   debug = new Socket<any>();
   err = new Socket<Error>();
-
-  start = new Socket<any>();
-  starting = new PrivateSinkSocket<boolean>();
-  started = new PrivateSinkSocket<any>();
-  stop = new Socket<any>();
-  stopping = new PrivateSinkSocket<boolean>();
-  stopped = new PrivateSinkSocket<any>();
-  restart = new Socket<any>();
-  restarting = new PrivateSinkSocket<boolean>();
-  restarted = new PrivateSinkSocket<any>();
-  running = new PrivateSinkSocket<boolean>();
   terminate = new Socket<any>();
-  terminating = new PrivateSinkSocket<boolean>();
   terminated = new Socket<any>();
 
   constructor (port: DeepPartialPort<Port> & {[key: string]: any} = {}) {
