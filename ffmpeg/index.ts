@@ -13,23 +13,23 @@ export class FfmpegPort extends Port {
   ffmpeg = new Socket<FFmpeg>();
   output = new Socket<Uint8Array>();
   event = new class extends Container {
-    input = new Socket<void>()
+    load = new Socket<void>()
   }
 
-  initFlow = (port: this, {log}: PortParams<this>) =>
+  createFfmpegInstanceFlow = (port: this, {log}: PortParams<this>) =>
     ofProc(sink(port.ffmpeg), createFFmpeg({log}))
 
-  readyFlow = (port: this) =>
-    mergeMapProc(source(port.ffmpeg), sink(port.ready), async (ffmpeg) =>
+  loadFlow = (port: this) =>
+    mergeMapProc(source(port.ffmpeg), sink(port.event.load), async (ffmpeg) =>
       await ffmpeg.load())
 
-  writeFileFlow = (port: this, {input, data}: PortParams<this>) =>
-    latestMapProc(source(port.ready), sink(port.event.input),
+  readyFlow = (port: this, {input, data}: PortParams<this>) =>
+    latestMapProc(source(port.event.load), sink(port.ready),
       [source(port.ffmpeg)], ([, ffmpeg]) =>
       ffmpeg.FS('writeFile', input, data))
 
   runFlow = (port: this, {run, output}: PortParams<this>) =>
-    latestMergeMapProc(source(port.event.input), sink(port.output),
+    latestMergeMapProc(source(port.ready), sink(port.output),
       [source(port.ffmpeg)], async ([, ffmpeg]) => {
         await ffmpeg.run(...run.map((token) => token.toString()));
         return ffmpeg.FS('readFile', output)

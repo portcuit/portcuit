@@ -2,7 +2,7 @@ import test from 'ava'
 import {readFile, writeFile} from 'fs/promises'
 import {config} from 'dotenv'
 import {merge, of, from} from "rxjs";
-import {Port, mergeMapProc, sink, Socket, source, PortParams, mapProc} from "@pkit/core";
+import {Port, mergeMapProc, sink, Socket, source, PortParams, mapProc, mapToProc, latestMergeMapProc} from "@pkit/core";
 import {FfmpegPort} from "./";
 
 config()
@@ -10,6 +10,7 @@ config()
 class FfmpegTestPort extends Port {
   init = new Socket<number>();
   ffmpeg = new FfmpegPort;
+  writeFile = new Socket<string>();
 
   testFlow = (port: this, lessonId: PortParams<this>, name = `${lessonId.toString().padStart(3, '0')}`, input = `${name}.mp4`, output = `${name}.flac`) => {
     const data = readFile(`${process.env.AUDIO_DIR}/${name}.mp4`)
@@ -20,9 +21,11 @@ class FfmpegTestPort extends Port {
         // run: ['-i', input, output]
       })),
 
-      mergeMapProc(source(port.ffmpeg.output), sink(port.complete),
-        async (data) =>
-          writeFile(`/tmp/${output}`, data)),
+      mapToProc(source(port.ffmpeg.output), sink(port.writeFile), `/tmp/${output}`),
+
+      latestMergeMapProc(source(port.writeFile), sink(port.complete),
+        [source(port.ffmpeg.output)], async ([path, data]) =>
+          writeFile(path, data))
     )
   }
 
