@@ -1,45 +1,31 @@
 import test from 'ava'
 import {merge} from "rxjs";
 import {take} from "rxjs/operators";
-import {source, sink, mapToProc, cycleFlow, IPort, IFlow, DeepPartialPort} from "@pkit/core";
+import {source, sink, mapToProc, IFlow} from "@pkit/core";
 import {HttpServerPort} from "./";
 
-class HttpServerTestPort extends HttpServerPort {
-  testFlow: Flow
+type Flow = IFlow<HttpServerPort>
 
-  constructor (port: DeepPartialPort<Omit<HttpServerTestPort, 'testFlow'>> & Pick<HttpServerTestPort, 'testFlow'>) {
-    super(port)
-    this.testFlow = port.testFlow
-  }
-
-  flow () {
-    return merge(
-      super.flow(),
-      cycleFlow(this, 'init', 'terminated', {
-        readyFlow: (port) =>
-          mapToProc(source(port.ready), sink(port.start))
-      })
-    )
-  }
-}
-
-type IHttpServerTestPort = IPort<HttpServerTestPort>
-type Flow = IFlow<IHttpServerTestPort>
-
+let i = 0;
 for (const [name, testFlow] of Object.entries({
-  senarioA: <Flow>((port) =>
+  '起動中に終了': <Flow>((port) =>
     mapToProc(source(port.started), sink(port.terminate))),
 
-  senarioB: <Flow>((port) => merge(
+  'サーバを落としてから終了': <Flow>((port) => merge(
     mapToProc(source(port.started), sink(port.stop)),
     mapToProc(source(port.stopped), sink(port.terminate)))),
 
-  senarioC: <Flow>((port) => merge(
+  '再スタートして、起動中に終了': <Flow>((port) => merge(
     mapToProc(source(port.started).pipe(take(1)), sink(port.restart)),
     mapToProc(source(port.restarted), sink(port.terminate))))
 })) {
-  test.serial(name, async (t) => {
-    new HttpServerTestPort({testFlow, log: t.log}).run({http: {listen: [18080]}})
+  test(name, async (t) => {
+    await new HttpServerPort({
+      testFlow,
+      log: t.log,
+      startServerFlow: <Flow>((port) =>
+        mapToProc(source(port.ready), sink(port.start)))
+    }).run({http: {listen: [18080 + i++]}}).toPromise()
     t.pass()
   })
 }

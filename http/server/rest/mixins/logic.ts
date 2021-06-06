@@ -42,6 +42,6 @@ export const endResponseFlow: Flow = (port, [, res]) =>
       end: await promisify<void, any>(res.end).apply(res, response.endArgs())
     }))
 
-export const terminatedFlow: Flow = (port, [req]) =>
+export const restCompleteFlow: Flow = (port, [req]) =>
   directProc(race(source(port.event.close), fromEvent(req, 'aborted')),
     sink(port.terminated))
