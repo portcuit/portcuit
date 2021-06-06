@@ -28,11 +28,11 @@ class FfmpegTestPort extends Port {
                 // run: ['-i', input, output]
               })),
 
-          mergeMapProc(source(port.ffmpeg.output), sink(port.terminated),
+          mergeMapProc(source(port.ffmpeg.output), sink(port.complete),
             async (data) =>
               writeFile(`/tmp/${output}`, data)),
 
-        ).pipe(takeUntil(source(port.terminated))))
+        ).pipe(takeUntil(source(port.complete))))
       )
     )
   }

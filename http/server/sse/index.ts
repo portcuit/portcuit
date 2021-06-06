@@ -41,5 +41,5 @@ export class HttpServerSsePort extends Port {
 
   completeFlow = (port: this, {ctx: [req]}: PortParams<this>) =>
     directProc(race(fromEvent(req, 'close'), source(port.event.end)),
-      sink(port.terminated))
+      sink(port.complete))
 }

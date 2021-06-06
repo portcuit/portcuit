@@ -44,4 +44,4 @@ export const endResponseFlow: Flow = (port, [, res]) =>
 
 export const restCompleteFlow: Flow = (port, [req]) =>
   directProc(race(source(port.event.close), fromEvent(req, 'aborted')),
-    sink(port.terminated))
+    sink(port.complete))

@@ -32,6 +32,6 @@ export class PuppeteerBrowserPort extends Port {
       fromEventProc(source(port.browser), sink(sock), name)))
 
   disconnectedFlow = (port: this) =>
-    mapToProc(source(port.event.disconnected), sink(port.terminated))
+    mapToProc(source(port.event.disconnected), sink(port.complete))
 }
 

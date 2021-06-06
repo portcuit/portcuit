@@ -39,7 +39,7 @@ type Assert = (logs: Array<PortMessage<any>>) => void;
 type FindLogs = (log: PortMessage<any>) => boolean
 
 const findTerminated: FindLogs = ([type]) =>
-  type === 'terminated'
+  type === 'complete'
 const findStarted: FindLogs = ([type]) =>
   type === 'started';
 const findRunningTrue: FindLogs = ([type, value]) =>

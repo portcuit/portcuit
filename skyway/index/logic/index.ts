@@ -63,5 +63,5 @@ export const directFlow: Flow = (port) =>
     mapToProc(source(port.ready), sink(port.start)),
     mapToProc(source(port.event.room.open), sink(port.started)),
     mapToProc(source(port.event.room.close), sink(port.stopped)),
-    mapToProc(source(port.event.peer.close), sink(port.terminated))
+    mapToProc(source(port.event.peer.close), sink(port.complete))
   )

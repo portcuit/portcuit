@@ -17,7 +17,7 @@ export class GoogleCloudStoragePort extends Port {
   }
 
   flow() {
-    return cycleFlow(this, 'init', 'terminated', {
+    return cycleFlow(this, 'init', 'complete', {
       bucketFlow: (port, {bucket}) =>
         ofProc(sink(port.bucket), (new Storage).bucket(bucket)),
 
@@ -33,7 +33,7 @@ export class GoogleCloudStoragePort extends Port {
         }, sink(port.err)),
 
       terminateFlow: (port) =>
-        mapToProc(source(port.terminate), sink(port.terminated))
+        mapToProc(source(port.terminate), sink(port.complete))
     })
   }
 }

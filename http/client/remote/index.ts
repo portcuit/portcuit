@@ -33,7 +33,7 @@ export class HttpClientRemotePort<T> extends Port {
     )
 
   terminateFlow = (port: this) =>
-    latestMapProc(source(port.terminate), sink(port.terminated),
+    latestMapProc(source(port.terminate), sink(port.complete),
       [source(port.es)], ([, es]) =>
         es.close())
 }

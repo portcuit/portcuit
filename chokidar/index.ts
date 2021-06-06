@@ -32,7 +32,7 @@ export class ChokidarPort extends Port {
   }
 
   flow () {
-    return cycleFlow(this, 'init', 'terminated', {
+    return cycleFlow(this, 'init', 'complete', {
       startWatchFlow: (port, {watch: chokidar}) =>
         ofProc(sink(port.watcher), watch(...chokidar)),
 
@@ -44,7 +44,7 @@ export class ChokidarPort extends Port {
             fromEventProc(source(port.watcher), sink(sock), name, (...args) => args))),
 
       terminateFlow: (port) =>
-        latestMergeMapProc(source(port.terminate), sink(port.terminated),
+        latestMergeMapProc(source(port.terminate), sink(port.complete),
           [source(port.watcher)], ([, watcher]) =>
           watcher.close())
     })

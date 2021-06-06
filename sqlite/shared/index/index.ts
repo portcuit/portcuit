@@ -133,7 +133,7 @@ class SqliteAgentPort extends ISqliteAgentPort {
       mapToProc(race(source(port.query.res), source(port.command.res)),
         sink(port.terminate)),
 
-      mapToProc(source(port.terminate), sink(port.terminated))
+      mapToProc(source(port.terminate), sink(port.complete))
     )
   }
 }
@@ -151,7 +151,7 @@ export class SqliteClientPort extends Port {
       source(this.init).pipe(
         switchMap((params) =>
           ofProc(sink(this.agent[params.type].req), params))),
-      mapToProc(source(this.agent.terminated).pipe(take(1)), sink(this.terminated)),
+      mapToProc(source(this.agent.complete).pipe(take(1)), sink(this.complete)),
     );
   }
 }

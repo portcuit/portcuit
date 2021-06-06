@@ -17,7 +17,7 @@ export abstract class Port {
   debug = new Socket<any>();
   err = new Socket<Error>();
   terminate = new Socket<any>();
-  terminated = new Socket<any>();
+  complete = new Socket<any>();
 
   constructor (port: DeepPartialPort<Port> & {[key: string]: any} = {}) {
     setImmediate(() =>
@@ -77,6 +77,6 @@ export abstract class Port {
       }
     }
 
-    return cycleFlow(this, 'init', 'terminated', flows)
+    return cycleFlow(this, 'init', 'complete', flows)
   }
 }

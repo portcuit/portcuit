@@ -16,7 +16,7 @@ export class LifecycleTestPort extends LifecyclePort {
       mapToProc(source(port.init), sink(port.ready)),
       mapToProc(source(port.start).pipe(delay(100)), sink(port.started)),
       mapToProc(source(port.stop).pipe(delay(100)), sink(port.stopped)),
-      mapToProc(source(port.terminate).pipe(delay(100)), sink(port.terminated)),
+      mapToProc(source(port.terminate).pipe(delay(100)), sink(port.complete)),
 
       mapToProc(source(port.ready), sink(port.start)),
 
@@ -42,7 +42,7 @@ type FindLogs = (log: PortMessage<any>) => boolean
 export const findLogsTerminate: FindLogs = ([type]) =>
   type === 'terminate'
 export const findLogsTerminated: FindLogs = ([type]) =>
-  type === 'terminated'
+  type === 'complete'
 export const findLogsStopped: FindLogs = ([type]) =>
   type === 'stopped'
 

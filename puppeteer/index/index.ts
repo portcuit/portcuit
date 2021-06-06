@@ -34,13 +34,13 @@ export class PuppeteerPort extends LifecyclePort {
     directProc(source(port.stop), sink(port.page.terminate))
 
   finishStopFlow = (port: this) =>
-    directProc(source(port.page.terminated), sink(port.stopped))
+    directProc(source(port.page.complete), sink(port.stopped))
 
   terminateFlow = (port: this) =>
     mapToProc(source(port.terminate), sink(port.browser.terminate))
 
   completeFlow = (port: this) =>
-    directProc(source(port.browser.terminated), sink(port.terminated))
+    directProc(source(port.browser.complete), sink(port.complete))
 
   // TODO: ページがない状態、ブラウザがない状態、一度もstartされない状態でterminateされた場合の考慮
   // source(port.terminate).pipe(

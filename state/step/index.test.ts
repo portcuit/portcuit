@@ -59,7 +59,7 @@ class StateTestPort extends Port {
   terminateFlow = (port: this) =>
     mapToProc(source(port.state.data).pipe(
       filter(isFinishStep('findTalk'))),
-      sink(port.terminated))
+      sink(port.complete))
 
   flow () {
     return merge(

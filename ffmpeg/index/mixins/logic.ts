@@ -34,7 +34,7 @@ const exitFlow: Flow = (port) =>
   merge(
     mapToProc(source(port.output), sink(port.terminate)),
 
-    latestMapProc(source(port.terminate), sink(port.terminated),
+    latestMapProc(source(port.terminate), sink(port.complete),
       [source(port.ffmpeg)],
       ([,ffmpeg]) =>
         null,

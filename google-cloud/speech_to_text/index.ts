@@ -12,7 +12,7 @@ export class GoogleCloudSpeechToTextPort extends Port {
   response = new Socket<[google.cloud.speech.v1p1beta1.ILongRunningRecognizeResponse, google.cloud.speech.v1p1beta1.ILongRunningRecognizeMetadata, google.longrunning.Operation]>();
 
   flow () {
-    return cycleFlow(this, 'init', 'terminated', {
+    return cycleFlow(this, 'init', 'complete', {
       clientFlow: (port) =>
         ofProc(sink(port.client), new SpeechClient),
 
@@ -37,7 +37,7 @@ export class GoogleCloudSpeechToTextPort extends Port {
             await operation.promise()),
 
       terminateFlow: (port) =>
-        mapToProc(source(port.terminate), sink(port.terminated))
+        mapToProc(source(port.terminate), sink(port.complete))
     })
   }
 }

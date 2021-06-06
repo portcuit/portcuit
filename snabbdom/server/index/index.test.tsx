@@ -21,7 +21,7 @@ class SnabbdomServerTestPort extends SnabbdomServerPort {
       mapToProc(source(port.html).pipe(
         filter((html) =>
           t.is(html, '<!DOCTYPE html><p>Hello World!</p>') === undefined)),
-        sink(port.terminated))
+        sink(port.complete))
     )
 }
 

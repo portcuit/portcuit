@@ -22,7 +22,7 @@ const patchFlow: Flow = (port, {container}) => {
 
 // it can subscribe with at least onetime invoking render sink
 const terminateFlow: Flow = (port: ISnabbdomClientLogicPort, {container}) =>
-  latestMapProc(source(port.terminate), sink(port.terminated),
+  latestMapProc(source(port.terminate), sink(port.complete),
     [source(port.vnode)], ([,vnode]) =>
       vnode!.elm!.parentNode!.replaceChild(container, vnode!.elm!));
 
@@ -32,5 +32,5 @@ export namespace ISnabbdomClientLogicPort {
     terminateFlow
   };
   export const flow = (port: ISnabbdomClientLogicPort) =>
-    cycleFlow(port, 'init', 'terminated', prototype)
+    cycleFlow(port, 'init', 'complete', prototype)
 }

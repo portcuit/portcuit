@@ -42,7 +42,7 @@ class SseTestHttpServerPort extends HttpServerPort {
       [source(port.es.es)], ([, es]) => es.close())
 
   terminateFlow: Flow = (port) =>
-    mapToProc(source(port.sse.terminated), sink(port.terminate))
+    mapToProc(source(port.sse.complete), sink(port.terminate))
 
   flow () {
     return merge(

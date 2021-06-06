@@ -54,9 +54,9 @@ export class WorkerPort extends LifecyclePort {
           running ?
             merge(
               ofProc(sink(port.stop)),
-              mapToProc(source(port.stopped), sink(port.terminated))
+              mapToProc(source(port.stopped), sink(port.complete))
             ) :
-            ofProc(sink(port.terminated))
+            ofProc(sink(port.complete))
         )
       )
     )

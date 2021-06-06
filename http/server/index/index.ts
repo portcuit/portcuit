@@ -50,8 +50,8 @@ export class HttpServerPort extends LifecyclePort {
       switchMap(([, running]) =>
         running ? merge(
           ofProc(sink(port.stop)),
-          mapToProc(source(port.stopped), sink(port.terminated))
-        ) : ofProc(sink(port.terminated))))
+          mapToProc(source(port.stopped), sink(port.complete))
+        ) : ofProc(sink(port.complete))))
 }
 
 

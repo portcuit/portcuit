@@ -29,7 +29,7 @@ export class LifecyclePort extends Port {
       mapToProc(source(port.stop), sink(port.running), false),
       mapToProc(source(port.stopped), sink(port.stopping), false),
       mapToProc(source(port.terminate), sink(port.terminating), true),
-      mapToProc(source(port.terminated), sink(port.terminating), false),
+      mapToProc(source(port.complete), sink(port.terminating), false),
       restartProc(source(port.restart), source(port.stopped), source(port.started),
         sink(port.stop), sink(port.restarting), sink(port.start), sink(port.restarted))
     )

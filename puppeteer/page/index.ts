@@ -48,5 +48,5 @@ export class PuppeteerPagePort extends Port {
       async ([, page]) => ({close: await page.close()}))
 
   completeFlow = (port: this) =>
-    mapToProc(source(port.event.close), sink(port.terminated))
+    mapToProc(source(port.event.close), sink(port.complete))
 }

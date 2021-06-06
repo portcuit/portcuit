@@ -44,7 +44,7 @@ export const pureKit = (port: IPiePort) =>
     mapToProc(source(port.puppeteer.ready), sink(port.puppeteer.start)),
 
     mapToProc(zip(source(port.electron.browser.event.closed), source(port.puppeteer.browser.terminate)),
-      sink(port.puppeteer.browser.terminated)),
+      sink(port.puppeteer.browser.complete)),
   )
 
 export const effectKit = (port: IPiePort) =>

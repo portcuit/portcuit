@@ -31,7 +31,7 @@ export class ElectronPort extends LifecyclePort {
       mapToProc(source(port.stop), sink(port.browser.close)),
       mapToProc(source(port.browser.event.closed), sink(port.stopped)),
       directProc(source(port.terminate), sink(port.app.terminate)),
-      mapToProc(source(port.app.event.quit), sink(port.terminated)),
+      mapToProc(source(port.app.event.quit), sink(port.complete)),
     )
 
   flow () {

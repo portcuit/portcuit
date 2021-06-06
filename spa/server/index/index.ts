@@ -19,7 +19,7 @@ export abstract class SpaServerPort<T extends SpaState> extends Port {
     ofProc(sink(port.rest.init), ctx)
 
   completeFlow = (port: this) =>
-    mapToProc(source(port.rest.terminated), sink(port.terminated))
+    mapToProc(source(port.rest.complete), sink(port.complete))
 
   flow () {
     return merge(

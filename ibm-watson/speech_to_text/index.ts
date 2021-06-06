@@ -18,7 +18,7 @@ export class IbmWatsonSpeechToTextPort extends Port {
   speechRecognitionResults = new Socket<SpeechRecognitionResults>();
 
   flow() {
-    return cycleFlow(this, 'init', 'terminated', {
+    return cycleFlow(this, 'init', 'complete', {
       speechToTextFlow: (port, params) =>
         mapProc(of(params), sink(port.speechToText),
           ({apikey, serviceUrl}) =>
@@ -40,7 +40,7 @@ export class IbmWatsonSpeechToTextPort extends Port {
               directProc(fromEvent<Error>(recognizeStream, 'error'), sink(port.err)),
 
               // TODO: ここでエラーになる時ある  [ 1006, 'Socket Error: write EPIPE' ]
-              directProc(fromEvent(recognizeStream, 'close').pipe(take(1)), sink(port.terminated))
+              directProc(fromEvent(recognizeStream, 'close').pipe(take(1)), sink(port.complete))
             )))
     })
   }

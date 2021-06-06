@@ -23,7 +23,7 @@ export class ElectronAppPort extends Port {
     )
 
   completeFlow = (port: this) =>
-    mapProc(source(port.terminate), sink(port.terminated), () =>
+    mapProc(source(port.terminate), sink(port.complete), () =>
       ({quit: app.quit()}))
 }
 
