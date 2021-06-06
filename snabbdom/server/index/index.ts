@@ -1,19 +1,22 @@
+import 'snabbdom-to-html'
+import init from 'snabbdom-to-html/init'
 import {VNode} from "snabbdom";
-import {
-  Port,
-  PrivateSourceSocket,
-  PrivateSinkSocket
-} from "@pkit/core";
-import {ISnabbdomServerLogicPort} from "./mixins/logic";
+import {Port, PortParams, Socket, mapProc, source, sink, ofProc} from "@pkit/core";
+import {jsxModule, classNamesModule} from './modules/'
 
 export class SnabbdomServerPort extends Port {
-  init = new PrivateSourceSocket<{
+  init = new Socket<{
     fragment: boolean
   }>();
-  render = new PrivateSourceSocket<VNode>();
-  html = new PrivateSinkSocket<string>();
+  render = new Socket<VNode>();
+  html = new Socket<string>();
 
-  flow () {
-    return ISnabbdomServerLogicPort.flow(this)
+  renderFlow = (port: this, params: PortParams<this>, fragment = params?.fragment || true) => {
+    const toHTML = init([jsxModule, classNamesModule]);
+    return mapProc(source(port.render), sink(port.html),
+      (vnode) => (fragment ? '<!DOCTYPE html>' : '') + toHTML(vnode))
   }
+
+  readyFlow = (port: this) =>
+    ofProc(sink(port.ready))
 }

@@ -21,8 +21,6 @@ class HttpServerTestPort extends HttpServerPort {
       })
     )
   }
-
-  log () { }
 }
 
 type IHttpServerTestPort = IPort<HttpServerTestPort>
@@ -41,7 +39,7 @@ for (const [name, testFlow] of Object.entries({
     mapToProc(source(port.restarted), sink(port.terminate))))
 })) {
   test.serial(name, async (t) => {
-    new HttpServerTestPort({testFlow}).run({http: {listen: [18080]}})
+    new HttpServerTestPort({testFlow, log: t.log}).run({http: {listen: [18080]}})
     t.pass()
   })
 }

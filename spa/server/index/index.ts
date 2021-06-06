@@ -1,11 +1,8 @@
 import {merge} from "rxjs";
-import {Port, Socket} from "@pkit/core";
+import {mapToProc, ofProc, Port, PortParams, sink, Socket, source} from "@pkit/core";
 import {StatePort} from '@pkit/state'
 import {HttpServerContext, HttpServerRestPort} from "@pkit/http/server";
 import {SpaState} from "@pkit/spa";
-import {ISpaServerRestPort, ISpaServerLogicPort} from "./mixins/";
-
-export * from './mixins/'
 
 export abstract class SpaServerPort<T extends SpaState> extends Port {
   init = new Socket<{
@@ -15,13 +12,20 @@ export abstract class SpaServerPort<T extends SpaState> extends Port {
   state: Omit<StatePort<T>, 'patchFlow'> = new StatePort<T>();
   rest = new HttpServerRestPort;
 
-  flow() {
-    const port = this;
+  initStateFlow = (port: this, {state}: PortParams<this>) =>
+    ofProc(sink(port.state.init), state)
+
+  initRestFlow = (port: this, {ctx}: PortParams<this>) =>
+    ofProc(sink(port.rest.init), ctx)
+
+  completeFlow = (port: this) =>
+    mapToProc(source(port.rest.terminated), sink(port.terminated))
+
+  flow () {
     return merge(
-      port.state.flow(),
-      port.rest.flow(),
-      ISpaServerLogicPort.flow(this),
-      ISpaServerRestPort.flow(this)
+      super.flow(),
+      this.state.flow(),
+      this.rest.flow()
     );
   }
 }
