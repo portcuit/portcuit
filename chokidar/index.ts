@@ -10,7 +10,8 @@ import {
   source,
   cycleFlow,
   ofProc,
-  fromEventProc
+  fromEventProc,
+  Container
 } from "@pkit/core";
 
 
@@ -19,8 +20,8 @@ export class ChokidarPort extends Port {
     watch: Parameters<typeof watch>
   }>();
   watcher = new Socket<FSWatcher>();
-  event = new class {
-    all = new Socket<[eventName: 'add'|'addDir'|'change'|'unlink'|'unlinkDir', path: string, stats?: Stats]>();
+  event = new class extends Container {
+    all = new Socket<[eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir', path: string, stats?: Stats]>();
     add = new Socket<[path: string, stats?: Stats]>();
     change = new Socket<[path: string, stats?: Stats]>();
     unlink = new Socket<[path: string]>();
@@ -39,9 +40,9 @@ export class ChokidarPort extends Port {
       readyFlow: (port) =>
         directProc(source(port.event.ready), sink(port.ready)),
 
-      eventFlow: (port) => 
-        merge(...Object.entries(port.event).map(([name, sock]) => 
-            fromEventProc(source(port.watcher), sink(sock), name, (...args) => args))),
+      eventFlow: (port) =>
+        merge(...Container.entries(port.event).map(([name, sock]) =>
+          fromEventProc(source(port.watcher), sink<any>(sock), name, (...args) => args))),
 
       terminateFlow: (port) =>
         latestMergeMapProc(source(port.terminate), sink(port.complete),

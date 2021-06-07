@@ -28,8 +28,8 @@ export class PuppeteerBrowserPort extends Port {
       ({close: await browser.close()}))
 
   eventFlow = (port: this) =>
-    merge(...Object.entries(port.event).map(([name, sock]) =>
-      fromEventProc(source(port.browser), sink(sock), name)))
+    merge(...Container.entries(port.event).map(([name, sock]) =>
+      fromEventProc(source(port.browser), sink<Target | void>(sock), name)))
 
   disconnectedFlow = (port: this) =>
     mapToProc(source(port.event.disconnected), sink(port.complete))

@@ -1,5 +1,5 @@
 import {merge} from 'rxjs'
-import {Container, fromEventProc, latestMapProc, latestMergeMapProc, LifecyclePort, mapToProc, ofProc, Port, PortParams, sink, Socket, source, tuple} from "@pkit/core";
+import {Container, fromEventProc, latestMapProc, latestMergeMapProc, LifecyclePort, mapToProc, ofProc, Port, PortMessage, PortParams, sink, Socket, source, tuple} from "@pkit/core";
 import {BrowserWindow} from "electron";
 import {BrowserWindowConstructorOptions} from "electron/main";
 
@@ -32,6 +32,6 @@ export class ElectronBrowserWindowPort extends LifecyclePort {
       ({close: win.close()}))
 
   eventFlow = (port: this) =>
-    merge(...Object.entries(port.event).map(([name, sock]) =>
-      fromEventProc(source<any>(port.win), sink(sock), name)))
+    merge(...Container.entries(port.event).map(([name, sock]) =>
+      fromEventProc(source<any>(port.win), sink<Event | void>(sock), name)))
 }

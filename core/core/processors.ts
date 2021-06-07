@@ -1,5 +1,6 @@
+import {toPairsIn} from 'ramda'
 import {Observable, merge} from 'rxjs'
-import {switchMap, takeUntil, take} from "rxjs/operators";
+import {switchMap, takeUntil} from "rxjs/operators";
 
 export class Socket<T> {
   source$!: Observable<T>
@@ -8,6 +9,14 @@ export class Socket<T> {
 
 export type Sink<T> = {sink (value: T): PortMessage<T>}['sink']
 export type PortMessage<T> = [string, T]
+
+
+export const source = <T> (sock: {source$: Observable<T>}) =>
+  sock.source$;
+
+export const sink = <T> (sock: {sink: Sink<T>}) =>
+  sock.sink;
+
 
 export interface PrivateSocket<T> extends Socket<T> {source$: never; sink: never;}
 export const PrivateSocket = {
@@ -62,12 +71,6 @@ export type IPort<T> = ForcePublicPort<Omit<T, 'flow'>>
 
 export const isSocket = (sock: unknown): sock is Socket<any> =>
   sock instanceof Socket
-
-export const source = <T> (sock: {source$: Observable<T>}) =>
-  sock.source$;
-
-export const sink = <T> (sock: {sink: Sink<T>}) =>
-  sock.sink;
 
 export const sourceSinkMapSocket = (port: PortObject): [SourceMap, SinkMap] => {
   const sourceMap: [string, Observable<any>][] = [];
@@ -188,8 +191,22 @@ export class PkitError extends Error {
   }
 }
 
-export class Container {
-  constructor (port = {}) {
+
+
+export class Container<T = {}> {
+  constructor (port: T = {} as T) {
     Object.assign(this, port)
+  }
+}
+
+type InferContainer<T> = T extends Container<infer I> ? I : never;
+type Entry<T> = [keyof T, T[keyof T]]
+export namespace Container {
+  export const entries = <T> (obj: T): Entry<T & InferContainer<T>>[] => {
+    const entries = [] as Entry<T & InferContainer<T>>[]
+    for (const key in obj) {
+      entries.push([key, obj[key]] as any)
+    }
+    return entries
   }
 }

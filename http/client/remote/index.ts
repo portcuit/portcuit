@@ -19,7 +19,7 @@ export class HttpClientRemotePort<T> extends Port {
     ofProc(sink(port.es), new EventSource(endpoint))
 
   eventFlow = (port: this) =>
-    merge(...Object.entries(port.event).map(([name, sock]) =>
+    merge(...Container.entries(port.event).map(([name, sock]) =>
       fromEventProc(source(port.es), sink(sock), name)))
 
   msgFlow = (port: this) =>

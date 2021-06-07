@@ -39,8 +39,8 @@ export class PuppeteerPagePort extends Port {
           toArray()))
 
   eventFlow = (port: this) =>
-    merge(...Object.entries(port.event).map(([name, sock]) =>
-      fromEventProc(source(port.page), sink(sock), name)))
+    merge(...Container.entries(port.event).map(([name, sock]) =>
+      fromEventProc(source(port.page), sink<void | HTTPResponse | HTTPRequest | Dialog>(sock), name)))
 
   // TODO: puppeteer-in-electron 使用時にヘッドありで開いた場合に page.close() で閉じずに実行結果が帰ってこない
   terminateFlow = (port: this) =>

@@ -8,17 +8,17 @@ type TrayEvent = [Event & {sender: Tray}, {x: number; y: number; width: number; 
 export class ElectronTrayPort extends Port {
   init = new Socket<{tray: ConstructorParameters<typeof Tray>}>();
   tray = new Socket<Tray>();
-  event = new Container ({
-    click: new Socket<TrayEvent>(),
-    rightClick: new Socket<TrayEvent>()
-  })
+  event = new class extends Container {
+    click = new Socket<TrayEvent>()
+    rightClick = new Socket<TrayEvent>()
+  }
   contextMenu = new ElectronContextMenuPort;
 
   trayInstanceFlow = (port: this, {tray}: PortParams<this>) =>
     ofProc(sink(port.tray), new Tray(...tray))
 
   eventFlow = (port: this) =>
-    merge(...Object.entries(port.event).map(([name, sock]) =>
+    merge(...Container.entries(port.event).map(([name, sock]) =>
       fromEventProc(source<any>(port.tray), sink(sock), name)))
 
   flow () {
