@@ -42,7 +42,7 @@ export class FfmpegPort extends Port {
         [source(port.ffmpeg)],
         ([, ffmpeg]) =>
           null
-        // it need to free memory but exit
+        // we should exit to free memory but　it will focefully terminate
         // ffmpeg.exit(),
       )
     )

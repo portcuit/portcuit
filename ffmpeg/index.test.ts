@@ -1,8 +1,8 @@
 import test from 'ava'
 import {readFile, writeFile} from 'fs/promises'
 import {config} from 'dotenv'
-import {merge, of, from} from "rxjs";
-import {Port, mergeMapProc, sink, Socket, source, PortParams, mapProc, mapToProc, latestMergeMapProc} from "@pkit/core";
+import {merge, from} from "rxjs";
+import {Port, sink, Socket, source, PortParams, mapProc, mapToProc, latestMergeMapProc} from "@pkit/core";
 import {FfmpegPort} from "./";
 
 config()
