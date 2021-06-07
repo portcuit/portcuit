@@ -133,21 +133,6 @@ export type DeepPartialPort<T> = {[P in keyof T]?: DeepPartialPort<T[P]>}
 export type InjectPort<T, U extends keyof T> = DeepPartialPort<Omit<T, U>> & Pick<T, U>;
 
 
-export const mergePrototypeKit = <T, U extends {[key: string]: (port: T) => Observable<any>}> (port: T, prototype: U): Observable<PortMessage<any>> => {
-  const mergedPort = port as T & U;
-  return merge(...(Object.keys(prototype).map((key) =>
-    mergedPort[key](port))))
-}
-
-export const mergeParamsPrototypeKit = <T extends {init: Socket<any>, complete: Socket<any>}, U extends {[key: string]: (port: T, params: PortParams<T>) => Observable<PortMessage<any>>}> (port: T, prototype: U): Observable<PortMessage<any>> => {
-  const mergedPort = port as T & U;
-  return source(port.init).pipe(
-    switchMap((params) =>
-      merge(...(Object.keys(prototype).map((key) =>
-        mergedPort[key](port, params)))).pipe(
-          takeUntil(source(port.complete)))))
-}
-
 export const replaceProperty = <T extends U, U extends {[key: string]: any}> (org: T, target: U) =>
   Object.fromEntries((Object.keys(target)).map((key) => [key, org[key]]))
 
