@@ -5,7 +5,7 @@ import {
   source,
   sink,
   Socket,
-} from '../index/'
+} from '../lib'
 import {
   latestMergeMapProc,
   latestMapProc,

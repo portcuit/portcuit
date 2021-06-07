@@ -1,6 +1,6 @@
 import {merge} from 'rxjs';
-import {Socket, IPort, IFlow, source, sink} from '../index/'
-import {Port} from "../port/";
+import {Socket, IPort, source, sink} from '../lib'
+import {Port, IFlow} from "../port/";
 import {mapToProc} from '../processors/'
 import {restartProc} from './lib'
 
@@ -33,10 +33,4 @@ export class LifecyclePort extends Port {
       restartProc(source(port.restart), source(port.stopped), source(port.started),
         sink(port.stop), sink(port.restarting), sink(port.start), sink(port.restarted))
     )
-
-  flow () {
-    return merge(
-      super.flow()
-    )
-  }
 }

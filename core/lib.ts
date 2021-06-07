@@ -1,5 +1,4 @@
-import {Observable, merge} from 'rxjs'
-import {switchMap, takeUntil} from "rxjs/operators";
+import {Observable} from 'rxjs'
 
 export class Socket<T> {
   source$!: Observable<T>
@@ -16,6 +15,24 @@ export const source = <T> (sock: {source$: Observable<T>}) =>
 export const sink = <T> (sock: {sink: Sink<T>}) =>
   sock.sink;
 
+
+
+export const isSocket = (sock: unknown): sock is Socket<any> =>
+  sock instanceof Socket
+
+
+export const tuple = <T extends any[]> (...args: T) =>
+  args;
+
+export class PkitError extends Error {
+  constructor (message?: string) {
+    super(message);
+    Object.setPrototypeOf(this, new.target.prototype);
+    this.name = new.target.name
+  }
+}
+
+// Deprecated from here
 
 export interface PrivateSocket<T> extends Socket<T> {source$: never; sink: never;}
 export const PrivateSocket = {
@@ -55,6 +72,7 @@ export type SocketData<T> = T extends PrivateSocket<infer I> ? I :
   T extends PrivateSourceSocket<infer I> ? I :
   T extends Socket<infer I> ? I : never;
 
+
 export type ForcePublicPort<T> =
   {
     [P in keyof T]:
@@ -67,9 +85,6 @@ export type ForcePublicPort<T> =
   }
 
 export type IPort<T> = ForcePublicPort<Omit<T, 'flow'>>
-
-export const isSocket = (sock: unknown): sock is Socket<any> =>
-  sock instanceof Socket
 
 export const sourceSinkMapSocket = (port: PortObject): [SourceMap, SinkMap] => {
   const sourceMap: [string, Observable<any>][] = [];
@@ -97,7 +112,6 @@ export type SourceMap = ReadonlyMap<string, Observable<any>>;
 
 export type SinkMap = ReadonlyMap<string, Sink<any>>;
 
-
 export const sourceSinkMap = <T> (port: PortSourceOrSink<T>): [SourceMap, SinkMap] => {
   const sourceMap: [string, Observable<any>][] = [];
   const sinkMap: [string, Sink<any>][] = [];
@@ -124,63 +138,3 @@ export type PortSourceOrSink<T> = {
 }
 
 export type MappedWrapObservable<T> = {[P in keyof T]: Observable<T[P]>}
-
-
-export type PortParams<T> = T extends {init: Socket<infer I>} ? I : never
-
-export type DeepPartialPort<T> = {[P in keyof T]?: DeepPartialPort<T[P]>}
-
-export type InjectPort<T, U extends keyof T> = DeepPartialPort<Omit<T, U>> & Pick<T, U>;
-
-
-export const replaceProperty = <T extends U, U extends {[key: string]: any}> (org: T, target: U) =>
-  Object.fromEntries((Object.keys(target)).map((key) => [key, org[key]]))
-
-export const cycleFlow = <
-  P extends {[A in T | U]: Socket<any>},
-  T extends string,
-  U extends string,
-  V extends {[label: string]: {(port: P, params: SocketData<P[T]>): Observable<PortMessage<any>>}}>
-  (port: P, start: T, stop: U, flows: V, override = true, target: V = port as any) =>
-  source(port[start]).pipe(
-    switchMap((params) => merge(
-      ...Object.entries(flows).map(([name, fn]) =>
-        (override && target[name] ? target[name] : fn)(port, params))
-    ).pipe(takeUntil(source(port[stop])))))
-
-export type IFlow<T extends {init: Socket<any>}> = {
-  (port: T, params: PortParams<T>): Observable<PortMessage<any>>
-}
-
-export type PortPrototype<T> = {[key: string]: (port: T) => Observable<PortMessage<any>>}
-
-export const tuple = <T extends any[]> (...args: T) =>
-  args;
-
-export class PkitError extends Error {
-  constructor (message?: string) {
-    super(message);
-    Object.setPrototypeOf(this, new.target.prototype);
-    this.name = new.target.name
-  }
-}
-
-
-
-export class Container<T = {}> {
-  constructor (port: T = {} as T) {
-    Object.assign(this, port)
-  }
-}
-
-type InferContainer<T> = T extends Container<infer I> ? I : never;
-type Entry<T> = [keyof T, T[keyof T]]
-export namespace Container {
-  export const entries = <T> (obj: T): Entry<T & InferContainer<T>>[] => {
-    const entries = [] as Entry<T & InferContainer<T>>[]
-    for (const key in obj) {
-      entries.push([key, obj[key]] as any)
-    }
-    return entries
-  }
-}

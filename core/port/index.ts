@@ -1,14 +1,11 @@
 import 'setimmediate'
 import {merge, of, Subject} from "rxjs";
 import {groupBy, tap} from "rxjs/operators";
-import {
-  PortMessage,
-  Socket,
-  SocketData,
-  DeepPartialPort,
-  cycleFlow,
-} from "../index/";
-import {inject} from "./lib";
+import {PortMessage, Socket, SocketData} from "../lib";
+import {DeepPartialPort, cycleFlow, inject} from './lib'
+
+export * from './lib'
+export * from './end_point'
 
 export abstract class Port {
   init = new Socket<any>();
@@ -66,7 +63,7 @@ export abstract class Port {
       tap(([type]) =>
         type === `${namespace}complete` &&
         setImmediate(() =>
-          subject$.complete())));
+          subject$.complete())))
   }
 
   flow () {
