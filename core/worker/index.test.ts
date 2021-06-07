@@ -3,7 +3,7 @@ import assert from 'assert'
 import {Worker, isMainThread} from 'worker_threads'
 import {merge} from "rxjs";
 import {filter, switchMap, toArray} from "rxjs/operators";
-import {PortMessage, sink, source, mapToProc, PortLogFilters, PortParams, Socket} from "@pkit/core";
+import {PortMessage, sink, source, mapToProc, PortParams, Socket} from "@pkit/core";
 import {WorkerPort} from "./index";
 
 class WorkerTestPort extends WorkerPort {
@@ -27,12 +27,6 @@ class WorkerTestPort extends WorkerPort {
       )
     )
   }
-
-  excludes(): PortLogFilters {
-    return [([type]) => type === 'worker'];
-  }
-
-  includes() { return []; }
 }
 
 type Assert = (logs: Array<PortMessage<any>>) => void;

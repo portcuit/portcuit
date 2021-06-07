@@ -1,4 +1,3 @@
-import {toPairsIn} from 'ramda'
 import {Observable, merge} from 'rxjs'
 import {switchMap, takeUntil} from "rxjs/operators";
 
@@ -133,16 +132,6 @@ export type DeepPartialPort<T> = {[P in keyof T]?: DeepPartialPort<T[P]>}
 
 export type InjectPort<T, U extends keyof T> = DeepPartialPort<Omit<T, U>> & Pick<T, U>;
 
-type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends Array<infer U>
-  ? Array<DeepPartial<U>>
-  : T[P] extends ReadonlyArray<infer U>
-  ? ReadonlyArray<DeepPartial<U>>
-  : T[P] extends Object
-  ? DeepPartial<T[P]> : T[P]
-};
-
-export type PortLogFilters = Array<(msg: PortMessage<any>) => boolean>
 
 export const mergePrototypeKit = <T, U extends {[key: string]: (port: T) => Observable<any>}> (port: T, prototype: U): Observable<PortMessage<any>> => {
   const mergedPort = port as T & U;

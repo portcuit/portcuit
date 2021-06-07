@@ -7,7 +7,7 @@ import {
   SocketData,
   DeepPartialPort,
   cycleFlow,
-} from "../core/";
+} from "../index/";
 import {inject} from "./lib";
 
 export abstract class Port {

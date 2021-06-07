@@ -1,6 +1,6 @@
 import {Observable, GroupedObservable, Subject} from "rxjs";
 import {map, switchMap, filter} from "rxjs/operators";
-import {PortMessage, PortObject, isSocket} from "../core/";
+import {PortMessage, PortObject, isSocket} from "../index/";
 
 export const inject = <T extends PortObject> (port: T, group$: Observable<GroupedObservable<string, any>>, subject$: Subject<PortMessage<any>>, namespace: string) => {
   const walk = (port: PortObject, ns: string[] = []) => {

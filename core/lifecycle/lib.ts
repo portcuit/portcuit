@@ -1,6 +1,6 @@
 import {Observable} from 'rxjs'
 import {mergeMap, take, map, startWith} from 'rxjs/operators'
-import {Sink} from '../core/'
+import {Sink} from '../index/'
 
 // It needs to have being started for restarting.
 export const restartProc = (

@@ -1,6 +1,6 @@
-import {Socket} from './processors'
+import {Socket} from './lib'
 
-export * from './processors'
+export * from './lib'
 
 export class EndpointPort<T, U, V = Error> {
   req = new Socket<T>();

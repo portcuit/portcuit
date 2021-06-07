@@ -1,4 +1,4 @@
-export * from './core/'
+export * from './index/'
 export * from './processors/'
 export * from './port/'
 export * from './lifecycle/'
