@@ -2,8 +2,8 @@ import {readFile} from 'fs/promises'
 import minimatch from "minimatch";
 import handler from "serve-handler";
 import {Observable} from "rxjs";
-import {HttpServerContext} from "../../http/server/";
-import {mergeMapProc, Sink} from "../../core/";
+import {HttpServerContext} from "@pkit/http/server";
+import {mergeMapProc, Sink} from "@pkit/core";
 
 export const serveHandlerProc = (source$: Observable<HttpServerContext>, sink: Sink<any>, config: NonNullable<Parameters<typeof handler>[2]>) =>
   mergeMapProc(source$, sink,
@@ -18,27 +18,28 @@ export const serveHandlerProc = (source$: Observable<HttpServerContext>, sink: S
 export const webModuleProc = (source$: Observable<HttpServerContext>, sink: Sink<any>) =>
   mergeMapProc(source$, sink,
     async ([req, res]) => {
-      const data = await readFile(`${process.cwd()}${req.url}`, {encoding: 'utf-8'});
+      const url = new URL(`${req.headers.origin}${req.url}`)
+      const data = await readFile(`${process.cwd()}${url.pathname}`, {encoding: 'utf-8'});
       res.writeHead(200, {
         'Content-Type': 'application/javascript; charset=utf-8'
       });
-      res.end(transform(data));
+      res.end(transform(data, url.search));
     })
 
-const transform = (data: string) => {
+const transform = (data: string, search: string) => {
   const tokens = data.split("\n") as string[];
   const heads = tokens.slice(0, 50).map((line) => {
     const match = line.match(/(^.*from\s*|^.*import\s*)("[^"]+"|'[^']+')(;?\s*)/);
     if (match) {
-      const [,left,piece,right] = match;
+      const [, left, piece, right] = match;
       const target = piece.replace(/["']/g, '');
 
       let newTarget = target;
       if (['.', '/'].some((ptn) => target.startsWith(ptn))) {
         if (target.endsWith('/')) {
-          newTarget = `${target}index.js`;
+          newTarget = `${target}index.js${search}`;
         } else if (!target.endsWith('.js')) {
-          newTarget = `${target}.js`;
+          newTarget = `${target}.js${search}`;
         }
       } else if (['@pkit/**', '@app/**'].some((ptn) => minimatch(target, ptn))) {
         newTarget = `/src/${target}/index.js`

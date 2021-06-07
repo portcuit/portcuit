@@ -1,6 +1,6 @@
 import {promisify} from "util";
 import {fromEvent, race, from} from "rxjs";
-import {Port, sink, Socket, source, directProc, mergeMapProc, PortParams} from "@pkit/core";
+import {Port, sink, Socket, source, directProc, mergeMapProc, PortParams, DeepPartialPort} from "@pkit/core";
 import {HttpServerContext} from "../";
 
 export class HttpServerSsePort extends Port {
@@ -13,6 +13,10 @@ export class HttpServerSsePort extends Port {
     end: new Socket<void>()
   }
   data = new Socket<string>()
+
+  constructor (port: DeepPartialPort<HttpServerSsePort> = {}) {
+    super(port)
+  }
 
   connectFlow = (port: this, {ctx: [, res], retry = 3000}: PortParams<this>) => {
     res.writeHead(200, {
