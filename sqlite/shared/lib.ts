@@ -1,4 +1,3 @@
-
 export type SqliteQueryUnit<T, U> = {
   prepare: (arg: T) => Prepare<'query'>;
   asObject: AsObject<U>;
