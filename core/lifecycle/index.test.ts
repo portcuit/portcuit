@@ -1,14 +1,14 @@
 import test from 'ava'
 import assert from 'assert'
-import {merge} from "rxjs";
+import {merge, lastValueFrom} from "rxjs";
 import {delay, filter, map, startWith, take, switchMap, toArray} from "rxjs/operators";
 import {sink, source, PortMessage, mapToProc, Socket} from "@pkit/core";
-import {LifecyclePort} from './index';
+import {LifecyclePort} from './';
 
 export class LifecycleTestPort extends LifecyclePort {
   init = new Socket<void>();
 
-  flow() {
+  flow () {
     const port = this;
     return merge(
       super.flow(),
@@ -35,7 +35,7 @@ export class LifecycleTestPort extends LifecyclePort {
     )
   }
 
-  includes () { return []; }
+  includes () {return [];}
 }
 
 type FindLogs = (log: PortMessage<any>) => boolean
@@ -71,6 +71,6 @@ const restartAssert = (res: PortMessage<any>[]) => {
 }
 
 test('it should restart', async () => {
-  let res = await new LifecycleTestPort().run().pipe(toArray()).toPromise();
+  let res = await lastValueFrom(new LifecycleTestPort().run().pipe(toArray()));
   restartAssert(res);
 })

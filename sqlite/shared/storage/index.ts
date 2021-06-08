@@ -1,20 +1,14 @@
-import {merge, Observable} from "rxjs";
-import {EndpointPort, Port, mapToProc, PortMessage, sink, Socket, source} from "@pkit/core";
+import {Observable} from "rxjs";
+import {EndpointPort, Port, PortMessage, sink, Socket, ofProc} from "@pkit/core";
 
 export abstract class SqliteStoragePort extends Port {
   init = new Socket<{sqlite: string, saveOnCommand?: boolean}>();
-  load = new EndpointPort<void, Uint8Array>();
-  save = new EndpointPort<Uint8Array, void>();
+  load = new EndpointPort<void, Uint8Array>()
+  save = new EndpointPort<Uint8Array, void>()
 
-  abstract loadKit (port: Pick<this, 'load' | 'init'>): Observable<PortMessage<Uint8Array>>;
-  abstract saveKit (port: Pick<this, 'save' | 'init'>): Observable<PortMessage<void>>;
+  abstract loadFlow (port: this): Observable<PortMessage<Uint8Array>>
+  abstract saveFlow (port: this): Observable<PortMessage<void>>
 
-  flow() {
-    return merge(
-      mapToProc(source(this.init), sink(this.ready)),
-      this.loadKit(this),
-      this.saveKit(this)
-    );
-  }
-
+  readyFlow = (port: this) =>
+    ofProc(sink(port.ready))
 }

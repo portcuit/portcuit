@@ -1,5 +1,5 @@
 import initSqlJs from 'sql.js'
-import {merge, Observable, race, from} from "rxjs";
+import {merge, Observable, race, from, lastValueFrom} from "rxjs";
 import {delayWhen, filter, map, mapTo, switchMap, take} from "rxjs/operators";
 import {
   DeepPartialPort,
@@ -27,25 +27,25 @@ export class SqlitePort extends Port {
   async query <T, U extends {[key: string]: any}>({prepare, asObject, jsonKeys}: SqliteQueryUnit<T, U>, arg: T) {
     const client = new SqliteClientPort({log: this.log});
 
-    return await ofProc(sink(this.session), ({port: client, prepare: prepare(arg)})).pipe(
+    return await lastValueFrom(ofProc(sink(this.session), ({port: client, prepare: prepare(arg)})).pipe(
       delayWhen(() =>
         from(new Promise((resolve) => client.injectedHook = resolve))),
       switchMap(() =>
         source(client.agent.query.res).pipe(
           map((result) =>
             asObject(result, jsonKeys)))),
-      take(1)).toPromise();
+      take(1)))
   }
 
   async command <T>({prepare}: SqliteCommandUnit<T>, arg: T) {
     const client = new SqliteClientPort({log: this.log});
-    return await ofProc(sink(this.session), ({port: client, prepare: prepare(arg)})).pipe(
+    return await lastValueFrom(ofProc(sink(this.session), ({port: client, prepare: prepare(arg)})).pipe(
       delayWhen(() =>
         from(new Promise((resolve) => client.injectedHook = resolve))),
       switchMap(() =>
         source(client.agent.command.res).pipe(
           mapTo(undefined))),
-      take(1)).toPromise();
+      take(1)))
   }
 
   agentKit (port: this) {

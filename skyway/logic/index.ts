@@ -1,4 +1,4 @@
-import Peer from "skyway-js";
+import Peer, {SfuRoom} from "skyway-js";
 import {merge, of} from "rxjs";
 import {
   IFlow,
@@ -27,7 +27,7 @@ export const peerEventFlow: Flow = (port) =>
 export const roomFlow: Flow = (port, {room: {roomName, roomOptions = {}}}) =>
   latestMergeMapProc(source(port.start), sink(port.room),
     [source(port.peer)], ([,peer]) =>
-      Promise.resolve(peer.joinRoom(roomName, roomOptions)),
+      Promise.resolve(peer.joinRoom(roomName, roomOptions)) as Promise<SfuRoom>,
     sink(port.err))
 
 export const roomEventFlow: Flow = (port) =>

@@ -1,11 +1,10 @@
 import {merge} from 'rxjs';
-import {Socket, IPort, source, sink} from '../lib'
+import {Socket, source, sink} from '../lib'
 import {Port, IFlow} from "../port/";
 import {mapToProc} from '../processors/'
 import {restartProc} from './lib'
 
-type ILifecyclePort = IPort<LifecyclePort>
-type Flow = IFlow<ILifecyclePort>
+type Flow = IFlow<LifecyclePort>
 
 export class LifecyclePort extends Port {
   start = new Socket<any>();

@@ -1,7 +1,7 @@
 import test from 'ava'
 import assert from 'assert'
 import {Worker, isMainThread} from 'worker_threads'
-import {merge} from "rxjs";
+import {merge, lastValueFrom} from "rxjs";
 import {filter, switchMap, toArray} from "rxjs/operators";
 import {PortMessage, sink, source, mapToProc, PortParams, Socket} from "@pkit/core";
 import {WorkerPort} from "./index";
@@ -50,11 +50,11 @@ const itShouldTerminatedWithRunning: Assert = (logs) => {
 }
 
 const exec = ({run}: {run: boolean}) =>
-  new WorkerTestPort().run({
+  lastValueFrom(new WorkerTestPort().run({
     run,
     ctor: Worker as any,
     args: [`${__dirname}/index.test.js`]
-  }).pipe(toArray()).toPromise();
+  }).pipe(toArray()));
 
 const testX = async (label: string, fn: () => Promise<any>) =>
   await fn()

@@ -5,9 +5,9 @@ import {Sink, PortMessage, SinkMap, SourceMap} from '@pkit/core'
 
 export const receiveProc = (worker$: Observable<Worker | NodeWorker>, sinkMap: SinkMap) =>
   worker$.pipe(
-    switchMap((worker) =>
-      fromEvent<PortMessage<any>>(worker, 'message').pipe(
-        map((ev) =>
+    switchMap((worker: any) =>
+      fromEvent(worker, 'message').pipe(
+        map((ev: any) =>
           'data' in ev ? ev['data'] : ev),
         filter(([path]) =>
           sinkMap.has(path)),

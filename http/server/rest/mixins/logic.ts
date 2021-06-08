@@ -1,12 +1,11 @@
 import {promisify} from 'util'
 import {fromEvent, race} from 'rxjs'
 import {takeUntil, reduce, map, filter} from 'rxjs/operators'
-import {mapToProc, directProc, IFlow, IPort, mergeMapProc, sink, source, mapProc} from "@pkit/core";
+import {mapToProc, directProc, IFlow, mergeMapProc, sink, source, mapProc} from "@pkit/core";
 import {HttpServerRestPort} from "../";
 import {makeHtmlResponse, makeJsonResponse} from './lib';
 
-type IHttpServerRestLogicPort = IPort<HttpServerRestPort>
-type Flow = IFlow<IHttpServerRestLogicPort>
+type Flow = IFlow<HttpServerRestPort>
 
 export const requestBodyFlow: Flow = (port, [req]) =>
   directProc(fromEvent<Buffer>(req, 'data').pipe(
