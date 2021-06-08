@@ -1,9 +1,9 @@
 import initSqlJs from 'sql.js'
 import {merge} from "rxjs";
 import {DeepPartialPort, Port, PortParams, Socket} from "@pkit/core";
-import {SqliteStoragePort} from "../storage/";
 import {Prepare, SqlJsDatabase} from '../lib';
-import {SqliteClientPort} from '../client/index';
+import {SqliteStoragePort} from "../storage/";
+import {SqliteClientPort} from '../client/';
 import * as mixin from './mixin'
 
 export class SqlitePort extends Port {
