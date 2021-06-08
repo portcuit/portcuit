@@ -17,27 +17,27 @@ type Database = SqlJsDatabase<typeof initSqlJs>
 
 export class SqlitePort extends Port {
   init = new Socket<{
-    config?: { locateFile (file: string): string };
+    config?: {locateFile (file: string): string};
   } & PortParams<SqliteStoragePort>>();
   private db = new Socket<Database>();
   storage: SqliteStoragePort;
   session = new Socket<{port: SqliteClientPort, prepare: Prepare}>();
   save = new Socket<void>();
 
-  async query <T, U extends {[key: string]: any}>({prepare, asObject, jsonKeys}: SqliteQueryUnit<T, U>, arg: T) {
+  async query<T, U extends {[key: string]: any}> ({prepare, asObject, jsonKeys}: SqliteQueryUnit<T, U>, arg: T) {
     const client = new SqliteClientPort({log: this.log});
-
-    return await lastValueFrom(ofProc(sink(this.session), ({port: client, prepare: prepare(arg)})).pipe(
+    const stream$ = ofProc(sink(this.session), ({port: client, prepare: prepare(arg)})).pipe(
       delayWhen(() =>
         from(new Promise((resolve) => client.injectedHook = resolve))),
       switchMap(() =>
         source(client.agent.query.res).pipe(
           map((result) =>
             asObject(result, jsonKeys)))),
-      take(1)))
+      take(1))
+    return await lastValueFrom(stream$)
   }
 
-  async command <T>({prepare}: SqliteCommandUnit<T>, arg: T) {
+  async command<T> ({prepare}: SqliteCommandUnit<T>, arg: T) {
     const client = new SqliteClientPort({log: this.log});
     return await lastValueFrom(ofProc(sink(this.session), ({port: client, prepare: prepare(arg)})).pipe(
       delayWhen(() =>
@@ -62,12 +62,12 @@ export class SqlitePort extends Port {
       })
   }
 
-  constructor(port: Omit<DeepPartialPort<SqlitePort>, 'storage'> & {storage: SqliteStoragePort}) {
+  constructor (port: Omit<DeepPartialPort<SqlitePort>, 'storage'> & {storage: SqliteStoragePort}) {
     super(port);
     this.storage = port.storage;
   }
 
-  flow() {
+  flow () {
     const port = this;
 
     return merge(
@@ -80,13 +80,13 @@ export class SqlitePort extends Port {
 
       latestMergeMapProc(source(port.storage.load.res), sink(port.db),
         [source(port.init)], async ([buf, {config = {}}]) =>
-          new (await initSqlJs(config)).Database(buf)) as Observable<PortMessage<any>>,
+        new (await initSqlJs(config)).Database(buf)) as Observable<PortMessage<any>>,
 
       mapToProc(source(port.db), sink(port.ready)),
 
       latestMapProc(source(port.save), sink(port.storage.save.req),
-        [source(port.db)], ([,db]) =>
-          db.export()),
+        [source(port.db)], ([, db]) =>
+        db.export()),
 
       port.agentKit(port)
     )
@@ -102,7 +102,7 @@ class SqliteAgentPort extends ISqliteAgentPort {
   init = new Socket<{db: Database, saveOnCommand?: boolean}>();
   storage: SqlitePort['storage']
 
-  constructor(port : DeepPartialPort<Omit<SqliteAgentPort, 'storage'>> & Pick<SqliteAgentPort, 'storage'>) {
+  constructor (port: DeepPartialPort<Omit<SqliteAgentPort, 'storage'>> & Pick<SqliteAgentPort, 'storage'>) {
     super(port);
     this.storage = port.storage;
   }
@@ -111,7 +111,7 @@ class SqliteAgentPort extends ISqliteAgentPort {
     return '/sqlite/agent/'
   }
 
-  flow() {
+  flow () {
     const port = this;
     return merge(
       source(port.init).pipe(
@@ -142,11 +142,11 @@ export class SqliteClientPort extends Port {
   init = new Socket<Prepare>()
   agent!: ISqliteAgentPort;
 
-  namespace() {
+  namespace () {
     return '/sqlite/client/'
   }
 
-  flow() {
+  flow () {
     return merge(
       source(this.init).pipe(
         switchMap((params) =>
@@ -176,20 +176,20 @@ type AsObject<T extends {[key: string]: any}> = {
   (data: Array<{columns: string[], values: any[][]}>, jsonKeys?: ReadonlyArray<keyof T>): Array<T>
 }
 
-export function asObject <T extends {[key: string]: any}>(data: Array<{columns: string[], values: any[][]}>, jsonKeys: ReadonlyArray<keyof T> = []) {
-  if (!(data?.length >= 1)) { return []; }
+export function asObject<T extends {[key: string]: any}> (data: Array<{columns: string[], values: any[][]}>, jsonKeys: ReadonlyArray<keyof T> = []) {
+  if (!(data?.length >= 1)) {return [];}
   const [{columns, values}] = data;
   return values.map((fields) =>
     fields.reduce((memo, curr, index) =>
-      ({
-        ...memo,
-        [columns[index]]: jsonKeys.includes(columns[index]) ? JSON.parse(curr) : curr
-      }), {})) as T[];
+    ({
+      ...memo,
+      [columns[index]]: jsonKeys.includes(columns[index]) ? JSON.parse(curr) : curr
+    }), {})) as T[];
 }
 
 type SqlJsDatabase<T extends {
   (config?: any): Promise<{
-    Database: new(...args: any[]) => any
+    Database: new (...args: any[]) => any
   }>;
   readonly default: any;
 }> = InstanceType<InferDatabase<T>['Database']>
