@@ -1,4 +1,3 @@
-import {merge} from 'rxjs'
 import {take} from 'rxjs/operators'
 import {mapToProc, ofProc, Port, PortParams, sink, Socket, source} from "@pkit/core";
 import {ISqliteAgentPort} from "../agent/";
@@ -12,18 +11,9 @@ export class SqliteClientPort extends Port {
     return '/sqlite/client/'
   }
 
-  clientFlow = (port: this, params: PortParams<this>) =>
-    merge(
-      ofProc(sink(port.agent[params.type].req), params),
-      mapToProc(source(port.agent.complete).pipe(take(1)), sink(port.complete))
-    )
+  startAgentFlow = (port: this, params: PortParams<this>) =>
+    ofProc(sink(port.agent[params.type].req), params)
 
-  // flow () {
-  //   return merge(
-  //     source(this.init).pipe(
-  //       switchMap((params) =>
-  //         ofProc(sink(this.agent[params.type].req), params))),
-  //     mapToProc(source(this.agent.complete).pipe(take(1)), sink(this.complete)),
-  //   );
-  // }
+  completeFlow = (port: this) =>
+    mapToProc(source(port.agent.complete).pipe(take(1)), sink(port.complete))
 }

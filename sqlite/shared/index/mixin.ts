@@ -1,11 +1,11 @@
 import initSqlJs from 'sql.js'
-import {lastValueFrom, from, merge, Observable} from 'rxjs'
+import {lastValueFrom, from, merge} from 'rxjs'
 import {delayWhen, switchMap, map, take, mapTo} from 'rxjs/operators'
-import {IFlow, latestMapProc, latestMergeMapProc, mapProc, mapToProc, mergeMapProc, ofProc, PortMessage, PortParams, sink, source} from "@pkit/core";
-import {SqliteClientPort} from "../client/index";
+import {IFlow, latestMapProc, latestMergeMapProc, mapToProc, mergeMapProc, ofProc, sink, source} from "@pkit/core";
 import {SqliteCommandUnit, SqliteQueryUnit} from "../lib";
-import {SqlitePort} from "./index";
-import {SqliteAgentPort} from '../agent/index';
+import {SqliteAgentPort} from '../agent/';
+import {SqliteClientPort} from "../client/";
+import {SqlitePort} from "./";
 
 type Flow = IFlow<SqlitePort>
 
@@ -24,7 +24,6 @@ export async function query<T, U extends {[key: string]: any}> (this: SqlitePort
 
 export async function command<T> (this: SqlitePort, {prepare}: SqliteCommandUnit<T>, arg: T) {
   const client = new SqliteClientPort({log: this.log});
-
   const stream$ = ofProc(sink(this.session), ({port: client, prepare: prepare(arg)})).pipe(
     delayWhen(() =>
       from(new Promise((resolve) => client.injectedHook = resolve))),
