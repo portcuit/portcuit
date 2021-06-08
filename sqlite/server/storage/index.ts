@@ -1,19 +1,15 @@
 import {readFile, writeFile} from "fs/promises";
-import {
-  latestMergeMapProc,
-  sink,
-  source
-} from "@pkit/core";
+import {mergeMapProc, PortParams, sink, source} from "@pkit/core";
 import {SqliteStoragePort} from "../../";
 
 export class SqliteServerStoragePort extends SqliteStoragePort {
-  loadFlow = (port: this) =>
-    latestMergeMapProc(source(port.load.req), sink(port.load.res),
-      [source(port.init)], async ([, {sqlite}]) =>
-      await readFile(sqlite))
+  loadFlow = (port: this, {sqlite}: PortParams<this>) =>
+    mergeMapProc(source(port.load.req), sink(port.load.res),
+      async () =>
+        await (readFile(sqlite) as Promise<Uint8Array>))
 
-  saveFlow = (port: this) =>
-    latestMergeMapProc(source(port.save.req), sink(port.save.res),
-      [source(port.init)], async ([buffer, {sqlite}]) =>
-      await writeFile(sqlite, buffer))
+  saveFlow = (port: this, {sqlite}: PortParams<this>) =>
+    mergeMapProc(source(port.save.req), sink(port.save.res),
+      async (buffer) =>
+        await writeFile(sqlite, buffer))
 }
