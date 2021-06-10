@@ -1,9 +1,10 @@
 import test from 'ava'
 import {merge} from "rxjs";
 import {filter, toArray} from "rxjs/operators";
-import {sink, source, Port, mapToProc, ofProc, cycleFlow} from "@pkit/core";
+import {sink, source, Port, mapToProc, ofProc} from "@pkit/core";
 import {StatePort, singlePatch} from '../index/'
-import {StepState, finishStep, isFinishStep} from "./state";
+import {StepState} from "./state";
+import {finishStep, isFinishStep} from './lib'
 
 type StateTestState = {
   talkId?: string;
