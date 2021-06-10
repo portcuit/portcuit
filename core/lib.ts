@@ -138,3 +138,14 @@ export type PortSourceOrSink<T> = {
 }
 
 export type MappedWrapObservable<T> = {[P in keyof T]: Observable<T[P]>}
+
+type AtLeastOneArray<T> = [T, ...T[]]
+type AtLeastTwoArray<T> = [T, T, ...T[]]
+type AtLeastThreeArray<T> = [T, T, T, ...T[]]
+
+export const firstArgsFirstElm = <T> ([value]: AtLeastOneArray<T>) =>
+  value
+
+export const isTruthy = <T>(arg: T, ...args: any[]): boolean =>
+  !!arg
+
