@@ -8,6 +8,12 @@ export const finishStep = <T extends string> (p: T) => [
   {step: {[p]: {finish: false}}}
 ] as {step: {[P in T]: {finish: boolean}}}[]
 
+export const completeStep = <T extends string> (p: T) => [
+  {step: {[p]: {finish: true, doing: false, done: true}}},
+  {step: {[p]: {finish: false}}}
+] as {step: {[P in T]: {finish: boolean}}}[]
+
+
 const createIsActionStep = (action: string) =>
   <T extends string> (p: T) =>
     <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
