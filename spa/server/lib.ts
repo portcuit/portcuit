@@ -1,9 +1,9 @@
 import {readFile} from 'fs/promises'
 import minimatch from "minimatch";
-import handler from "serve-handler";
-import {Observable} from "rxjs";
-import {HttpServerContext} from "@pkit/http/server";
-import {mergeMapProc, Sink} from "@pkit/core";
+import handler from "serve-handler"
+import {Observable} from "rxjs"
+import {HttpServerContext} from "@pkit/http/server"
+import {mergeMapProc, Sink} from "@pkit/core"
 
 export const serveHandlerProc = (source$: Observable<HttpServerContext>, sink: Sink<any>, config: NonNullable<Parameters<typeof handler>[2]>) =>
   mergeMapProc(source$, sink,
