@@ -11,7 +11,7 @@ export class StatePort<T extends {}> extends Port {
   update = new Socket<UpdateBatch<T>>();
   data = new Socket<StateData<T>>();
 
-  patchFlow = (port: this, initial: T) =>
+  patchFlow = (port: StatePort<T>, initial: T) =>
     directProc(source(port.update).pipe(
       map((batch) => {
         const patches = []
