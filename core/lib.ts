@@ -159,5 +159,8 @@ export const firstElm = <T> ([value]: AtLeastOneArray<T>) =>
 export const secondElm = <T> (data: AtLeastTwoArray<T>) =>
   data[1]
 
+export const firstElmsFirstElm = <T> ([[value]]: AtLeastOneArray<AtLeastOneArray<T>>) =>
+  value
+
 export const firstElmsSecondElm = <T> ([[, value]]: AtLeastOneArray<AtLeastTwoArray<T>>) =>
   value
