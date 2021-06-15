@@ -26,4 +26,4 @@ const createIsActionStep = (action: string) =>
 export const isStartStep = createIsActionStep('start')
 export const isFinishStep = createIsActionStep('finish')
 export const isDoingStep = createIsActionStep('doing')
-export const isDoneStep = createIsActionStep('doing')
+export const isDoneStep = createIsActionStep('done')
