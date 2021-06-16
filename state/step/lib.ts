@@ -6,7 +6,7 @@ export const startStep = <T extends string> (p: T, data?: any) => [
 export const finishStep = <T extends string> (p: T) => [
   {step: {[p]: {finish: true, doing: false}}},
   {step: {[p]: {finish: false}}}
-] as {step: {[P in T]: {finish: boolean}}}[]
+] as [{step: {[P in T]: {finish: boolean, doing: boolean}}}, {step: {[P in T]: {finish: boolean}}}]
 
 export const completeStep = <T extends string> (p: T) => [
   {step: {[p]: {finish: true, doing: false, done: true}}},

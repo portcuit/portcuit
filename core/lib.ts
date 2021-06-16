@@ -150,11 +150,8 @@ export const firstArgsFirstElm = <T> ([value]: AtLeastOneArray<T>) =>
 export const isTruthy = <T> (arg: T, ...args: any[]): boolean =>
   !!arg
 
-
-
 export const firstElm = <T> ([value]: AtLeastOneArray<T>) =>
   value
-
 
 export const secondElm = <T> (data: AtLeastTwoArray<T>) =>
   data[1]

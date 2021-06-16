@@ -24,19 +24,33 @@ export const updateBatchFromFlowEvent = (event: Event, dataString: string) => {
   ]
 }
 
+export const fromDomProc = <
+  T extends {target: {dataset: {bind: string}}},
+  U, V extends U
+> (
+  source$: Observable<T>, sink: Sink<U>, fn: (ev: T, batch: V) => V) => {
+
+  return source$.pipe(
+    map((ev, _, {target: {dataset: {bind}}} = ev) =>
+      fn(ev, JSON.parse(bind))),
+    map((data) => sink(data))
+  )
+}
+
+
 export const dataBindProc = <
   T extends {target: {dataset: {bind: string}}},
   U extends UpdateBatch<any>,
   V extends InferUpdateBatch<U>,
-  W extends U>(
-  source$: Observable<T>,
-  sink: Sink<U>,
-  markObj: PartialState<V>,
-  fn: (ev: T, data: V) => W) => {
+  W extends U> (
+    source$: Observable<T>,
+    sink: Sink<U>,
+    markObj: PartialState<V>,
+    fn: (ev: T, data: V) => W) => {
 
   const markStr = JSON.stringify(markObj);
   const index = markStr.indexOf(':null');
-  if (index < 0) { throw new Error('invalid mark') }
+  if (index < 0) {throw new Error('invalid mark')}
   const mark = markStr.substr(0, index + 1);
 
   return source$.pipe(

@@ -17,7 +17,7 @@ export abstract class SpaClientPort<T extends SpaState> extends Port {
   }>();
   state = new StatePort<T>();
   vdom = new SnabbdomClientPort();
-  dom = new SpaClientDomPort();
+  dom = new SpaClientDomPort<T>();
   bff = new SpaClientBffPort();
 
   initChildPortFlow = (port: this, {vdom, state, params: {csr}, dom}: PortParams<this>) =>
