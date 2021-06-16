@@ -10,7 +10,9 @@ declare const extra: unique symbol;
 
 export type PartialState<T> =
   T extends object ?
-  {[P in keyof T]?: PartialState<T[P]> | null;} & {[extra]?: Error} :
+  {[P in keyof T]?: PartialState<T[P]> | null;}
+//  & {[extra]?: Error}
+ :
   T | null;
 
 type Primitive<T> =
@@ -22,7 +24,8 @@ type Primitive<T> =
 export type PartialStateX<T> =
   T extends Primitive<T> ? T :
   T extends object ?
-  {[P in keyof T]?: PartialState<T[P]>;} & {[extra]?: Error}
+  {[P in keyof T]?: PartialState<T[P]>;}
+//  & {[extra]?: Error}
   : T;
 
 export const toRecord = <T extends {[key: string]: any}, U extends keyof T> (id: U, rows: Array<T>) => {

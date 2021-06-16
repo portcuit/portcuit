@@ -1,9 +1,10 @@
 import test from 'ava'
 import {merge} from "rxjs";
-import {filter, toArray} from "rxjs/operators";
-import {sink, source, Port, mapToProc, ofProc, cycleFlow} from "@pkit/core";
+import {filter, toArray, map} from "rxjs/operators";
+import {sink, source, Port, mapToProc, ofProc, firstArgsFirstElm} from "@pkit/core";
 import {StatePort, singlePatch} from '../index/'
-import {StepState, finishStep, isFinishStep} from "./state";
+import {StepState} from "./state";
+import {finishStep, isFinishStep} from './lib'
 
 type StateTestState = {
   talkId?: string;
@@ -16,8 +17,7 @@ type StateTestState = {
   };
 }
 
-const initialState = (): StateTestState =>
-({
+const initialState = (): StateTestState => ({
   talk: {
     talentId: 1
   },
@@ -25,7 +25,8 @@ const initialState = (): StateTestState =>
     init: StepState.initialState(),
     findTalk: StepState.initialState()
   }
-});
+})
+
 
 class StateTestPort extends Port {
   state = new StatePort<StateTestState>()
@@ -39,6 +40,7 @@ class StateTestPort extends Port {
 
   singlePatchFlow = (port: this) =>
     mapToProc(source(port.state.data).pipe(
+      map(firstArgsFirstElm),
       filter(isFinishStep('init'))),
       sink(port.state.update),
       singlePatch({talkId: '5'}))
@@ -58,6 +60,7 @@ class StateTestPort extends Port {
 
   terminateFlow = (port: this) =>
     mapToProc(source(port.state.data).pipe(
+      map(firstArgsFirstElm),
       filter(isFinishStep('findTalk'))),
       sink(port.complete))
 

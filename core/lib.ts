@@ -1,3 +1,4 @@
+import {values} from 'ramda'
 import {Observable} from 'rxjs'
 
 export class Socket<T> {
@@ -138,3 +139,28 @@ export type PortSourceOrSink<T> = {
 }
 
 export type MappedWrapObservable<T> = {[P in keyof T]: Observable<T[P]>}
+
+type AtLeastOneArray<T> = [T, ...unknown[]]
+type AtLeastTwoArray<T> = [unknown, T, ...unknown[]]
+type AtLeastThreeArray<T> = [T, T, T, ...T[]]
+
+export const firstArgsFirstElm = <T> ([value]: AtLeastOneArray<T>) =>
+  value
+
+export const isTruthy = <T> (arg: T, ...args: any[]): boolean =>
+  !!arg
+
+
+
+export const firstElm = <T> ([value]: AtLeastOneArray<T>) =>
+  value
+
+
+export const secondElm = <T> (data: AtLeastTwoArray<T>) =>
+  data[1]
+
+export const firstElmsFirstElm = <T> ([[value]]: AtLeastOneArray<AtLeastOneArray<T>>) =>
+  value
+
+export const firstElmsSecondElm = <T> ([[, value]]: AtLeastOneArray<AtLeastTwoArray<T>>) =>
+  value
