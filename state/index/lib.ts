@@ -1,7 +1,7 @@
 export const singlePatch = <T> (patch: T) =>
   [[patch]]
 
-export type UpdateBatch<T extends {}> = [PartialState<T>, PartialState<T>?][]
+export type UpdateBatch<T extends {}> = PartialState<T>[][]
 export type InferUpdateBatch<T> = T extends UpdateBatch<infer I> ? I : never
 
 export type StateData<T extends {}> = [data: T, postData: T, prevData: T]

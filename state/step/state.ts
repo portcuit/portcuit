@@ -1,4 +1,4 @@
-export type StepState<T = null> = {
+export type StepState<T = any> = {
   start: boolean
   finish: boolean
   doing: boolean
