@@ -16,12 +16,12 @@ export class SpaClientDomPort<T = any> extends Port {
   startClickDomEventFlow = (port: this, {doc}: PortParams<this>) =>
     directProc(fromEvent<SocketData<SpaClientDomPort['event']['click']>>(doc, 'click').pipe(
       map(domEventMap),
-      filter(({detail}) => Array.isArray(detail))),
+      filter(({batch}) => !!batch)),
       sink(port.event.click))
 
   startChangeDomEventFlow = (port: this, {doc}: PortParams<this>) =>
     directProc(fromEvent<SocketData<SpaClientDomPort['event']['change']>>(doc, 'change').pipe(
       map(domEventMap),
-      filter(({detail}) => Array.isArray(detail))),
+      filter(({batch}) => !!batch)),
       sink(port.event.change))
 }

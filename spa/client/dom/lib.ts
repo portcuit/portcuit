@@ -1,6 +1,6 @@
 import {UpdateBatch} from "@pkit/state"
 
-export const domEventMap = (ev: {target: HTMLElement & {dataset: {bind: string}}}) => {
+export const domEventMap = <T>(ev: {target: HTMLElement & {dataset: {bind: string}}}) => {
   if (!ev.target) {return ev}
   const batch = extractBatch(ev.target)
   if (!batch) {return ev}

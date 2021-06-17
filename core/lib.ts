@@ -150,7 +150,7 @@ export const firstArgsFirstElm = <T> ([value]: AtLeastOneArray<T>) =>
 export const isTruthy = <T> (arg: T, ...args: any[]): boolean =>
   !!arg
 
-export const firstElm = <T> (data: T[] | [T] | readonly T[]) =>
+export const firstElm = <T> (data: AtLeastOneArray<T> | T[] | readonly T[]) =>
   data[0]
 
 export const secondElm = <T> (data: AtLeastTwoArray<T>) =>
