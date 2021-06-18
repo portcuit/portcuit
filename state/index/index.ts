@@ -26,11 +26,17 @@ export class StatePort<T extends {}> extends Port {
         const data = patches.reduce((acc, patch) =>
           mergePatch.apply(acc, patch), json8.clone(prevData))
 
+        const prePatch = patches.reduce((acc, patch) =>
+          mergePatch.apply(acc, patch), {})
+
         const postData = postPatches.reduce((acc, patch) =>
           mergePatch.apply(acc, patch), json8.clone(data))
 
-        return [data, postData, prevData] as StateData<T>
-      }, [{}, initial, initial] as StateData<T>),
-      startWith([initial, initial, initial] as StateData<T>)),
+        const postPatch = postPatches.reduce((acc, patch) =>
+          mergePatch.apply(acc, patch), {})
+
+        return [data, postData, prevData, prePatch, postPatch] as StateData<T>
+      }, [{}, initial, initial, {}, {}] as StateData<T>),
+      startWith([initial, initial, initial, {}, {}] as StateData<T>)),
       sink(port.data))
 }
