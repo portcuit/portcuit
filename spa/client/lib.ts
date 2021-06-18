@@ -1,7 +1,7 @@
 import {assocPath} from 'ramda'
-import {Observable} from "rxjs";
-import {filter, map} from "rxjs/operators";
-import {Sink} from "@pkit/core";
+import {Observable, from, of} from "rxjs";
+import {filter, map, mergeMap, catchError} from "rxjs/operators";
+import {Sink, source, PortMessage} from "@pkit/core";
 import {PartialState, UpdateBatch, InferUpdateBatch} from "@pkit/state";
 import {FlowEvent} from "@pkit/spa";
 
@@ -61,3 +61,21 @@ export const dataBindProc = <
     map((data) =>
       sink(data)))
 }
+
+export const bffProc = <T> (source$: Observable<UpdateBatch<T>>, sink: Sink<UpdateBatch<T>>, endpoint: string, errSink?: Sink<Error>) =>
+  source$.pipe(mergeMap((batch) => {
+    const stream$ = from((async () => {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify(batch)
+      })
+      return await res.json() as UpdateBatch<T>
+    })()).pipe(map((data) => sink(data)))
+
+    return errSink ?
+      stream$.pipe(catchError((err) => of(errSink(err)))) :
+      stream$
+  }))

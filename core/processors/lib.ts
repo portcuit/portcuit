@@ -117,22 +117,7 @@ export const latestMergeMapProc = <T, U, V extends readonly any[], W extends U> 
       return errSink ? stream$.pipe(
         catchError((err) => of(errSink(err)))) :
         stream$
-    })
-
-    // mergeMapOperator<[T, ...V], U>(fn, sink, errSink)
-  ) as Observable<PortMessage<U>>;
-
-// export const latestMergeMapProc = <T, U, V extends unknown[], W extends U> (source$: Observable<T>, sink: Sink<U>, latests$: MappedWrapObservable<V>, fn: (arg: [T, ...V]) => Observable<W> | Promise<W>, errSink?: Sink<Error>) =>
-//   source$.pipe(
-//     withLatestFrom<T, V>(...latests$),
-//     mergeMap((data) => {
-//       const stream$ = from(fn(data)).pipe(
-//         map((data) => sink(data)))
-//       return errSink ? stream$.pipe(
-//         catchError((err) => of(errSink(err)))) :
-//         stream$
-//     })
-//   )
+    })) as Observable<PortMessage<U>>;
 
 export const createLatestMergeMapProc = <T, U, V extends unknown[], W extends U = U> (fn: LatestMergeMapFn<T, V, W>) =>
   (source$: Observable<T>, sink: Sink<U>, latests$: MappedWrapObservable<V>, errSink?: Sink<Error>) =>
