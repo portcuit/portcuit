@@ -1,27 +1,48 @@
-import {fromEvent} from 'rxjs'
-import {filter, map} from 'rxjs/operators'
-import {Container, directProc, mapProc, Port, PortParams, sink, Socket, SocketData} from "@pkit/core";
+import {fromEvent, merge} from 'rxjs'
+import {filter, map, mergeMap} from 'rxjs/operators'
+import {Container, DeepPartialPort, ofProc, Port, PortParams, sink, Socket} from "@pkit/core";
 import {UpdateBatch} from '@pkit/state'
-import {domEventMap} from './lib'
+
+export * from './lib'
 
 export class SpaClientDomPort<T = any> extends Port {
   init = new Socket<{
     doc: Document
   }>();
   event = new class extends Container {
-    click = new Socket<Omit<MouseEvent, 'target'> & {target: HTMLElement & {dataset: {bind: string}}} & {batch: UpdateBatch<T>}>()
-    change = new Socket<Omit<Event, 'target'> & {target: HTMLElement & {dataset: {bind: string}, value: string, checked: boolean}} & {batch: UpdateBatch<T>}>()
+    click = new Socket<MouseEvent & {target: HTMLElement}>()
+    change = new Socket<Event & {target: HTMLInputElement}>()
+    focus = new Socket<FocusEvent>()
+    blur = new Socket<FocusEvent>()
+  }
+  hook = new class extends Container {
+    update = new Socket<UpdateBatch<T>>()
   }
 
-  startClickDomEventFlow = (port: this, {doc}: PortParams<this>) =>
-    directProc(fromEvent<SocketData<SpaClientDomPort['event']['click']>>(doc, 'click').pipe(
-      map(domEventMap),
-      filter(({batch}) => !!batch)),
-      sink(port.event.click))
+  constructor (port: DeepPartialPort<SpaClientDomPort<T>> = {}) {
+    super(port)
+  }
 
-  startChangeDomEventFlow = (port: this, {doc}: PortParams<this>) =>
-    directProc(fromEvent<SocketData<SpaClientDomPort['event']['change']>>(doc, 'change').pipe(
-      map(domEventMap),
-      filter(({batch}) => !!batch)),
-      sink(port.event.change))
+  fromEventFlow = (port: this, {doc}: PortParams<this>) =>
+    merge(...Container.entries(port.event).map(([name, sock]) =>
+      fromEvent(doc, name).pipe(
+        map((ev) => {
+          const prop = `on${name.slice(0, 1).toUpperCase()}${name.slice(1)}`
+          const extractBatch = (elm: HTMLElement): UpdateBatch<T> | null => {
+            if (elm && elm.dataset && elm.dataset?.[prop]) {
+              return JSON.parse(elm.dataset?.[prop]!)
+            } else if (elm.parentNode) {
+              return extractBatch(elm.parentNode as HTMLElement)
+            } else {
+              return null
+            }
+          }
+          const batch = ev.target && extractBatch(ev.target as HTMLElement)
+          return {batch, ev}
+        }),
+        filter(({batch}) => !!batch),
+        mergeMap(({batch, ev}) => merge(
+          ofProc(sink(sock as any), ev),
+          ofProc(sink(port.hook.update), batch!)
+        )))))
 }

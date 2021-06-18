@@ -15,10 +15,10 @@ export abstract class SpaClientPort<T extends SpaState> extends Port {
       csr: SpaCsr
     }
   }>();
-  state = new StatePort<T>();
-  vdom = new SnabbdomClientPort();
-  dom = new SpaClientDomPort<T>();
-  bff = new SpaClientBffPort();
+  state = new StatePort<T>()
+  vdom = new SnabbdomClientPort()
+  dom = new SpaClientDomPort<T>()
+  bff = new SpaClientBffPort()
 
   initChildPortFlow = (port: this, {vdom, state, params: {csr}, dom}: PortParams<this>) =>
     merge(
@@ -35,6 +35,9 @@ export abstract class SpaClientPort<T extends SpaState> extends Port {
 
   bffUpdateFlow = (port: this) =>
     directProc(source(port.bff.batch), sink(port.state.update))
+
+  hookUpdateFlow = (port: this) =>
+    directProc(source(port.dom.hook.update), sink(port.state.update))
 
   flow () {
     return merge(
