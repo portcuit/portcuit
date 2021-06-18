@@ -1,20 +1,5 @@
-import {
-  of,
-  Observable,
-  throwError,
-  fromEvent,
-  from
-} from 'rxjs'
-import {
-  map,
-  withLatestFrom,
-  mergeMap,
-  switchMap,
-  filter,
-  catchError,
-  takeUntil,
-  merge,
-} from 'rxjs/operators'
+import {of, Observable, throwError, fromEvent, from} from 'rxjs'
+import {map, withLatestFrom, mergeMap, switchMap, filter, catchError} from 'rxjs/operators'
 import type {Sink, MappedWrapObservable, PortMessage} from '@pkit/core'
 
 export type UnwrapObservable<T> = T extends Observable<infer I> ? I : never;
