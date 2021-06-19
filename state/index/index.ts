@@ -17,7 +17,7 @@ export class StatePort<T extends {}> extends Port {
         patches.reduce((acc, patch) =>
           mergePatch.apply(acc, patch), json8.clone(prevData)),
         patches, prevData
-      ] as StateData<T>, [{}, [] as any, initial] as StateData<T>),
+      ] as StateData<T>, [initial, [] as any, {}] as StateData<T>),
       startWith([initial, [], {} as any] as StateData<T>)),
       sink(port.data))
 }

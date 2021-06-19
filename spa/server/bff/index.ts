@@ -11,7 +11,7 @@ export class SpaServerBffPort<T extends SpaState> extends SpaServerPort<T> {
   startBffFlow = (port: this) =>
     mergeMapProc(source<UpdateBatch<T>>(port.rest.request.body.json), sink<UpdateBatch<SpaState>>(port.state.update),
       async (batch) => {
-        if (!(Array.isArray(batch) && batch.every((patches) => Array.isArray(patches)))) {
+        if (!(Array.isArray(batch))) {
           throw new Error(`invalid updateBatch: ${JSON.stringify(batch)}`);
         }
         return [...batch, startStep('bff')]
