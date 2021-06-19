@@ -1,8 +1,9 @@
 import test from 'ava'
+import {pipe, anyPass} from 'ramda'
 import {merge} from "rxjs";
 import {filter, toArray, map} from "rxjs/operators";
-import {sink, source, Port, mapToProc, ofProc, firstArgsFirstElm} from "@pkit/core";
-import {StatePort, singlePatch} from '../index/'
+import {sink, source, Port, mapToProc, ofProc, firstArgsFirstElm, secondElm} from "@pkit/core";
+import {StatePort} from '../index/'
 import {StepState} from "./state";
 import {finishStep, isFinishStep} from './lib'
 
@@ -43,7 +44,7 @@ class StateTestPort extends Port {
       map(firstArgsFirstElm),
       filter(isFinishStep('init'))),
       sink(port.state.update),
-      singlePatch({talkId: '5'}))
+      [{talkId: '5'}])
 
   findTalkFlow = (port: this) =>
     mapToProc(source(port.state.data).pipe(
@@ -51,17 +52,17 @@ class StateTestPort extends Port {
         talkId === '5')),
       sink(port.state.update),
       [
-        [{
+        {
           talkId: '3',
           talk: {talentId: 3}
-        }],
+        },
         finishStep('findTalk')
       ])
 
   terminateFlow = (port: this) =>
     mapToProc(source(port.state.data).pipe(
-      map(firstArgsFirstElm),
-      filter(isFinishStep('findTalk'))),
+      filter(([, batch]) =>
+        batch.some(isFinishStep('findTalk')))),
       sink(port.complete))
 
   flow () {

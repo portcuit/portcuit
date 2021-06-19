@@ -15,9 +15,7 @@ export class SpaClientDomPort<T = any> extends Port {
     focus = new Socket<FocusEvent>()
     blur = new Socket<FocusEvent>()
   }
-  hook = new class extends Container {
-    update = new Socket<UpdateBatch<T>>()
-  }
+  update = new Socket<UpdateBatch<T>>()
 
   constructor (port: DeepPartialPort<SpaClientDomPort<T>> = {}) {
     super(port)
@@ -43,6 +41,6 @@ export class SpaClientDomPort<T = any> extends Port {
         filter(({batch}) => !!batch),
         mergeMap(({batch, ev}) => merge(
           ofProc(sink(sock as any), ev),
-          ofProc(sink(port.hook.update), batch!)
+          ofProc(sink(port.update), batch!)
         )))))
 }

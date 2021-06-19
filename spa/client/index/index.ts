@@ -22,12 +22,12 @@ export abstract class SpaClientPort<T extends SpaState> extends Port {
     update = new Socket<UpdateBatch<T>>()
   }
   vdom = new SnabbdomClientPort()
-  dom = new SpaClientDomPort<T>({hook: {update: this.state.update}})
+  dom = new SpaClientDomPort<T>()
   render = new Socket<T>()
   view = new Socket<FC>()
 
-  renderDecision ([, , , patch]: StateData<T>): boolean {
-    return [patch].some(isFinishStep('render'))
+  renderDecision ([,batch]: StateData<T>): boolean {
+    return batch.some(isFinishStep('render'))
   }
 
   renderDecisionFlow = (port: this) =>
@@ -35,7 +35,7 @@ export abstract class SpaClientPort<T extends SpaState> extends Port {
       filter((data) =>
         port.renderDecision(data))),
       sink(port.render),
-      ([, state]) => state)
+      ([state]) => state)
 
   renderFlow = (port: this, {params}: PortParams<this>) =>
     latestMergeMapProc(source(port.render), sink(port.vdom.render),

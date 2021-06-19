@@ -13,30 +13,11 @@ export class StatePort<T extends {}> extends Port {
 
   patchFlow = (port: StatePort<T>, initial: T) =>
     directProc(source(port.update).pipe(
-      map((batch) => {
-        const patches = []
-        const postPathces = []
-        for (const pair of batch) {
-          patches.push(pair[0])
-          if (pair[1]) {postPathces.push(pair[1])}
-        }
-        return [patches, postPathces] as const;
-      }),
-      scan(([, prevData], [patches, postPatches]) => {
-        const data = patches.reduce((acc, patch) =>
-          mergePatch.apply(acc, patch), json8.clone(prevData))
-
-        const prePatch = patches.reduce((acc, patch) =>
-          mergePatch.apply(acc, patch), {})
-
-        const postData = postPatches.reduce((acc, patch) =>
-          mergePatch.apply(acc, patch), json8.clone(data))
-
-        const postPatch = postPatches.reduce((acc, patch) =>
-          mergePatch.apply(acc, patch), {})
-
-        return [data, postData, prevData, prePatch, postPatch] as StateData<T>
-      }, [{}, initial, initial, {}, {}] as StateData<T>),
-      startWith([initial, initial, initial, {}, {}] as StateData<T>)),
+      scan(([prevData], patches) => [
+        patches.reduce((acc, patch) =>
+          mergePatch.apply(acc, patch), json8.clone(prevData)),
+        patches, prevData
+      ] as StateData<T>, [{}, [] as any, initial] as StateData<T>),
+      startWith([initial, [], {} as any] as StateData<T>)),
       sink(port.data))
 }
