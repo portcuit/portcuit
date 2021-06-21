@@ -4,15 +4,13 @@ export const startStep = <T extends string, U extends any> (p: T, data?: U) =>
 export const finishStep = <T extends string> (p: T, status?: any) =>
   ({step: {[p]: {doing: false, data: null}}}) as {step: {[P in T]: {doing: false, data: null}}}
 
-export const completeStep = <T extends string> (p: T) => [
-  {step: {[p]: {finish: true, doing: false, done: true}}},
-  {step: {[p]: {finish: false}}}
-] as {step: {[P in T]: {finish: boolean}}}[]
+export const completeStep = <T extends string> (p: T) => 
+  ({step: {[p]: {doing: false, done: true}}}) as {step: {[P in T]: {doing: false, done: true}}}
 
 
 const createIsDoingStep = (target: boolean) =>
   <T extends string> (p: T) =>
-    <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
+    <U extends {step?: {[P in T]?: any} | null} | null | undefined> (state: U) => {
       if (!state) {return false}
       if (!state.step) {return false;}
       if (!(p in state.step)) {return false}
@@ -24,7 +22,7 @@ export const isFinishStep = createIsDoingStep(false)
 
 const createIsActionStep = (action: string) =>
   <T extends string> (p: T) =>
-    <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
+    <U extends {step?: {[P in T]?: any} | null} | null | undefined> (state: U) => {
       if (!state) {return false}
       if (!state.step) {return false;}
       if (!(p in state.step)) {return false}
@@ -38,7 +36,7 @@ export const isDoneStep = createIsActionStep('done')
 
 const createIsNotDoingStep = () =>
   <T extends string> (p: T) =>
-    <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
+    <U extends {step?: {[P in T]?: any} | null} | null | undefined> (state: U) => {
       if (!state) {return false}
       if (!state.step) {return false;}
       if (!(p in state.step)) {return false}

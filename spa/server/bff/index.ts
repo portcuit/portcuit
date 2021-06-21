@@ -4,7 +4,7 @@ import {UpdateBatch, startStep} from "@pkit/state";
 import {SpaServerPort} from "../index/";
 
 export class SpaServerBffPort<T extends SpaState> extends SpaServerPort<T> {
-  bff = new class extends Container {
+  bffState = new class extends Container {
     update = new Socket<UpdateBatch<T>>()
   }
 
@@ -18,5 +18,5 @@ export class SpaServerBffPort<T extends SpaState> extends SpaServerPort<T> {
       }, sink(port.err))
 
   updateBatchFlow = (port: this) =>
-    directProc(source(port.bff.update), sink(port.rest.response.json))
+    directProc(source(port.bffState.update), sink(port.rest.response.json))
 }
