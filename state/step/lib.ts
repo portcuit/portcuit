@@ -22,7 +22,7 @@ export const isFinishStep = createIsDoingStep(false)
 
 const createIsActionStep = (action: string) =>
   <T extends string> (p: T) =>
-    <U extends {step?: {[P in T]?: any} | null} | null | undefined> (state: U) => {
+    <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
       if (!state) {return false}
       if (!state.step) {return false;}
       if (!(p in state.step)) {return false}
@@ -36,7 +36,7 @@ export const isDoneStep = createIsActionStep('done')
 
 const createIsNotDoingStep = () =>
   <T extends string> (p: T) =>
-    <U extends {step?: {[P in T]?: any} | null} | null | undefined> (state: U) => {
+    <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
       if (!state) {return false}
       if (!state.step) {return false;}
       if (!(p in state.step)) {return false}
