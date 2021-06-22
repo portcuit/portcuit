@@ -1,9 +1,10 @@
-export type StepState<T = any> = {
+export type StepState<T = any, U = any> = {
   start: boolean
   finish: boolean
   doing: boolean
   done: boolean
-  data: T | null
+  data?: T
+  status?: U
 }
 
 export namespace StepState {
@@ -12,7 +13,6 @@ export namespace StepState {
     start: false,
     finish: false,
     doing: false,
-    done: false,
-    data: null
+    done: false
   })
 }

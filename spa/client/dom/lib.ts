@@ -5,7 +5,7 @@ export const domEventMap = <T> (ev: {target: HTMLElement & {dataset: {bind: stri
   const batch = extractBatch(ev.target)
   if (!batch) {return ev}
   return Object.defineProperty(ev, 'batch',
-    {enumerable: true, value: batch})
+    {enumerable: true, configurable: true, value: batch})
 }
 
 export const extractBatch = <T> (elm: HTMLElement): UpdateBatch<T> | null => {

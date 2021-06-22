@@ -10,10 +10,10 @@ export class SpaClientDomPort<T = any> extends Port {
     doc: Document
   }>();
   event = new class extends Container {
-    click = new Socket<MouseEvent & {target: HTMLElement} & {batch: UpdateBatch<T>}>()
-    change = new Socket<Event & {target: HTMLInputElement} & {batch: UpdateBatch<T>}>()
-    focus = new Socket<FocusEvent & {batch: UpdateBatch<T>}>()
-    blur = new Socket<FocusEvent & {batch: UpdateBatch<T>}>()
+    click = new Socket<readonly [MouseEvent & {target: HTMLElement}, UpdateBatch<T>]>()
+    change = new Socket<readonly [Event & {target: HTMLInputElement}, UpdateBatch<T>]>()
+    focus = new Socket<readonly [FocusEvent, UpdateBatch<T>]>()
+    blur = new Socket<readonly [FocusEvent, UpdateBatch<T>]>()
   }
 
   constructor (port: DeepPartialPort<SpaClientDomPort<T>> = {}) {
@@ -35,12 +35,9 @@ export class SpaClientDomPort<T = any> extends Port {
             }
           }
           const batch = ev.target && extractBatch(ev.target as HTMLElement)
-          return Object.defineProperty(ev, 'batch', {
-            value: batch,
-            enumerable: true
-          })
+          return [ev, batch] as const
         }),
-        filter(({batch}) => !!batch),
-        map((ev) =>
-          sink(sock as any)(ev)))))
+        filter(([, batch]) => !!batch),
+        map((data) =>
+          sink(sock as any)(data)))))
 }

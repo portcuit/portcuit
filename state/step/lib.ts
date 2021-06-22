@@ -1,26 +1,31 @@
+import {pipe, not} from 'ramda'
+
 export const startStep = <T extends string, U extends any> (p: T, data?: U) =>
-  ({step: {[p]: {doing: true, data}}}) as {step: {[P in T]: {doing: true, data: U}}}
+  ({step: {[p]: {start: true, finish: false, doing: true, data, status: null}}}) as
+  {step: {[P in T]: {start: true, finish: false, doing: true, data: U, status: null}}}
 
-export const finishStep = <T extends string> (p: T, status?: any) =>
-  ({step: {[p]: {doing: false, data: null}}}) as {step: {[P in T]: {doing: false, data: null}}}
+export const finishStep = <T extends string, U extends any> (p: T, status?: U) =>
+  ({step: {[p]: {start: false, finish: true, doing: false, data: null, status}}}) as
+  {step: {[P in T]: {start: false, finish: true, doing: false, data: null, status: U}}}
 
-export const completeStep = <T extends string> (p: T) => 
-  ({step: {[p]: {doing: false, done: true}}}) as {step: {[P in T]: {doing: false, done: true}}}
+export const completeStep = <T extends string, U extends any> (p: T, status?: U) =>
+  ({step: {[p]: {start: false, finish: true, doing: false, data: null, status, done: true}}}) as
+  {step: {[P in T]: {start: false, finish: true, doing: false, data: null, status: U, done: true}}}
 
-
-const createIsDoingStep = (target: boolean) =>
+export const createIsBatchStep = (action: 'start' | 'finish') =>
   <T extends string> (p: T) =>
     <U extends {step?: {[P in T]?: any} | null} | null | undefined> (state: U) => {
       if (!state) {return false}
-      if (!state.step) {return false;}
-      if (!(p in state.step)) {return false}
-      return (state.step[p] as any)['doing'] === target;
+      if (!state.step) {return false}
+      if (!state.step[p]) {return false}
+      if (!(action in state.step[p])) {return false}
+      return state.step[p][action] === true
     }
 
-export const isStartStep = createIsDoingStep(true)
-export const isFinishStep = createIsDoingStep(false)
+export const isStartStep = createIsBatchStep('start')
+export const isFinishStep = createIsBatchStep('finish')
 
-const createIsActionStep = (action: string) =>
+const createIsStateStep = (action: 'doing' | 'done') =>
   <T extends string> (p: T) =>
     <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
       if (!state) {return false}
@@ -29,26 +34,32 @@ const createIsActionStep = (action: string) =>
       return (state.step[p] as any)[action] === true;
     }
 
-// export const isStartStep = createIsActionStep('start')
-// export const isFinishStep = createIsActionStep('finish')
-export const isDoingStep = createIsActionStep('doing')
-export const isDoneStep = createIsActionStep('done')
+export const isDoingStep = createIsStateStep('doing')
+export const isDoneStep = createIsStateStep('done')
+
+export const isNotDoingStep = <T extends string> (p: T) =>
+  <U extends {step?: {[P in T]?: any} | null}> (state: U) =>
+    !isDoingStep(p)(state)
 
 export const isNotDoneStep = <T extends string> (p: T) =>
-    <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
-      if (!state) {return false}
-      if (!state.step) {return false;}
-      if (!(p in state.step)) {return false}
-      return (state.step[p] as any)['done'] !== true
-    }
+  <U extends {step?: {[P in T]?: any} | null}> (state: U) =>
+    !isDoneStep(p)(state)
 
-const createIsNotDoingStep = () =>
-  <T extends string> (p: T) =>
-    <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
-      if (!state) {return false}
-      if (!state.step) {return false;}
-      if (!(p in state.step)) {return false}
-      return (state.step[p] as any)['doing'] !== true
-    }
+// export const isNotDoneStep = <T extends string> (p: T) =>
+//   <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
+//     if (!state) {return false}
+//     if (!state.step) {return false;}
+//     if (!(p in state.step)) {return false}
+//     return (state.step[p] as any)['done'] !== true
+//   }
 
-export const isNotDoingStep = createIsNotDoingStep()
+// const createIsNotDoingStep = () =>
+//   <T extends string> (p: T) =>
+//     <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
+//       if (!state) {return false}
+//       if (!state.step) {return false;}
+//       if (!(p in state.step)) {return false}
+//       return (state.step[p] as any)['doing'] !== true
+//     }
+
+// export const isNotDoingStep = createIsNotDoingStep()
