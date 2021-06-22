@@ -35,31 +35,12 @@ const createIsStateStep = (action: 'doing' | 'done') =>
     }
 
 export const isDoingStep = createIsStateStep('doing')
-export const isDoneStep = createIsStateStep('done')
+export const isCompleteStep = createIsStateStep('done')
 
 export const isNotDoingStep = <T extends string> (p: T) =>
   <U extends {step?: {[P in T]?: any} | null}> (state: U) =>
     !isDoingStep(p)(state)
 
-export const isNotDoneStep = <T extends string> (p: T) =>
+export const isNotCompleteStep = <T extends string> (p: T) =>
   <U extends {step?: {[P in T]?: any} | null}> (state: U) =>
-    !isDoneStep(p)(state)
-
-// export const isNotDoneStep = <T extends string> (p: T) =>
-//   <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
-//     if (!state) {return false}
-//     if (!state.step) {return false;}
-//     if (!(p in state.step)) {return false}
-//     return (state.step[p] as any)['done'] !== true
-//   }
-
-// const createIsNotDoingStep = () =>
-//   <T extends string> (p: T) =>
-//     <U extends {step?: {[P in T]?: any} | null}> (state: U) => {
-//       if (!state) {return false}
-//       if (!state.step) {return false;}
-//       if (!(p in state.step)) {return false}
-//       return (state.step[p] as any)['doing'] !== true
-//     }
-
-// export const isNotDoingStep = createIsNotDoingStep()
+    !isCompleteStep(p)(state)
