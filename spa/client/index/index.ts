@@ -1,7 +1,7 @@
 import {merge} from "rxjs"
 import {filter} from 'rxjs/operators'
 import {Container, latestMergeMapProc, mapProc, mapToProc, ofProc, Port, PortParams, sink, Socket, source} from "@pkit/core"
-import {finishStep, isFinishStep, StateData, StatePort, UpdateBatch} from '@pkit/state'
+import {finishStep, isFinishStep, PartialState, StateData, StatePort, UpdateBatch} from '@pkit/state'
 import {FC} from '@pkit/snabbdom'
 import {SnabbdomClientPort} from "@pkit/snabbdom/client"
 import {SpaCsr, SpaState} from "../../shared/"
@@ -26,14 +26,14 @@ export abstract class SpaClientPort<T extends SpaState> extends Port {
   render = new Socket<T>()
   view = new Socket<FC>()
 
-  renderDecision ([,batch]: StateData<T>): boolean {
+  renderDecisionFilter (batch: UpdateBatch<T>): boolean {
     return batch.some(isFinishStep('render'))
   }
 
   renderDecisionFlow = (port: this) =>
     mapProc(source(port.state.data).pipe(
-      filter((data) =>
-        port.renderDecision(data))),
+      filter(([,batch]) =>
+        port.renderDecisionFilter(batch))),
       sink(port.render),
       ([state]) => state)
 
