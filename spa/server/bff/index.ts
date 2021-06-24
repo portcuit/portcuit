@@ -33,8 +33,9 @@ export class SpaServerBffPort<T extends SpaState> extends SpaServerPort<T> {
         finishStep('bff')
       ])
 
-  bffBufferFilter = (state: T) =>
-    [state].some(isDoingStep('bff'))
+  bffBufferFilter (state: T) {
+    return [state].some(isDoingStep('bff'))
+  }
 
   updateBatchFlow = (port: this) =>
     directProc(source(port.bffState.update), sink(port.rest.response.json))
