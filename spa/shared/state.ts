@@ -1,6 +1,7 @@
 import {StepState} from "@pkit/state";
 
 export type SpaState = {
+  params: {},
   step: {
     init: StepState
     bff: StepState
@@ -11,8 +12,8 @@ export type SpaState = {
 }
 
 export namespace SpaState {
-  export const initialState = (): SpaState =>
-  ({
+  export const initialState = (): SpaState => ({
+    params: {},
     step: {
       init: StepState.initialState(),
       bff: StepState.initialState(),
