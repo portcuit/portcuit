@@ -8,10 +8,10 @@ import {FlowEvent} from "@pkit/spa";
 const objFromTextContent = (doc: Document, selector: string) =>
   JSON.parse(doc.querySelector(selector)!.textContent!)
 
-export const hydroState = (doc: Document) =>
+export const hydroState = <T>(doc: Document): T =>
   objFromTextContent(doc, '#hydration-state')
 
-export const hydroParams = (doc: Document) =>
+export const hydroParams = <T>(doc: Document): T =>
   objFromTextContent(doc, '#hydration-params')
 
 export const updateBatchFromFlowEvent = (event: Event, dataString: string) => {
