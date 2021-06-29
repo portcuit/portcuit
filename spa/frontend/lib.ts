@@ -1,7 +1,7 @@
 import {assocPath} from 'ramda'
 import {Observable, from, of} from "rxjs";
 import {filter, map, mergeMap, catchError} from "rxjs/operators";
-import {Sink, source, PortMessage} from "@pkit/core";
+import {Sink} from "@pkit/core";
 import {PartialState, UpdateBatch, InferUpdateBatch} from "@pkit/state";
 import {FlowEvent} from "@pkit/spa";
 

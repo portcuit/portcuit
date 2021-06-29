@@ -1,11 +1,11 @@
 import {fromEvent, merge} from 'rxjs'
-import {filter, map, mergeMap} from 'rxjs/operators'
-import {Container, DeepPartialPort, ofProc, Port, PortParams, sink, Socket} from "@pkit/core";
+import {filter, map} from 'rxjs/operators'
+import {Container, DeepPartialPort, Port, PortParams, sink, Socket} from "@pkit/core"
 import {UpdateBatch} from '@pkit/state'
 
 export * from './lib'
 
-export class SpaClientDomPort<T = any> extends Port {
+export class SpaFrontendDomPort<T = any> extends Port {
   init = new Socket<{
     doc: Document
   }>();
@@ -16,7 +16,7 @@ export class SpaClientDomPort<T = any> extends Port {
     blur = new Socket<readonly [FocusEvent, UpdateBatch<T>]>()
   }
 
-  constructor (port: DeepPartialPort<SpaClientDomPort<T>> = {}) {
+  constructor (port: DeepPartialPort<SpaFrontendDomPort<T>> = {}) {
     super(port)
   }
 

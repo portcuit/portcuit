@@ -1,18 +1,18 @@
 import {merge} from "rxjs"
 import {filter} from 'rxjs/operators'
 import {Container, latestMergeMapProc, mapProc, mapToProc, ofProc, Port, PortParams, sink, Socket, source} from "@pkit/core"
-import {finishStep, isFinishStep, PartialState, StateData, StatePort, UpdateBatch} from '@pkit/state'
+import {finishStep, isFinishStep, StatePort, UpdateBatch} from '@pkit/state'
 import {FC} from '@pkit/snabbdom'
 import {SnabbdomClientPort} from "@pkit/snabbdom/client"
 import {SpaCsr, SpaState} from "../../shared/"
-import {SpaClientDomPort} from "../dom/"
+import {SpaFrontendDomPort} from "../dom/"
 import {bffProc} from "../lib"
 
-export abstract class SpaClientPort<T extends SpaState> extends Port {
+export abstract class SpaFrontendPort<T extends SpaState> extends Port {
   init = new Socket<{
     state: T;
     vdom: PortParams<SnabbdomClientPort>;
-    dom: PortParams<SpaClientDomPort>;
+    dom: PortParams<SpaFrontendDomPort>;
     params: {
       csr: SpaCsr
     }
@@ -22,7 +22,7 @@ export abstract class SpaClientPort<T extends SpaState> extends Port {
     update = new Socket<UpdateBatch<T>>()
   }
   vdom = new SnabbdomClientPort()
-  dom = new SpaClientDomPort<T>()
+  dom = new SpaFrontendDomPort<T>()
   render = new Socket<T>()
   view = new Socket<FC>()
 

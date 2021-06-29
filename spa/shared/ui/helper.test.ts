@@ -1,6 +1,6 @@
 import test from 'ava'
 import {flowEvent, jsonSearch} from "./helper";
-import {updateBatchFromFlowEvent} from "../../client/";
+import {updateBatchFromFlowEvent} from "../../frontend";
 
 
 test('search', async () => {
