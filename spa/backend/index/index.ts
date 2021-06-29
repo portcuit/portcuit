@@ -4,7 +4,7 @@ import {StatePort} from '@pkit/state'
 import {HttpServerContext, HttpServerRestPort} from "@pkit/http/server";
 import {SpaState} from "@pkit/spa";
 
-export abstract class SpaServerPort<T extends SpaState> extends Port {
+export abstract class SpaBackendPort<T extends SpaState> extends Port {
   init = new Socket<{
     ctx: HttpServerContext;
     state: T;

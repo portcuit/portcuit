@@ -1,10 +1,10 @@
 import {filter, switchMap, takeUntil, toArray} from 'rxjs/operators'
-import {directProc, mergeMapProc, sink, Socket, source, Container, mapProc, SocketData} from "@pkit/core";
+import {directProc, mergeMapProc, sink, Socket, source, Container, mapProc} from "@pkit/core";
 import {SpaState} from '@pkit/spa'
-import {UpdateBatch, startStep, isStartStep, finishStep, StateData, isNotCompleteStep, isDoingStep} from "@pkit/state";
-import {SpaServerPort} from "../index/";
+import {UpdateBatch, startStep, isStartStep, finishStep, isDoingStep} from "@pkit/state";
+import {SpaBackendPort} from "../";
 
-export class SpaServerBffPort<T extends SpaState> extends SpaServerPort<T> {
+export class SpaBackendBffPort<T extends SpaState> extends SpaBackendPort<T> {
   bffState = new class extends Container {
     update = new Socket<UpdateBatch<T>>()
   }

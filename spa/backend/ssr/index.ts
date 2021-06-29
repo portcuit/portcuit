@@ -3,11 +3,11 @@ import {filter} from 'rxjs/operators'
 import {directProc, mapToProc, ofProc, Port, PortParams, sink, Socket, source} from "@pkit/core";
 import {SnabbdomServerPort} from "@pkit/snabbdom/server";
 import {SpaCsr, SpaState} from "@pkit/spa";
-import {SpaServerBffPort} from "../bff/";
+import {SpaBackendBffPort} from "../bff";
 import {startStep, UpdateBatch} from "@pkit/state";
 
-export class SpaServerSsrPort<T extends SpaState> extends SpaServerBffPort<T> {
-  init = new Socket<{params: {csr: SpaCsr}} & PortParams<SpaServerBffPort<T>>>();
+export class SpaBackendSsrPort<T extends SpaState> extends SpaBackendBffPort<T> {
+  init = new Socket<{params: {csr: SpaCsr}} & PortParams<SpaBackendBffPort<T>>>();
   vdom = new SnabbdomServerPort;
   html = new Socket<string>()
 
